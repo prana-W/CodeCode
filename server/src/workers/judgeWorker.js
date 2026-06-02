@@ -1,7 +1,7 @@
 import {Worker} from 'bullmq';
 import connection from '../config/redis.js';
 import Submission from '../models/Submission.model.js';
-import {runJudge} from '../services/judge.js';
+import {runJudge} from '../services/judge.service.js';
 
 const worker = new Worker(
     'submission-queue',
@@ -24,12 +24,21 @@ const worker = new Worker(
 
         try {
             const {verdict, execution_time_ms} = await runJudge(data);
-            await Submission.setVerdict(submissionId, verdict, execution_time_ms);
-            console.log(`Submission ${submissionId}: ${verdict} (${execution_time_ms}ms)`);
+            await Submission.setVerdict(
+                submissionId,
+                verdict,
+                execution_time_ms
+            );
+            console.log(
+                `Submission ${submissionId}: ${verdict} (${execution_time_ms}ms)`
+            );
         } catch (err) {
-            console.error(`Judge failed for submission ${submissionId}:`, err.message);
+            console.error(
+                `Judge failed for submission ${submissionId}:`,
+                err.message
+            );
             await Submission.setVerdict(submissionId, 'runtime_error');
         }
     },
-    {connection}
+    {connection, concurrency: 2}
 );

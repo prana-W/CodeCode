@@ -81,7 +81,12 @@ class Submission {
         return rows[0];
     }
 
-    static async setVerdict(submission_id, verdict, execution_time_ms = null, memory_used_kb = null) {
+    static async setVerdict(
+        submission_id,
+        verdict,
+        execution_time_ms = null,
+        memory_used_kb = null
+    ) {
         await pool.query(
             `UPDATE submissions
              SET verdict = ?, execution_time_ms = ?, memory_used_kb = ?

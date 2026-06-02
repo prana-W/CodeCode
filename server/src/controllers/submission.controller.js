@@ -48,12 +48,9 @@ const createSubmission = asyncHandler(async (req, res) => {
 
     const submission = await Submission.findById(insertId);
 
-    await submissionQueue.add(
-    "judge-submission",
-    {
-        submissionId: insertId
-    }
-);
+    await submissionQueue.add('judge-submission', {
+        submissionId: insertId,
+    });
 
     return res
         .status(statusCode.CREATED)
