@@ -10,6 +10,7 @@ import testcaseRouter from './routes/testcase.routes.js';
 import submissionRouter from './routes/submission.routes.js';
 import userRouter from './routes/user.routes.js';
 import morgan from 'morgan';
+import {apiLimiter} from './middlewares/rateLimit.middleware.js';
 
 const app = express();
 
@@ -31,6 +32,8 @@ app.use(express.static('public'));
 app.use(cookieParser());
 
 // API Routes
+app.use('/api/', apiLimiter);
+
 app.get('/', checkHealth);
 app.get('/api/v1', checkHealth);
 
