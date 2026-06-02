@@ -1,10 +1,10 @@
 import pool from '../db/db.js';
 
 class ContestRegistration {
-    static async register({contest_id, user_id}) {
+    static async register({contest_id, user_id, current_rating}) {
         const [result] = await pool.query(
-            `INSERT INTO contest_registrations (contest_id, user_id) VALUES (?, ?)`,
-            [contest_id, user_id]
+            `INSERT INTO contest_registrations (contest_id, user_id, final_rating) VALUES (?, ?, ?)`,
+            [contest_id, user_id, current_rating]
         );
         return result.insertId;
     }
@@ -61,12 +61,12 @@ class ContestRegistration {
         return rows;
     }
 
-    static async updateDelta(conn, contest_id, user_id, delta) {
+    static async updateDelta(conn, contest_id, user_id, delta, newRating) {
         await conn.query(
             `UPDATE contest_registrations
-             SET delta = ?
+             SET delta = ?, final_rating = ?
              WHERE contest_id = ? AND user_id = ?`,
-            [delta, contest_id, user_id]
+            [delta, newRating, contest_id, user_id]
         );
     }
 }

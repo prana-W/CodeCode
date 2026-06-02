@@ -63,7 +63,7 @@ export const deltaCalculation = async (contestId) => {
 
         for (const p of ranked) {
  
-            await ContestRegistration.updateDelta(conn, contestId, p.userId, p.delta);
+            await ContestRegistration.updateDelta(conn, contestId, p.userId, p.delta, p.newRating);
 
             const [userRows] = await conn.query(
                 'SELECT max_rating FROM users WHERE id = ?',

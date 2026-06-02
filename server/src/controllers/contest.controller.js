@@ -2,6 +2,7 @@ import Contest from '../models/Contest.model.js';
 import Problem from '../models/Problem.model.js';
 import ContestStanding from '../models/ContestStanding.model.js';
 import ContestRegistration from '../models/ContestRegistration.model.js';
+import User from '../models/User.model.js';
 import {ApiError, ApiResponse, asyncHandler} from '../utility/index.js';
 import statusCode from '../constants/statusCode.js';
 import {deltaCalculation} from '../services/contest.service.js';
@@ -266,9 +267,15 @@ const registerForContest = asyncHandler(async (req, res) => {
         );
     }
 
+    const user = await User.findById(req.userId);
+    if (!user) {
+        throw new ApiError(statusCode.NOT_FOUND, 'User not found.');
+    }
+
     await ContestRegistration.register({
         contest_id: Number(contest_id),
         user_id: req.userId,
+        current_rating: user.rating,
     });
 
     const registration = await ContestRegistration.findByUserAndContest(

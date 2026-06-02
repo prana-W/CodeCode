@@ -12,6 +12,8 @@ import userRouter from './routes/user.routes.js';
 import aiRouter from './routes/ai.routes.js';
 import morgan from 'morgan';
 import {apiLimiter} from './middlewares/rateLimit.middleware.js';
+import swaggerUi from 'swagger-ui-express';
+import swaggerDefinition from './config/swagger.js';
 
 const app = express();
 
@@ -35,8 +37,10 @@ app.use(cookieParser());
 // API Routes
 app.use('/api/', apiLimiter);
 
-app.get('/', checkHealth);
+app.use('/', swaggerUi.serve, swaggerUi.setup(swaggerDefinition, {customSiteTitle: 'CodeCode API Docs'}));
 app.get('/api/v1', checkHealth);
+
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDefinition, {customSiteTitle: 'CodeCode API Docs'}));
 
 app.use('/api/v1/auth', authRouter);
 app.use('/api/v1/contests', contestRouter);
