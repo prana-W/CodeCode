@@ -78,6 +78,19 @@ class User {
 
         return result;
     }
+
+    static async update(id, {name, institute, email}) {
+        const [result] = await pool.query(
+            `
+            UPDATE users
+            SET name = ?, institute = ?, email = ?
+            WHERE id = ?
+            `,
+            [name, institute, email, id]
+        );
+
+        return result;
+    }
 }
 
 export default User;

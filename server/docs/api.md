@@ -656,3 +656,91 @@ _Note: All endpoints require authentication. Admins and contest creators do not 
     }
     ```
     > `time_remaining` counts down to the registration deadline (contest start + 30 min). Shows `"Registration closed"` if the window has passed.
+
+---
+
+## User Endpoints (`/api/v1/users`)
+
+_Note: All endpoints require authentication._
+
+### 1. View User Details
+
+- **Method**: `GET`
+- **Route**: `/:id`
+- **Access**: Authenticated users (any user can view another user's profile details).
+- **Success Response (200 OK)**:
+    ```json
+    {
+        "statusCode": 200,
+        "success": true,
+        "message": "User details fetched successfully.",
+        "data": {
+            "id": 1,
+            "username": "coder_x",
+            "name": "Alex Mercer",
+            "institute": "MIT",
+            "email": "alex@example.com",
+            "rating": 0,
+            "max_rating": 0,
+            "role": "user",
+            "created_at": "2026-06-02T09:00:00.000Z"
+        }
+    }
+    ```
+- **Error Cases**:
+    - `404` — User not found
+
+### 2. Update User Details
+
+- **Method**: `PATCH`
+- **Route**: `/:id`
+- **Access**: Submitter must be the same user as `:id` (ownership verification).
+- **Request Body**: (all fields optional)
+    ```json
+    {
+        "name": "Alex J. Mercer",
+        "institute": "Harvard",
+        "email": "alex.new@example.com"
+    }
+    ```
+- **Success Response (200 OK)**:
+    ```json
+    {
+        "statusCode": 200,
+        "success": true,
+        "message": "User updated successfully.",
+        "data": {
+            "id": 1,
+            "username": "coder_x",
+            "name": "Alex J. Mercer",
+            "institute": "Harvard",
+            "email": "alex.new@example.com",
+            "rating": 0,
+            "max_rating": 0,
+            "role": "user",
+            "created_at": "2026-06-02T09:00:00.000Z"
+        }
+    }
+    ```
+- **Error Cases**:
+    - `400` — Empty name or email provided
+    - `403` — Not authorized (updating someone else's profile)
+    - `404` — User not found
+    - `409` — Email already in use
+
+### 3. Delete User Profile
+
+- **Method**: `DELETE`
+- **Route**: `/:id`
+- **Access**: Submitter must be the same user as `:id` (ownership verification). Clears the session token cookie on success.
+- **Success Response (200 OK)**:
+    ```json
+    {
+        "statusCode": 200,
+        "success": true,
+        "message": "User deleted successfully."
+    }
+    ```
+- **Error Cases**:
+    - `403` — Not authorized (deleting someone else's profile)
+    - `404` — User not found
