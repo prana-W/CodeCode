@@ -33,6 +33,12 @@ CREATE TABLE IF NOT EXISTS contests (
 
     contest_start_time DATETIME NOT NULL,
     contest_end_time DATETIME NOT NULL,
+    
+    contest_evaluation ENUM(
+        'pending',
+        'running',
+        'completed'
+    ) NOT NULL DEFAULT 'pending',
 
     division TINYINT NOT NULL,
 

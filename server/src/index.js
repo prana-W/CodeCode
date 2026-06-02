@@ -3,6 +3,7 @@ import {createServer} from 'http';
 // import {connectToNgrok} from './connection/index.js';
 import connectToDatabase from './db/connectDB.js';
 import app from './app.js';
+import './cron/contestEvaluation.cron.js';
 
 dotenv.config({
     path: `./.env`,

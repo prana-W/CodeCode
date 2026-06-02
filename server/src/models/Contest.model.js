@@ -73,6 +73,23 @@ class Contest {
         ]);
         return result;
     }
+
+    static async getPendingEvaluations() {
+        const [rows] = await pool.query(
+            `SELECT * FROM contests 
+             WHERE contest_end_time < NOW() 
+             AND contest_evaluation = 'pending'`
+        );
+        return rows;
+    }
+
+    static async updateEvaluationStatus(id, status) {
+        const [result] = await pool.query(
+            'UPDATE contests SET contest_evaluation = ? WHERE id = ?',
+            [status, id]
+        );
+        return result;
+    }
 }
 
 export default Contest;
