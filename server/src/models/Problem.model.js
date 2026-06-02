@@ -18,7 +18,6 @@ class Problem {
         return rows[0];
     }
 
-    // Update editable fields (contest author-only)
     static async update(problem_id, { title, score, rating, input, output, statement, explanation }) {
         const [result] = await pool.query(
             `UPDATE problems

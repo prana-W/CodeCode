@@ -6,6 +6,7 @@ import { errorHandler } from './middlewares/index.js';
 import authRouter from './routes/auth.routes.js';
 import contestRouter from './routes/contest.routes.js';
 import problemRouter from './routes/problem.routes.js';
+import testcaseRouter from './routes/testcase.routes.js';
 import morgan from 'morgan';
 
 const app = express();
@@ -34,6 +35,7 @@ app.get('/api/v1', checkHealth);
 app.use('/api/v1/auth', authRouter);
 app.use('/api/v1/contests', contestRouter);
 app.use('/api/v1/problems', problemRouter);
+app.use('/api/v1/testcases', testcaseRouter);
 
 // Error Handling
 app.use(errorHandler());

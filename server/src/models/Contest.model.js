@@ -18,7 +18,6 @@ class Contest {
         return rows[0];
     }
 
-    // Update editable fields (author-only)
     static async update(id, { description, division, contest_start_time, contest_end_time }) {
         const [result] = await pool.query(
             `UPDATE contests
@@ -29,7 +28,6 @@ class Contest {
         return result;
     }
 
-    // Toggle isVerified (admin-only)
     static async setVerified(id, isVerified) {
         const [result] = await pool.query(
             'UPDATE contests SET isVerified = ? WHERE id = ?',

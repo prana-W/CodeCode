@@ -19,8 +19,6 @@ CREATE TABLE IF NOT EXISTS users (
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
-DROP TABLE users;
-
 CREATE TABLE contests (
     id INT AUTO_INCREMENT PRIMARY KEY,
 
@@ -74,7 +72,7 @@ CREATE TABLE problems (
 CREATE TABLE test_cases (
     test_case_id INT AUTO_INCREMENT PRIMARY KEY,
 
-    problem_id INT NOT NULL,
+    problem_id INT UNIQUE,
 
     input_data LONGTEXT NOT NULL,
     expected_output LONGTEXT NOT NULL,
@@ -85,5 +83,7 @@ CREATE TABLE test_cases (
         REFERENCES problems(problem_id)
         ON DELETE CASCADE
 );
+
+DROP TABLE test_cases;
 
 SELECT * FROM contests;
