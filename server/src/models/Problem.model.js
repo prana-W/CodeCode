@@ -18,6 +18,18 @@ class Problem {
         return rows[0];
     }
 
+    // Returns problem columns + c.authored_by in a single JOIN
+    static async findWithContest(problem_id) {
+        const [rows] = await pool.query(
+            `SELECT p.*, c.authored_by AS contest_authored_by
+             FROM problems p
+             JOIN contests c ON p.contest_id = c.id
+             WHERE p.problem_id = ?`,
+            [problem_id]
+        );
+        return rows[0];
+    }
+
     static async update(problem_id, { title, score, rating, statement, explanation }) {
         const [result] = await pool.query(
             `UPDATE problems

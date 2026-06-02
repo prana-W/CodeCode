@@ -4,21 +4,14 @@ import { ApiError, ApiResponse, asyncHandler } from '../utility/index.js';
 import statusCode from '../constants/statusCode.js';
 
 const resolveContestAuthor = async (problem_id, userId) => {
-    const problem = await Problem.findById(problem_id);
-    if (!problem) {
+    const row = await Problem.findWithContest(problem_id);
+    if (!row) {
         throw new ApiError(statusCode.NOT_FOUND, 'Problem not found.');
     }
-
-    const contest = await Contest.findById(problem.contest_id);
-    if (!contest) {
-        throw new ApiError(statusCode.NOT_FOUND, 'Owning contest not found.');
-    }
-
-    if (contest.authored_by !== userId) {
+    if (row.contest_authored_by !== userId) {
         throw new ApiError(statusCode.FORBIDDEN, 'You are not the author of the contest this problem belongs to.');
     }
-
-    return { problem, contest };
+    return row;
 };
 
 const createProblem = asyncHandler(async (req, res) => {
@@ -67,14 +60,14 @@ const createProblem = asyncHandler(async (req, res) => {
 const updateProblem = asyncHandler(async (req, res) => {
     const { id } = req.params;
 
-    const { problem } = await resolveContestAuthor(Number(id), req.userId);
+    const row = await resolveContestAuthor(Number(id), req.userId);
 
     const {
-        title       = problem.title,
-        score       = problem.score,
-        rating      = problem.rating,
-        statement   = problem.statement,
-        explanation = problem.explanation,
+        title       = row.title,
+        score       = row.score,
+        rating      = row.rating,
+        statement   = row.statement,
+        explanation = row.explanation,
     } = req.body;
 
     if (Number(score) < 0 || Number(score) > 5000) {
@@ -109,3 +102,4 @@ const deleteProblem = asyncHandler(async (req, res) => {
 });
 
 export { createProblem, updateProblem, deleteProblem };
+

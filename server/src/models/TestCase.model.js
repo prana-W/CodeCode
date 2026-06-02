@@ -18,6 +18,19 @@ class TestCase {
         return rows[0];
     }
 
+    // Returns testcase columns + c.authored_by in a single 3-table JOIN
+    static async findWithContest(test_case_id) {
+        const [rows] = await pool.query(
+            `SELECT tc.*, c.authored_by AS contest_authored_by
+             FROM test_cases tc
+             JOIN problems p  ON tc.problem_id  = p.problem_id
+             JOIN contests c  ON p.contest_id   = c.id
+             WHERE tc.test_case_id = ?`,
+            [test_case_id]
+        );
+        return rows[0];
+    }
+
     static async findByProblemId(problem_id) {
         const [rows] = await pool.query(
             'SELECT * FROM test_cases WHERE problem_id = ?',
