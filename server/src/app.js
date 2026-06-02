@@ -4,6 +4,8 @@ import cookieParser from 'cookie-parser';
 import checkHealth from './controllers/checkHealth.controller.js';
 import { errorHandler } from './middlewares/index.js';
 import authRouter from './routes/auth.routes.js';
+import contestRouter from './routes/contest.routes.js';
+import problemRouter from './routes/problem.routes.js';
 import morgan from 'morgan';
 
 const app = express();
@@ -27,9 +29,11 @@ app.use(cookieParser());
 
 // API Routes
 app.get('/', checkHealth);
-app.get('/api/v1/check-health', checkHealth);
+app.get('/api/v1', checkHealth);
 
 app.use('/api/v1/auth', authRouter);
+app.use('/api/v1/contests', contestRouter);
+app.use('/api/v1/problems', problemRouter);
 
 // Error Handling
 app.use(errorHandler());
