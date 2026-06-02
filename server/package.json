@@ -8,16 +8,18 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon -r dotenv/config src/index.js",
-    "start": "node -r dotenv/config src/index.js",
+    "dev": "concurrently \"nodemon -r dotenv/config src/index.js\" \"nodemon -r dotenv/config src/workers/judgeWorker.js\"",
+    "start": "concurrently \"node -r dotenv/config src/index.js\" \"node -r dotenv/config src/workers/judgeWorker.js\"",
     "format": "prettier --write ."
   },
   "dependencies": {
     "bcrypt": "^6.0.0",
+    "bullmq": "^5.78.0",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
+    "ioredis": "^5.11.0",
     "jsonwebtoken": "^9.0.3",
     "morgan": "^1.10.1",
     "mysql2": "^3.22.4",
@@ -25,6 +27,7 @@
     "prettier": "^3.8.3"
   },
   "devDependencies": {
+    "concurrently": "^10.0.3",
     "nodemon": "^3.1.14"
   }
 }

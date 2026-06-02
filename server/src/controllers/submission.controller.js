@@ -1,6 +1,7 @@
 import Submission from '../models/Submission.model.js';
 import {ApiError, ApiResponse, asyncHandler} from '../utility/index.js';
 import statusCode from '../constants/statusCode.js';
+import submissionQueue from '../queues/submissionQueue.js';
 
 const createSubmission = asyncHandler(async (req, res) => {
     const {problem_id, language, source_code} = req.body;
@@ -46,6 +47,13 @@ const createSubmission = asyncHandler(async (req, res) => {
     });
 
     const submission = await Submission.findById(insertId);
+
+    await submissionQueue.add(
+    "judge-submission",
+    {
+        submissionId: insertId
+    }
+);
 
     return res
         .status(statusCode.CREATED)
