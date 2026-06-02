@@ -30,7 +30,10 @@ const worker = new Worker(
                 execution_time_ms
             );
 
-            if (verdict === 'accepted') {
+            if (
+                verdict === 'accepted' &&
+                new Date() <= new Date(data.contest_end_time)
+            ) {
                 await Submission.recordStanding({
                     contest_id: data.contest_id,
                     user_id: data.submitted_by,

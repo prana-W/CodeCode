@@ -1,6 +1,7 @@
 import Contest from '../models/Contest.model.js';
 import Problem from '../models/Problem.model.js';
 import ContestStanding from '../models/ContestStanding.model.js';
+import ContestRegistration from '../models/ContestRegistration.model.js';
 import {ApiError, ApiResponse, asyncHandler} from '../utility/index.js';
 import statusCode from '../constants/statusCode.js';
 
@@ -219,6 +220,130 @@ const getLeaderboard = asyncHandler(async (req, res) => {
         );
 });
 
+const REGISTRATION_WINDOW_MINUTES = 30;
+
+const registerForContest = asyncHandler(async (req, res) => {
+    const {contest_id} = req.body;
+
+    if (!contest_id) {
+        throw new ApiError(statusCode.BAD_REQUEST, 'contest_id is required.');
+    }
+
+    const contest = await ContestRegistration.findContestTimes(
+        Number(contest_id)
+    );
+    if (!contest) {
+        throw new ApiError(statusCode.NOT_FOUND, 'Contest not found.');
+    }
+
+    const now = new Date();
+    const startTime = new Date(contest.contest_start_time);
+    const endTime = new Date(contest.contest_end_time);
+    const registrationDeadline = new Date(
+        startTime.getTime() + REGISTRATION_WINDOW_MINUTES * 60 * 1000
+    );
+
+    if (now >= endTime) {
+        throw new ApiError(statusCode.FORBIDDEN, 'Contest has already ended.');
+    }
+
+    if (now >= registrationDeadline) {
+        throw new ApiError(
+            statusCode.FORBIDDEN,
+            `Registration closed. You can only register up to ${REGISTRATION_WINDOW_MINUTES} minutes after the contest starts.`
+        );
+    }
+
+    const existing = await ContestRegistration.findByUserAndContest(
+        Number(contest_id),
+        req.userId
+    );
+    if (existing) {
+        throw new ApiError(
+            statusCode.CONFLICT,
+            'You are already registered for this contest.'
+        );
+    }
+
+    await ContestRegistration.register({
+        contest_id: Number(contest_id),
+        user_id: req.userId,
+    });
+
+    const registration = await ContestRegistration.findByUserAndContest(
+        Number(contest_id),
+        req.userId
+    );
+
+    return res.status(statusCode.CREATED).json(
+        new ApiResponse(
+            statusCode.CREATED,
+            'Successfully registered for the contest.',
+            {
+                registration_id: registration.registration_id,
+                contest_id: registration.contest_id,
+                user_id: registration.user_id,
+                registered_at: registration.registered_at,
+            }
+        )
+    );
+});
+
+const checkRegistration = asyncHandler(async (req, res) => {
+    const {contest_id} = req.query;
+
+    if (!contest_id) {
+        throw new ApiError(
+            statusCode.BAD_REQUEST,
+            'contest_id query param is required.'
+        );
+    }
+
+    const contest = await ContestRegistration.findContestTimes(
+        Number(contest_id)
+    );
+    if (!contest) {
+        throw new ApiError(statusCode.NOT_FOUND, 'Contest not found.');
+    }
+
+    const registration = await ContestRegistration.findByUserAndContest(
+        Number(contest_id),
+        req.userId
+    );
+
+    if (registration) {
+        return res.status(statusCode.OK).json(
+            new ApiResponse(statusCode.OK, 'Registration status fetched.', {
+                is_registered: true,
+                registered_at: registration.registered_at,
+            })
+        );
+    }
+
+    const now = new Date();
+    const startTime = new Date(contest.contest_start_time);
+    const registrationDeadline = new Date(
+        startTime.getTime() + REGISTRATION_WINDOW_MINUTES * 60 * 1000
+    );
+
+    const msRemaining = Math.max(0, registrationDeadline - now);
+    const minutesRemaining = Math.floor(msRemaining / 60_000);
+    const secondsRemaining = Math.floor((msRemaining % 60_000) / 1000);
+
+    return res.status(statusCode.OK).json(
+        new ApiResponse(statusCode.OK, 'Registration status fetched.', {
+            is_registered: false,
+            registration_open:
+                now < registrationDeadline &&
+                now < new Date(contest.contest_end_time),
+            time_remaining:
+                msRemaining > 0
+                    ? `${minutesRemaining}m ${secondsRemaining}s`
+                    : 'Registration closed',
+        })
+    );
+});
+
 export {
     createContest,
     updateContest,
@@ -227,4 +352,6 @@ export {
     getContestById,
     getAllContests,
     getLeaderboard,
+    registerForContest,
+    checkRegistration,
 };

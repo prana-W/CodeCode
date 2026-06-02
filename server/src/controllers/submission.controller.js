@@ -1,4 +1,5 @@
 import Submission from '../models/Submission.model.js';
+import ContestRegistration from '../models/ContestRegistration.model.js';
 import {ApiError, ApiResponse, asyncHandler} from '../utility/index.js';
 import statusCode from '../constants/statusCode.js';
 import submissionQueue from '../queues/submissionQueue.js';
@@ -27,16 +28,30 @@ const createSubmission = asyncHandler(async (req, res) => {
 
     const isCreator = context.contest_authored_by === req.userId;
     const isAdmin = req.role === 'admin';
+    const now = new Date();
+    const startTime = new Date(context.contest_start_time);
+    const endTime = new Date(context.contest_end_time);
 
-    if (
-        !isAdmin &&
-        !isCreator &&
-        new Date() < new Date(context.contest_start_time)
-    ) {
-        throw new ApiError(
-            statusCode.FORBIDDEN,
-            'Contest has not started yet.'
-        );
+    if (!isAdmin && !isCreator) {
+        if (now < startTime) {
+            throw new ApiError(
+                statusCode.FORBIDDEN,
+                'Contest has not started yet.'
+            );
+        }
+
+        if (now >= startTime && now <= endTime) {
+            const registration = await ContestRegistration.findByUserAndContest(
+                context.contest_id,
+                req.userId
+            );
+            if (!registration) {
+                throw new ApiError(
+                    statusCode.FORBIDDEN,
+                    'You must be registered for the contest to submit during the contest window.'
+                );
+            }
+        }
     }
 
     const insertId = await Submission.create({

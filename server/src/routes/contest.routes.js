@@ -7,6 +7,8 @@ import {
     getContestById,
     getAllContests,
     getLeaderboard,
+    registerForContest,
+    checkRegistration,
 } from '../controllers/contest.controller.js';
 import {verifyToken, verifyAdmin} from '../middlewares/index.js';
 
@@ -19,6 +21,8 @@ router.post('/', createContest);
 router.get('/', getAllContests);
 router.get('/:id', getContestById);
 router.get('/:id/leaderboard', getLeaderboard);
+router.post('/register', registerForContest);
+router.get('/register/status', checkRegistration);
 router.patch('/:id', updateContest);
 router.patch('/:id/verify', verifyAdmin, toggleVerifyContest);
 router.delete('/:id', deleteContest);

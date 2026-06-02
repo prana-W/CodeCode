@@ -240,6 +240,31 @@ _Note: All endpoints require authentication._
     }
     ```
 
+### 7. View Contest Leaderboard
+
+- **Method**: `GET`
+- **Route**: `/:id/leaderboard`
+- **Access**: Authenticated. Normal users can only view if the contest is verified. Admin and the contest creator can view regardless of verification status.
+- **Success Response (200 OK)**:
+    ```json
+    {
+        "statusCode": 200,
+        "success": true,
+        "message": "Leaderboard fetched.",
+        "data": [
+            {
+                "user_id": 1,
+                "username": "coder_x",
+                "name": "Alex Mercer",
+                "problems_solved": 2,
+                "total_score": 1400,
+                "total_penalty_minutes": 120,
+                "final_score": 1280
+            }
+        ]
+    }
+    ```
+
 ---
 
 ## Problem Endpoints (`/api/v1/problems`)
@@ -566,3 +591,68 @@ _Note: All endpoints require authentication._
         }
     }
     ```
+
+## Registration Endpoints (`/api/v1/contests`)
+
+_Note: All endpoints require authentication. Admins and contest creators do not need to register._
+
+### 8. Register for a Contest
+
+- **Method**: `POST`
+- **Route**: `/register`
+- **Access**: Authenticated users. Registration is allowed any time before the contest ends, but closes 30 minutes after the contest start time.
+- **Request Body**:
+    ```json
+    {"contest_id": 1}
+    ```
+- **Success Response (201 Created)**:
+    ```json
+    {
+        "statusCode": 201,
+        "success": true,
+        "message": "Successfully registered for the contest.",
+        "data": {
+            "registration_id": 42,
+            "contest_id": 1,
+            "user_id": 7,
+            "registered_at": "2026-06-03T18:10:00.000Z"
+        }
+    }
+    ```
+- **Error cases**:
+    - `400` — `contest_id` missing
+    - `404` — Contest not found
+    - `409` — Already registered
+    - `403` — Contest has ended, or registration window (start time + 30 min) has passed
+
+### 9. Check Registration Status
+
+- **Method**: `GET`
+- **Route**: `/register/status?contest_id=1`
+- **Access**: Authenticated users.
+- **Success Response — Registered (200 OK)**:
+    ```json
+    {
+        "statusCode": 200,
+        "success": true,
+        "message": "Registration status fetched.",
+        "data": {
+            "is_registered": true,
+            "registered_at": "2026-06-03T18:10:00.000Z"
+        }
+    }
+    ```
+- **Success Response — Not Registered (200 OK)**:
+    ```json
+    {
+        "statusCode": 200,
+        "success": true,
+        "message": "Registration status fetched.",
+        "data": {
+            "is_registered": false,
+            "registration_open": true,
+            "time_remaining": "24m 13s"
+        }
+    }
+    ```
+    > `time_remaining` counts down to the registration deadline (contest start + 30 min). Shows `"Registration closed"` if the window has passed.

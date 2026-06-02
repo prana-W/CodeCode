@@ -138,3 +138,25 @@ CREATE TABLE contest_standings (
         problem_id
     )
 );
+
+CREATE TABLE IF NOT EXISTS contest_registrations (
+    registration_id BIGINT PRIMARY KEY AUTO_INCREMENT,
+
+    contest_id INT NOT NULL,
+    user_id INT NOT NULL,
+
+    registered_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+	
+    UNIQUE KEY unique_registration (
+        contest_id,
+        user_id
+    ),
+
+    FOREIGN KEY (contest_id)
+        REFERENCES contests(id)
+        ON DELETE CASCADE,
+
+    FOREIGN KEY (user_id)
+        REFERENCES users(id)
+        ON DELETE CASCADE
+);
