@@ -9,6 +9,7 @@ import {
     getLeaderboard,
     registerForContest,
     checkRegistration,
+    finalizeContest,
 } from '../controllers/contest.controller.js';
 import {verifyToken, verifyAdmin} from '../middlewares/index.js';
 import {
@@ -29,6 +30,7 @@ router.post('/register', contestRegistrationLimiter, registerForContest);
 router.get('/register/status', checkRegistration);
 router.patch('/:id', updateContest);
 router.patch('/:id/verify', verifyAdmin, toggleVerifyContest);
+router.post('/:id/finalize', verifyAdmin, finalizeContest);
 router.delete('/:id', deleteContest);
 
 export default router;

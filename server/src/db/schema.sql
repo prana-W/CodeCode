@@ -152,6 +152,8 @@ CREATE TABLE IF NOT EXISTS contest_registrations (
     user_id INT NOT NULL,
 
     registered_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    
+    delta INT DEFAULT 0,
 	
     UNIQUE KEY unique_registration (
         contest_id,

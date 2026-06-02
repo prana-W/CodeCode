@@ -657,6 +657,24 @@ _Note: All endpoints require authentication. Admins and contest creators do not 
     ```
     > `time_remaining` counts down to the registration deadline (contest start + 30 min). Shows `"Registration closed"` if the window has passed.
 
+### 10. Finalize Contest
+
+- **Method**: `POST`
+- **Route**: `/:id/finalize`
+- **Access**: Admin only. Triggers the calculation of Elo-like rating deltas for all participants of the contest.
+- **Success Response (200 OK)**:
+    ```json
+    {
+        "statusCode": 200,
+        "success": true,
+        "message": "Contest 1 finalized successfully."
+    }
+    ```
+- **Error Cases**:
+    - `400` — Contest has not ended yet. Cannot finalize before the end time.
+    - `404` — Contest not found.
+    - `409` — Contest has already been finalized or finalization is already in progress.
+
 ---
 
 ## User Endpoints (`/api/v1/users`)

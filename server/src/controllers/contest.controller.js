@@ -4,6 +4,7 @@ import ContestStanding from '../models/ContestStanding.model.js';
 import ContestRegistration from '../models/ContestRegistration.model.js';
 import {ApiError, ApiResponse, asyncHandler} from '../utility/index.js';
 import statusCode from '../constants/statusCode.js';
+import {deltaCalculation} from '../services/contest.service.js';
 
 const createContest = asyncHandler(async (req, res) => {
     if (req.role !== 'user') {
@@ -344,6 +345,59 @@ const checkRegistration = asyncHandler(async (req, res) => {
     );
 });
 
+const finalizeContest = asyncHandler(async (req, res) => {
+    const {id} = req.params;
+
+    const contest = await Contest.findById(Number(id));
+    if (!contest) {
+        throw new ApiError(statusCode.NOT_FOUND, 'Contest not found.');
+    }
+
+    if (new Date() < new Date(contest.contest_end_time)) {
+        throw new ApiError(
+            statusCode.BAD_REQUEST,
+            'Contest has not ended yet. Cannot finalize before the end time.'
+        );
+    }
+
+    if (contest.contest_evaluation === 'completed') {
+        throw new ApiError(
+            statusCode.CONFLICT,
+            'Contest has already been finalized.'
+        );
+    }
+
+    if (contest.contest_evaluation === 'running') {
+        throw new ApiError(
+            statusCode.CONFLICT,
+            'Contest finalization is already in progress.'
+        );
+    }
+
+    await Contest.updateEvaluationStatus(Number(id), 'running');
+
+    try {
+        await deltaCalculation(Number(id));
+        await Contest.updateEvaluationStatus(Number(id), 'completed');
+    } catch (err) {
+        await Contest.updateEvaluationStatus(Number(id), 'pending');
+        throw new ApiError(
+            statusCode.INTERNAL_SERVER_ERROR,
+            'Delta calculation failed. Status reverted to pending.',
+            err.message
+        );
+    }
+
+    return res
+        .status(statusCode.OK)
+        .json(
+            new ApiResponse(
+                statusCode.OK,
+                `Contest ${id} finalized successfully.`
+            )
+        );
+});
+
 export {
     createContest,
     updateContest,
@@ -354,4 +408,5 @@ export {
     getLeaderboard,
     registerForContest,
     checkRegistration,
+    finalizeContest,
 };

@@ -12,15 +12,12 @@ cron.schedule('*/5 * * * *', async () => {
         }
 
         for (const contest of pendingContests) {
-            console.log(`[CRON] Evaluating contest ${contest.id}...`);
 
-            //! Set to 'running' to prevent duplicate execution
             await Contest.updateEvaluationStatus(contest.id, 'running');
 
             try {
                 await deltaCalculation(contest.id);
 
-                //! Set to 'completed' after successful execution
                 await Contest.updateEvaluationStatus(contest.id, 'completed');
                 console.log(
                     `[CRON] Successfully evaluated contest ${contest.id}.`
