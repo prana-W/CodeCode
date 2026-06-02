@@ -19,7 +19,7 @@ const generateToken = (user) =>
     );
 
 const register = asyncHandler(async (req, res) => {
-    const { username, name, institute, email, password, role } = req.body;
+    const { username, name, institute, email, password } = req.body;
 
     if (!username || !name || !email || !password) {
         throw new ApiError(statusCode.BAD_REQUEST, 'username, name, email and password are required.');
@@ -46,7 +46,7 @@ const register = asyncHandler(async (req, res) => {
         password: hashedPassword,
         rating:     0,
         max_rating: 0,
-        role:       role || 'user',
+        role:       'user',
     });
 
     const newUser = await User.findById(insertId);

@@ -19,7 +19,7 @@ CREATE TABLE IF NOT EXISTS users (
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE contests (
+CREATE TABLE IF NOT EXISTS contests (
     id INT AUTO_INCREMENT PRIMARY KEY,
 
     title VARCHAR(255) NOT NULL UNIQUE,
@@ -44,7 +44,7 @@ CREATE TABLE contests (
         ON DELETE CASCADE
 );
 
-CREATE TABLE problems (
+CREATE TABLE IF NOT EXISTS problems (
     problem_id INT AUTO_INCREMENT PRIMARY KEY,
 
     contest_id INT NOT NULL,
@@ -81,7 +81,42 @@ CREATE TABLE test_cases (
         ON DELETE CASCADE
 );
 
-DROP TABLE test_cases;
-DROP TABLE problems;
+CREATE TABLE IF NOT EXISTS submissions (
+    submission_id BIGINT AUTO_INCREMENT PRIMARY KEY,
 
-SELECT * FROM contests;
+    problem_id INT NOT NULL,
+    submitted_by INT NOT NULL,
+
+    submitted_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    verdict ENUM(
+        'pending',
+        'accepted',
+        'wrong_answer',
+        'runtime_error',
+        'compilation_error',
+        'time_limit_exceeded',
+        'memory_limit_exceeded'
+    ) NOT NULL DEFAULT 'pending',
+
+    language ENUM(
+        'cpp',
+        'c',
+        'java',
+        'python',
+        'javascript'
+    ) NOT NULL,
+
+    source_code LONGTEXT NOT NULL,
+
+    execution_time_ms INT NULL,
+    memory_used_kb INT NULL,
+
+    FOREIGN KEY (problem_id)
+        REFERENCES problems(problem_id)
+        ON DELETE CASCADE,
+
+    FOREIGN KEY (submitted_by)
+        REFERENCES users(id)
+        ON DELETE CASCADE
+);
