@@ -29,6 +29,16 @@ const worker = new Worker(
                 verdict,
                 execution_time_ms
             );
+
+            if (verdict === 'accepted') {
+                await Submission.recordStanding({
+                    contest_id: data.contest_id,
+                    user_id: data.submitted_by,
+                    problem_id: data.problem_id,
+                    accepted_submission_id: submissionId,
+                });
+            }
+
             console.log(
                 `Submission ${submissionId}: ${verdict} (${execution_time_ms}ms)`
             );

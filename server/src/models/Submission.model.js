@@ -69,8 +69,8 @@ class Submission {
 
     static async findForJudge(submission_id) {
         const [rows] = await pool.query(
-            `SELECT s.submission_id, s.source_code, s.language,
-                    p.time_limit_ms, p.memory_limit_mb,
+            `SELECT s.submission_id, s.submitted_by, s.source_code, s.language,
+                    p.problem_id, p.contest_id, p.time_limit_ms, p.memory_limit_mb,
                     tc.input_data, tc.expected_output
              FROM submissions s
              JOIN problems p ON s.problem_id = p.problem_id
@@ -79,6 +79,19 @@ class Submission {
             [submission_id]
         );
         return rows[0];
+    }
+
+    static async recordStanding({
+        contest_id,
+        user_id,
+        problem_id,
+        accepted_submission_id,
+    }) {
+        await pool.query(
+            `INSERT IGNORE INTO contest_standings (contest_id, user_id, problem_id, accepted_submission_id)
+             VALUES (?, ?, ?, ?)`,
+            [contest_id, user_id, problem_id, accepted_submission_id]
+        );
     }
 
     static async setVerdict(

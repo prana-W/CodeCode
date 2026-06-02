@@ -124,3 +124,17 @@ CREATE TABLE IF NOT EXISTS submissions (
         REFERENCES users(id)
         ON DELETE CASCADE
 );
+
+CREATE TABLE contest_standings (
+    contest_id BIGINT NOT NULL,
+    user_id BIGINT NOT NULL,
+    problem_id BIGINT NOT NULL,
+
+    accepted_submission_id BIGINT NOT NULL,
+
+    PRIMARY KEY (
+        contest_id,
+        user_id,
+        problem_id
+    )
+);

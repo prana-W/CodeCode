@@ -1,5 +1,6 @@
 import Contest from '../models/Contest.model.js';
 import Problem from '../models/Problem.model.js';
+import ContestStanding from '../models/ContestStanding.model.js';
 import {ApiError, ApiResponse, asyncHandler} from '../utility/index.js';
 import statusCode from '../constants/statusCode.js';
 
@@ -191,6 +192,33 @@ const getAllContests = asyncHandler(async (req, res) => {
         );
 });
 
+const getLeaderboard = asyncHandler(async (req, res) => {
+    const {id} = req.params;
+
+    const contest = await Contest.findById(id);
+    if (!contest) {
+        throw new ApiError(statusCode.NOT_FOUND, 'Contest not found.');
+    }
+
+    const isAdmin = req.role === 'admin';
+    const isCreator = contest.authored_by === req.userId;
+
+    if (!isAdmin && !isCreator && !contest.isVerified) {
+        throw new ApiError(
+            statusCode.FORBIDDEN,
+            'This contest is not yet available.'
+        );
+    }
+
+    const leaderboard = await ContestStanding.getLeaderboard(Number(id));
+
+    return res
+        .status(statusCode.OK)
+        .json(
+            new ApiResponse(statusCode.OK, 'Leaderboard fetched.', leaderboard)
+        );
+});
+
 export {
     createContest,
     updateContest,
@@ -198,4 +226,5 @@ export {
     deleteContest,
     getContestById,
     getAllContests,
+    getLeaderboard,
 };
