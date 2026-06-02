@@ -56,9 +56,6 @@ CREATE TABLE problems (
 
     statement LONGTEXT NOT NULL,
 
-    input LONGTEXT NOT NULL,
-    output LONGTEXT NOT NULL,
-
     explanation LONGTEXT NULL,
 
     CONSTRAINT chk_problem_score
@@ -85,5 +82,6 @@ CREATE TABLE test_cases (
 );
 
 DROP TABLE test_cases;
+DROP TABLE problems;
 
 SELECT * FROM contests;

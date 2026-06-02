@@ -26,16 +26,15 @@ const createProblem = asyncHandler(async (req, res) => {
         throw new ApiError(statusCode.FORBIDDEN, 'Only users with role "user" can create problems.');
     }
 
-    const { contest_id, title, score, rating, statement, input, output, explanation } = req.body;
+    const { contest_id, title, score, rating, statement, explanation } = req.body;
 
-    if (!contest_id || !title || score === undefined || rating === undefined || !statement || !input || !output) {
+    if (!contest_id || !title || score === undefined || rating === undefined || !statement) {
         throw new ApiError(
             statusCode.BAD_REQUEST,
-            'contest_id, title, score, rating, statement, input and output are required.'
+            'contest_id, title, score, rating and statement are required.'
         );
     }
 
-    // Confirm the contest exists and the requester is its author
     const contest = await Contest.findById(contest_id);
     if (!contest) {
         throw new ApiError(statusCode.NOT_FOUND, 'Contest not found.');
@@ -55,8 +54,6 @@ const createProblem = asyncHandler(async (req, res) => {
         score:  Number(score),
         rating: Number(rating),
         statement,
-        input,
-        output,
         explanation,
     });
 
@@ -76,8 +73,6 @@ const updateProblem = asyncHandler(async (req, res) => {
         title       = problem.title,
         score       = problem.score,
         rating      = problem.rating,
-        input       = problem.input,
-        output      = problem.output,
         statement   = problem.statement,
         explanation = problem.explanation,
     } = req.body;
@@ -90,8 +85,6 @@ const updateProblem = asyncHandler(async (req, res) => {
         title,
         score:  Number(score),
         rating: Number(rating),
-        input,
-        output,
         statement,
         explanation,
     });
