@@ -4,14 +4,13 @@ import pool from "../db/db.js";
 
 const checkHealth = asyncHandler(async (req, res) => {
 
-    const [rows] = await pool.query("SELECT 1");
+    const [rows] = await pool.query("SELECT current_timestamp()");
 
-    console.log(rows);
-
-    return res.json(new ApiResponse(statusCode.OK, 'Server is running!'));
+    return res.json(new ApiResponse(statusCode.OK, 'Server is running!', {
+        serverTime: new Date(),
+        databaseTime: rows[0]['current_timestamp()']
+    }));
 
 });
-
-
 
 export default checkHealth;

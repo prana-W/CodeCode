@@ -2,7 +2,8 @@ import express from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import checkHealth from './controllers/checkHealth.controller.js';
-import {errorHandler, verifyAccessToken} from './middlewares/index.js';
+import { errorHandler } from './middlewares/index.js';
+import authRouter from './routes/auth.routes.js';
 import morgan from 'morgan';
 
 const app = express();
@@ -25,11 +26,13 @@ app.use(express.static('public'));
 app.use(cookieParser());
 
 // API Routes
-
 app.get('/', checkHealth);
 app.get('/api/v1/check-health', checkHealth);
+
+app.use('/api/v1/auth', authRouter);
 
 // Error Handling
 app.use(errorHandler());
 
 export default app;
+

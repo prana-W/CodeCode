@@ -1,4 +1,4 @@
 import errorHandler from './errorHandler.js';
-import {verifyAccessToken} from './verifyAccessToken.js';
+import { verifyToken } from './verifyToken.js';
 
-export {errorHandler, verifyAccessToken};
+export { errorHandler, verifyToken };
