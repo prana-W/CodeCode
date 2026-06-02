@@ -2,7 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import checkHealth from './controllers/checkHealth.controller.js';
-import { errorHandler } from './middlewares/index.js';
+import {errorHandler} from './middlewares/index.js';
 import authRouter from './routes/auth.routes.js';
 import contestRouter from './routes/contest.routes.js';
 import problemRouter from './routes/problem.routes.js';
@@ -43,4 +43,3 @@ app.use('/api/v1/submissions', submissionRouter);
 app.use(errorHandler());
 
 export default app;
-

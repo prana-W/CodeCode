@@ -1,4 +1,4 @@
-CREATE DATABASE codecode_v0;
+CREATE DATABASE IF NOT EXISTS codecode_v0;
 USE codecode_v0;
 
 CREATE TABLE IF NOT EXISTS users (

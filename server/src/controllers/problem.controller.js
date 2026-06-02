@@ -1,6 +1,6 @@
 import Problem from '../models/Problem.model.js';
 import Contest from '../models/Contest.model.js';
-import { ApiError, ApiResponse, asyncHandler } from '../utility/index.js';
+import {ApiError, ApiResponse, asyncHandler} from '../utility/index.js';
 import statusCode from '../constants/statusCode.js';
 
 const resolveContestAuthor = async (problem_id, userId) => {
@@ -9,19 +9,31 @@ const resolveContestAuthor = async (problem_id, userId) => {
         throw new ApiError(statusCode.NOT_FOUND, 'Problem not found.');
     }
     if (row.contest_authored_by !== userId) {
-        throw new ApiError(statusCode.FORBIDDEN, 'You are not the author of the contest this problem belongs to.');
+        throw new ApiError(
+            statusCode.FORBIDDEN,
+            'You are not the author of the contest this problem belongs to.'
+        );
     }
     return row;
 };
 
 const createProblem = asyncHandler(async (req, res) => {
     if (req.role !== 'user') {
-        throw new ApiError(statusCode.FORBIDDEN, 'Only users with role "user" can create problems.');
+        throw new ApiError(
+            statusCode.FORBIDDEN,
+            'Only users with role "user" can create problems.'
+        );
     }
 
-    const { contest_id, title, score, rating, statement, explanation } = req.body;
+    const {contest_id, title, score, rating, statement, explanation} = req.body;
 
-    if (!contest_id || !title || score === undefined || rating === undefined || !statement) {
+    if (
+        !contest_id ||
+        !title ||
+        score === undefined ||
+        rating === undefined ||
+        !statement
+    ) {
         throw new ApiError(
             statusCode.BAD_REQUEST,
             'contest_id, title, score, rating and statement are required.'
@@ -34,17 +46,23 @@ const createProblem = asyncHandler(async (req, res) => {
     }
 
     if (contest.authored_by !== req.userId) {
-        throw new ApiError(statusCode.FORBIDDEN, 'You can only add problems to contests you have authored.');
+        throw new ApiError(
+            statusCode.FORBIDDEN,
+            'You can only add problems to contests you have authored.'
+        );
     }
 
     if (Number(score) < 0 || Number(score) > 5000) {
-        throw new ApiError(statusCode.BAD_REQUEST, 'score must be between 0 and 5000.');
+        throw new ApiError(
+            statusCode.BAD_REQUEST,
+            'score must be between 0 and 5000.'
+        );
     }
 
     const insertId = await Problem.create({
         contest_id: Number(contest_id),
         title,
-        score:  Number(score),
+        score: Number(score),
         rating: Number(rating),
         statement,
         explanation,
@@ -54,29 +72,38 @@ const createProblem = asyncHandler(async (req, res) => {
 
     return res
         .status(statusCode.CREATED)
-        .json(new ApiResponse(statusCode.CREATED, 'Problem created successfully.', problem));
+        .json(
+            new ApiResponse(
+                statusCode.CREATED,
+                'Problem created successfully.',
+                problem
+            )
+        );
 });
 
 const updateProblem = asyncHandler(async (req, res) => {
-    const { id } = req.params;
+    const {id} = req.params;
 
     const row = await resolveContestAuthor(Number(id), req.userId);
 
     const {
-        title       = row.title,
-        score       = row.score,
-        rating      = row.rating,
-        statement   = row.statement,
+        title = row.title,
+        score = row.score,
+        rating = row.rating,
+        statement = row.statement,
         explanation = row.explanation,
     } = req.body;
 
     if (Number(score) < 0 || Number(score) > 5000) {
-        throw new ApiError(statusCode.BAD_REQUEST, 'score must be between 0 and 5000.');
+        throw new ApiError(
+            statusCode.BAD_REQUEST,
+            'score must be between 0 and 5000.'
+        );
     }
 
     await Problem.update(Number(id), {
         title,
-        score:  Number(score),
+        score: Number(score),
         rating: Number(rating),
         statement,
         explanation,
@@ -86,11 +113,17 @@ const updateProblem = asyncHandler(async (req, res) => {
 
     return res
         .status(statusCode.OK)
-        .json(new ApiResponse(statusCode.OK, 'Problem updated successfully.', updated));
+        .json(
+            new ApiResponse(
+                statusCode.OK,
+                'Problem updated successfully.',
+                updated
+            )
+        );
 });
 
 const deleteProblem = asyncHandler(async (req, res) => {
-    const { id } = req.params;
+    const {id} = req.params;
 
     await resolveContestAuthor(Number(id), req.userId);
 
@@ -102,26 +135,42 @@ const deleteProblem = asyncHandler(async (req, res) => {
 });
 
 const getAllProblems = asyncHandler(async (req, res) => {
-    const { contest_id } = req.query;
+    const {contest_id} = req.query;
     if (!contest_id) {
-        throw new ApiError(statusCode.BAD_REQUEST, 'contest_id query param is required.');
+        throw new ApiError(
+            statusCode.BAD_REQUEST,
+            'contest_id query param is required.'
+        );
     }
 
     const problems = await Problem.findAllByContest(Number(contest_id));
     if (!problems.length) {
-        return res.status(statusCode.OK).json(new ApiResponse(statusCode.OK, 'No problems found.', []));
+        return res
+            .status(statusCode.OK)
+            .json(new ApiResponse(statusCode.OK, 'No problems found.', []));
     }
 
     const now = new Date();
-    const { contest_authored_by, contest_start_time, contest_end_time } = problems[0];
+    const {contest_authored_by, contest_start_time, contest_end_time} =
+        problems[0];
     const isCreator = contest_authored_by === req.userId;
     const isAdmin = req.role === 'admin';
 
     if (!isAdmin && !isCreator && now < new Date(contest_start_time)) {
-        throw new ApiError(statusCode.FORBIDDEN, 'Contest has not started yet.');
+        throw new ApiError(
+            statusCode.FORBIDDEN,
+            'Contest has not started yet.'
+        );
     }
 
-    const data = problems.map(({ contest_authored_by, contest_start_time, contest_end_time, ...rest }) => rest);
+    const data = problems.map(
+        ({
+            contest_authored_by,
+            contest_start_time,
+            contest_end_time,
+            ...rest
+        }) => rest
+    );
 
     return res
         .status(statusCode.OK)
@@ -129,7 +178,7 @@ const getAllProblems = asyncHandler(async (req, res) => {
 });
 
 const getProblemById = asyncHandler(async (req, res) => {
-    const { id } = req.params;
+    const {id} = req.params;
 
     const rows = await Problem.findByIdWithSampleTestCases(Number(id));
     if (!rows.length) {
@@ -142,14 +191,18 @@ const getProblemById = asyncHandler(async (req, res) => {
     const isAdmin = req.role === 'admin';
 
     if (!isAdmin && !isCreator && now < new Date(first.contest_start_time)) {
-        throw new ApiError(statusCode.FORBIDDEN, 'Contest has not started yet.');
+        throw new ApiError(
+            statusCode.FORBIDDEN,
+            'Contest has not started yet.'
+        );
     }
 
-    const showRating = isAdmin || isCreator || now > new Date(first.contest_end_time);
+    const showRating =
+        isAdmin || isCreator || now > new Date(first.contest_end_time);
 
     const sampleTestCases = rows
-        .filter(r => r.test_case_id !== null)
-        .map(r => ({
+        .filter((r) => r.test_case_id !== null)
+        .map((r) => ({
             test_case_id: r.test_case_id,
             input_data: r.input_data,
             expected_output: r.expected_output,
@@ -160,7 +213,7 @@ const getProblemById = asyncHandler(async (req, res) => {
         contest_id: first.contest_id,
         title: first.title,
         score: first.score,
-        ...(showRating ? { rating: first.rating } : {}),
+        ...(showRating ? {rating: first.rating} : {}),
         statement: first.statement,
         explanation: first.explanation,
         sample_test_cases: sampleTestCases,
@@ -171,5 +224,10 @@ const getProblemById = asyncHandler(async (req, res) => {
         .json(new ApiResponse(statusCode.OK, 'Problem fetched.', problem));
 });
 
-export { createProblem, updateProblem, deleteProblem, getAllProblems, getProblemById };
-
+export {
+    createProblem,
+    updateProblem,
+    deleteProblem,
+    getAllProblems,
+    getProblemById,
+};

@@ -1,20 +1,33 @@
 import pool from '../db/db.js';
 
 class Contest {
-    static async create({ title, description, authored_by, contest_start_time, contest_end_time, division }) {
+    static async create({
+        title,
+        description,
+        authored_by,
+        contest_start_time,
+        contest_end_time,
+        division,
+    }) {
         const [result] = await pool.query(
             `INSERT INTO contests (title, description, authored_by, contest_start_time, contest_end_time, division)
              VALUES (?, ?, ?, ?, ?, ?)`,
-            [title, description ?? null, authored_by, contest_start_time, contest_end_time, division]
+            [
+                title,
+                description ?? null,
+                authored_by,
+                contest_start_time,
+                contest_end_time,
+                division,
+            ]
         );
         return result.insertId;
     }
 
     static async findById(id) {
-        const [rows] = await pool.query(
-            'SELECT * FROM contests WHERE id = ?',
-            [id]
-        );
+        const [rows] = await pool.query('SELECT * FROM contests WHERE id = ?', [
+            id,
+        ]);
         return rows[0];
     }
 
@@ -27,12 +40,21 @@ class Contest {
         return rows;
     }
 
-    static async update(id, { description, division, contest_start_time, contest_end_time }) {
+    static async update(
+        id,
+        {description, division, contest_start_time, contest_end_time}
+    ) {
         const [result] = await pool.query(
             `UPDATE contests
              SET description = ?, division = ?, contest_start_time = ?, contest_end_time = ?
              WHERE id = ?`,
-            [description ?? null, division, contest_start_time, contest_end_time, id]
+            [
+                description ?? null,
+                division,
+                contest_start_time,
+                contest_end_time,
+                id,
+            ]
         );
         return result;
     }
@@ -46,10 +68,9 @@ class Contest {
     }
 
     static async delete(id) {
-        const [result] = await pool.query(
-            'DELETE FROM contests WHERE id = ?',
-            [id]
-        );
+        const [result] = await pool.query('DELETE FROM contests WHERE id = ?', [
+            id,
+        ]);
         return result;
     }
 }

@@ -7,7 +7,7 @@ class Submission {
         return VALID_LANGUAGES;
     }
 
-    static async create({ problem_id, submitted_by, language, source_code }) {
+    static async create({problem_id, submitted_by, language, source_code}) {
         const [result] = await pool.query(
             `INSERT INTO submissions (problem_id, submitted_by, language, source_code)
              VALUES (?, ?, ?, ?)`,

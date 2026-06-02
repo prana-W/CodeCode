@@ -1,7 +1,14 @@
 import pool from '../db/db.js';
 
 class Problem {
-    static async create({ contest_id, title, score, rating, statement, explanation }) {
+    static async create({
+        contest_id,
+        title,
+        score,
+        rating,
+        statement,
+        explanation,
+    }) {
         const [result] = await pool.query(
             `INSERT INTO problems (contest_id, title, score, rating, statement, explanation)
              VALUES (?, ?, ?, ?, ?, ?)`,
@@ -58,7 +65,10 @@ class Problem {
         return rows;
     }
 
-    static async update(problem_id, { title, score, rating, statement, explanation }) {
+    static async update(
+        problem_id,
+        {title, score, rating, statement, explanation}
+    ) {
         const [result] = await pool.query(
             `UPDATE problems
              SET title = ?, score = ?, rating = ?, statement = ?, explanation = ?

@@ -1,6 +1,6 @@
 import TestCase from '../models/TestCase.model.js';
 import Problem from '../models/Problem.model.js';
-import { ApiError, ApiResponse, asyncHandler } from '../utility/index.js';
+import {ApiError, ApiResponse, asyncHandler} from '../utility/index.js';
 import statusCode from '../constants/statusCode.js';
 
 const resolveOwnership = async (test_case_id, userId) => {
@@ -18,7 +18,7 @@ const resolveOwnership = async (test_case_id, userId) => {
 };
 
 const createTestCase = asyncHandler(async (req, res) => {
-    const { problem_id, input_data, expected_output, is_sample } = req.body;
+    const {problem_id, input_data, expected_output, is_sample} = req.body;
 
     if (!problem_id || !input_data || !expected_output) {
         throw new ApiError(
@@ -32,12 +32,18 @@ const createTestCase = asyncHandler(async (req, res) => {
         throw new ApiError(statusCode.NOT_FOUND, 'Problem not found.');
     }
     if (problem.contest_authored_by !== req.userId) {
-        throw new ApiError(statusCode.FORBIDDEN, 'You are not the author of the contest this problem belongs to.');
+        throw new ApiError(
+            statusCode.FORBIDDEN,
+            'You are not the author of the contest this problem belongs to.'
+        );
     }
 
     const existing = await TestCase.findByProblemId(Number(problem_id));
     if (existing) {
-        throw new ApiError(statusCode.CONFLICT, 'A test case already exists for this problem.');
+        throw new ApiError(
+            statusCode.CONFLICT,
+            'A test case already exists for this problem.'
+        );
     }
 
     const insertId = await TestCase.create({
@@ -51,31 +57,43 @@ const createTestCase = asyncHandler(async (req, res) => {
 
     return res
         .status(statusCode.CREATED)
-        .json(new ApiResponse(statusCode.CREATED, 'Test case created successfully.', testCase));
+        .json(
+            new ApiResponse(
+                statusCode.CREATED,
+                'Test case created successfully.',
+                testCase
+            )
+        );
 });
 
 const updateTestCase = asyncHandler(async (req, res) => {
-    const { id } = req.params;
+    const {id} = req.params;
 
     const row = await resolveOwnership(Number(id), req.userId);
 
     const {
-        input_data      = row.input_data,
+        input_data = row.input_data,
         expected_output = row.expected_output,
-        is_sample       = row.is_sample,
+        is_sample = row.is_sample,
     } = req.body;
 
-    await TestCase.update(Number(id), { input_data, expected_output, is_sample });
+    await TestCase.update(Number(id), {input_data, expected_output, is_sample});
 
     const updated = await TestCase.findById(Number(id));
 
     return res
         .status(statusCode.OK)
-        .json(new ApiResponse(statusCode.OK, 'Test case updated successfully.', updated));
+        .json(
+            new ApiResponse(
+                statusCode.OK,
+                'Test case updated successfully.',
+                updated
+            )
+        );
 });
 
 const deleteTestCase = asyncHandler(async (req, res) => {
-    const { id } = req.params;
+    const {id} = req.params;
 
     await resolveOwnership(Number(id), req.userId);
 
@@ -83,30 +101,39 @@ const deleteTestCase = asyncHandler(async (req, res) => {
 
     return res
         .status(statusCode.OK)
-        .json(new ApiResponse(statusCode.OK, 'Test case deleted successfully.'));
+        .json(
+            new ApiResponse(statusCode.OK, 'Test case deleted successfully.')
+        );
 });
 
 const getAllTestCases = asyncHandler(async (req, res) => {
-    const { problem_id } = req.query;
+    const {problem_id} = req.query;
     if (!problem_id) {
-        throw new ApiError(statusCode.BAD_REQUEST, 'problem_id query param is required.');
+        throw new ApiError(
+            statusCode.BAD_REQUEST,
+            'problem_id query param is required.'
+        );
     }
 
     const rows = await TestCase.findAllByProblem(Number(problem_id));
     if (!rows.length) {
-        return res.status(statusCode.OK).json(new ApiResponse(statusCode.OK, 'No test cases found.', []));
+        return res
+            .status(statusCode.OK)
+            .json(new ApiResponse(statusCode.OK, 'No test cases found.', []));
     }
 
     if (rows[0].contest_authored_by !== req.userId) {
-        throw new ApiError(statusCode.FORBIDDEN, 'Only the contest creator can view all test cases.');
+        throw new ApiError(
+            statusCode.FORBIDDEN,
+            'Only the contest creator can view all test cases.'
+        );
     }
 
-    const data = rows.map(({ contest_authored_by, ...rest }) => rest);
+    const data = rows.map(({contest_authored_by, ...rest}) => rest);
 
     return res
         .status(statusCode.OK)
         .json(new ApiResponse(statusCode.OK, 'Test cases fetched.', data));
 });
 
-export { createTestCase, updateTestCase, deleteTestCase, getAllTestCases };
-
+export {createTestCase, updateTestCase, deleteTestCase, getAllTestCases};

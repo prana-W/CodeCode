@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import {Router} from 'express';
 import {
     createProblem,
     updateProblem,
@@ -6,7 +6,7 @@ import {
     getAllProblems,
     getProblemById,
 } from '../controllers/problem.controller.js';
-import { verifyToken } from '../middlewares/index.js';
+import {verifyToken} from '../middlewares/index.js';
 
 const router = Router();
 

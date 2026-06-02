@@ -1,6 +1,11 @@
-import { Router } from 'express';
-import { createTestCase, updateTestCase, deleteTestCase, getAllTestCases } from '../controllers/testcase.controller.js';
-import { verifyToken } from '../middlewares/index.js';
+import {Router} from 'express';
+import {
+    createTestCase,
+    updateTestCase,
+    deleteTestCase,
+    getAllTestCases,
+} from '../controllers/testcase.controller.js';
+import {verifyToken} from '../middlewares/index.js';
 
 const router = Router();
 

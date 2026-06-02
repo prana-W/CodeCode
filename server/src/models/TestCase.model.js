@@ -1,7 +1,7 @@
 import pool from '../db/db.js';
 
 class TestCase {
-    static async create({ problem_id, input_data, expected_output, is_sample }) {
+    static async create({problem_id, input_data, expected_output, is_sample}) {
         const [result] = await pool.query(
             `INSERT INTO test_cases (problem_id, input_data, expected_output, is_sample)
              VALUES (?, ?, ?, ?)`,
@@ -51,7 +51,10 @@ class TestCase {
         return rows;
     }
 
-    static async update(test_case_id, { input_data, expected_output, is_sample }) {
+    static async update(
+        test_case_id,
+        {input_data, expected_output, is_sample}
+    ) {
         const [result] = await pool.query(
             `UPDATE test_cases
              SET input_data = ?, expected_output = ?, is_sample = ?

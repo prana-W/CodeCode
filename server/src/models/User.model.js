@@ -1,16 +1,16 @@
-import pool from "../db/db.js";
+import pool from '../db/db.js';
 
 class User {
     static async create({
-                            username,
-                            name,
-                            institute,
-                            email,
-                            password,
-                            rating,
-                            max_rating,
-                            role
-                        }) {
+        username,
+        name,
+        institute,
+        email,
+        password,
+        rating,
+        max_rating,
+        role,
+    }) {
         const [result] = await pool.query(
             `
             INSERT INTO users (
@@ -33,7 +33,7 @@ class User {
                 password,
                 rating,
                 max_rating,
-                role
+                role,
             ]
         );
 
@@ -41,26 +41,24 @@ class User {
     }
 
     static async findById(id) {
-        const [rows] = await pool.query(
-            "SELECT * FROM users WHERE id = ?",
-            [id]
-        );
+        const [rows] = await pool.query('SELECT * FROM users WHERE id = ?', [
+            id,
+        ]);
 
         return rows[0];
     }
 
     static async findByEmail(email) {
-        const [rows] = await pool.query(
-            "SELECT * FROM users WHERE email = ?",
-            [email]
-        );
+        const [rows] = await pool.query('SELECT * FROM users WHERE email = ?', [
+            email,
+        ]);
 
         return rows[0];
     }
 
     static async findByUsername(username) {
         const [rows] = await pool.query(
-            "SELECT * FROM users WHERE username = ?",
+            'SELECT * FROM users WHERE username = ?',
             [username]
         );
 
@@ -68,18 +66,15 @@ class User {
     }
 
     static async getAll() {
-        const [rows] = await pool.query(
-            "SELECT * FROM users"
-        );
+        const [rows] = await pool.query('SELECT * FROM users');
 
         return rows;
     }
 
     static async delete(id) {
-        const [result] = await pool.query(
-            "DELETE FROM users WHERE id = ?",
-            [id]
-        );
+        const [result] = await pool.query('DELETE FROM users WHERE id = ?', [
+            id,
+        ]);
 
         return result;
     }
