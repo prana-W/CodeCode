@@ -4,6 +4,8 @@ import {
     updateContest,
     toggleVerifyContest,
     deleteContest,
+    getContestById,
+    getAllContests,
 } from '../controllers/contest.controller.js';
 import { verifyToken, verifyAdmin } from '../middlewares/index.js';
 
@@ -13,8 +15,11 @@ const router = Router();
 router.use(verifyToken);
 
 router.post('/', createContest);
+router.get('/', getAllContests);
+router.get('/:id', getContestById);
 router.patch('/:id', updateContest);
 router.patch('/:id/verify', verifyAdmin, toggleVerifyContest);
 router.delete('/:id', deleteContest);
+
 
 export default router;

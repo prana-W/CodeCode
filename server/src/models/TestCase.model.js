@@ -39,6 +39,18 @@ class TestCase {
         return rows[0];
     }
 
+    static async findAllByProblem(problem_id) {
+        const [rows] = await pool.query(
+            `SELECT tc.*, c.authored_by AS contest_authored_by
+             FROM test_cases tc
+             JOIN problems p ON tc.problem_id = p.problem_id
+             JOIN contests c ON p.contest_id = c.id
+             WHERE tc.problem_id = ?`,
+            [problem_id]
+        );
+        return rows;
+    }
+
     static async update(test_case_id, { input_data, expected_output, is_sample }) {
         const [result] = await pool.query(
             `UPDATE test_cases

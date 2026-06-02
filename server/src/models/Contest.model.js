@@ -18,6 +18,15 @@ class Contest {
         return rows[0];
     }
 
+    static async findAll() {
+        const [rows] = await pool.query(
+            `SELECT c.id, c.title, c.authored_by, c.isVerified, c.contest_start_time, c.contest_end_time, u.name AS authored_by_name
+             FROM contests c
+             JOIN users u ON c.authored_by = u.id`
+        );
+        return rows;
+    }
+
     static async update(id, { description, division, contest_start_time, contest_end_time }) {
         const [result] = await pool.query(
             `UPDATE contests

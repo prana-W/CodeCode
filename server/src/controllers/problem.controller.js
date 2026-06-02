@@ -101,5 +101,75 @@ const deleteProblem = asyncHandler(async (req, res) => {
         .json(new ApiResponse(statusCode.OK, 'Problem deleted successfully.'));
 });
 
-export { createProblem, updateProblem, deleteProblem };
+const getAllProblems = asyncHandler(async (req, res) => {
+    const { contest_id } = req.query;
+    if (!contest_id) {
+        throw new ApiError(statusCode.BAD_REQUEST, 'contest_id query param is required.');
+    }
+
+    const problems = await Problem.findAllByContest(Number(contest_id));
+    if (!problems.length) {
+        return res.status(statusCode.OK).json(new ApiResponse(statusCode.OK, 'No problems found.', []));
+    }
+
+    const now = new Date();
+    const { contest_authored_by, contest_start_time, contest_end_time } = problems[0];
+    const isCreator = contest_authored_by === req.userId;
+    const isAdmin = req.role === 'admin';
+
+    if (!isAdmin && !isCreator && now < new Date(contest_start_time)) {
+        throw new ApiError(statusCode.FORBIDDEN, 'Contest has not started yet.');
+    }
+
+    const data = problems.map(({ contest_authored_by, contest_start_time, contest_end_time, ...rest }) => rest);
+
+    return res
+        .status(statusCode.OK)
+        .json(new ApiResponse(statusCode.OK, 'Problems fetched.', data));
+});
+
+const getProblemById = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+
+    const rows = await Problem.findByIdWithSampleTestCases(Number(id));
+    if (!rows.length) {
+        throw new ApiError(statusCode.NOT_FOUND, 'Problem not found.');
+    }
+
+    const now = new Date();
+    const first = rows[0];
+    const isCreator = first.contest_authored_by === req.userId;
+    const isAdmin = req.role === 'admin';
+
+    if (!isAdmin && !isCreator && now < new Date(first.contest_start_time)) {
+        throw new ApiError(statusCode.FORBIDDEN, 'Contest has not started yet.');
+    }
+
+    const showRating = isAdmin || isCreator || now > new Date(first.contest_end_time);
+
+    const sampleTestCases = rows
+        .filter(r => r.test_case_id !== null)
+        .map(r => ({
+            test_case_id: r.test_case_id,
+            input_data: r.input_data,
+            expected_output: r.expected_output,
+        }));
+
+    const problem = {
+        problem_id: first.problem_id,
+        contest_id: first.contest_id,
+        title: first.title,
+        score: first.score,
+        ...(showRating ? { rating: first.rating } : {}),
+        statement: first.statement,
+        explanation: first.explanation,
+        sample_test_cases: sampleTestCases,
+    };
+
+    return res
+        .status(statusCode.OK)
+        .json(new ApiResponse(statusCode.OK, 'Problem fetched.', problem));
+});
+
+export { createProblem, updateProblem, deleteProblem, getAllProblems, getProblemById };
 

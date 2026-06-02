@@ -1,4 +1,5 @@
 import Contest from '../models/Contest.model.js';
+import Problem from '../models/Problem.model.js';
 import { ApiError, ApiResponse, asyncHandler } from '../utility/index.js';
 import statusCode from '../constants/statusCode.js';
 
@@ -50,10 +51,10 @@ const updateContest = asyncHandler(async (req, res) => {
     }
 
     const {
-        description   = contest.description,
-        division      = contest.division,
+        description = contest.description,
+        division = contest.division,
         contest_start_time = contest.contest_start_time,
-        contest_end_time   = contest.contest_end_time,
+        contest_end_time = contest.contest_end_time,
     } = req.body;
 
     if (![1, 2, 3, 4, 5].includes(Number(division))) {
@@ -114,5 +115,32 @@ const deleteContest = asyncHandler(async (req, res) => {
         .status(statusCode.OK)
         .json(new ApiResponse(statusCode.OK, 'Contest deleted successfully.'));
 });
+const getContestById = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const contest = await Contest.findById(id);
+    if (!contest) {
+        throw new ApiError(statusCode.NOT_FOUND, 'Contest not found.');
+    }
+    const isCreator = contest.authored_by === req.userId;
+    const isAdmin = req.role === 'admin';
+    if (!isAdmin && !isCreator && !contest.isVerified) {
+        throw new ApiError(statusCode.FORBIDDEN, 'This contest is not yet available.');
+    }
+    return res
+        .status(statusCode.OK)
+        .json(new ApiResponse(statusCode.OK, 'Contest fetched.', contest));
+});
 
-export { createContest, updateContest, toggleVerifyContest, deleteContest };
+const getAllContests = asyncHandler(async (req, res) => {
+    const all = await Contest.findAll();
+    const now = new Date();
+    const isAdmin = req.role === 'admin';
+    const filtered = all.filter(c =>
+        isAdmin || c.authored_by === req.userId || c.isVerified
+    ).map(({ authored_by, ...rest }) => rest);
+    return res
+        .status(statusCode.OK)
+        .json(new ApiResponse(statusCode.OK, 'All contests fetched.', filtered));
+});
+
+export { createContest, updateContest, toggleVerifyContest, deleteContest, getContestById, getAllContests };

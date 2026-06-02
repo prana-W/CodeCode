@@ -86,5 +86,27 @@ const deleteTestCase = asyncHandler(async (req, res) => {
         .json(new ApiResponse(statusCode.OK, 'Test case deleted successfully.'));
 });
 
-export { createTestCase, updateTestCase, deleteTestCase };
+const getAllTestCases = asyncHandler(async (req, res) => {
+    const { problem_id } = req.query;
+    if (!problem_id) {
+        throw new ApiError(statusCode.BAD_REQUEST, 'problem_id query param is required.');
+    }
+
+    const rows = await TestCase.findAllByProblem(Number(problem_id));
+    if (!rows.length) {
+        return res.status(statusCode.OK).json(new ApiResponse(statusCode.OK, 'No test cases found.', []));
+    }
+
+    if (rows[0].contest_authored_by !== req.userId) {
+        throw new ApiError(statusCode.FORBIDDEN, 'Only the contest creator can view all test cases.');
+    }
+
+    const data = rows.map(({ contest_authored_by, ...rest }) => rest);
+
+    return res
+        .status(statusCode.OK)
+        .json(new ApiResponse(statusCode.OK, 'Test cases fetched.', data));
+});
+
+export { createTestCase, updateTestCase, deleteTestCase, getAllTestCases };
 
