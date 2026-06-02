@@ -9,6 +9,7 @@ import problemRouter from './routes/problem.routes.js';
 import testcaseRouter from './routes/testcase.routes.js';
 import submissionRouter from './routes/submission.routes.js';
 import userRouter from './routes/user.routes.js';
+import aiRouter from './routes/ai.routes.js';
 import morgan from 'morgan';
 import {apiLimiter} from './middlewares/rateLimit.middleware.js';
 
@@ -43,6 +44,7 @@ app.use('/api/v1/problems', problemRouter);
 app.use('/api/v1/testcases', testcaseRouter);
 app.use('/api/v1/submissions', submissionRouter);
 app.use('/api/v1/users', userRouter);
+app.use('/api/v1/ai', aiRouter);
 
 // Error Handling
 app.use(errorHandler());

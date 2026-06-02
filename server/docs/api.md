@@ -743,4 +743,38 @@ _Note: All endpoints require authentication._
     ```
 - **Error Cases**:
     - `403` — Not authorized (deleting someone else's profile)
-    - `404` — User not found
+
+---
+
+## AI Endpoints (`/api/v1/ai`)
+
+_Note: All endpoints require authentication._
+
+### 1. Ask AI Assistant
+
+- **Method**: `POST`
+- **Route**: `/ask`
+- **Access**: Authenticated users. Limited to 5 requests per 10 minutes.
+- **Description**: Asks the local AI assistant a question. The assistant is configured as a coding mentor to provide hints and definitions, but never code.
+- **Request Body**:
+    ```json
+    {
+        "prompt": "How do I find the longest palindromic substring?"
+    }
+    ```
+- **Success Response (200 OK)**:
+    ```json
+    {
+        "statusCode": 200,
+        "success": true,
+        "message": "AI response generated successfully.",
+        "data": {
+            "hint": "To find the longest palindromic substring, you can use the 'expand around center' approach. This involves iterating through the string and expanding outward from each character (and between each pair of characters) to check for palindromes. By keeping track of the longest palindrome found during these expansions, you can identify the final answer."
+        }
+    }
+    ```
+
+- **Error Cases**:
+    - `400` — Prompt is required and must be a non-empty string.
+    - `429` — You have reached your AI assistant limit.
+    - `500` — Failed to communicate with the AI assistant (Ollama offline).

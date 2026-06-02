@@ -81,3 +81,17 @@ export const contestRegistrationLimiter = rateLimit({
         message: 'Too many registration attempts. Please wait 10 minutes.',
     },
 });
+
+// AI Assistant Limiter
+export const aiLimiter = rateLimit({
+    windowMs: 5 * 60 * 1000, // 5 minutes
+    limit: 100, // Limit each IP to 100 AI requests per 5 minutes
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: {
+        statusCode: 429,
+        success: false,
+        message:
+            'You have reached your AI assistant limit. Please wait 5 minutes.',
+    },
+});
