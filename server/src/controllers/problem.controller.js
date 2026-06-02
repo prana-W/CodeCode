@@ -25,7 +25,7 @@ const createProblem = asyncHandler(async (req, res) => {
         );
     }
 
-    const {contest_id, title, score, rating, statement, explanation} = req.body;
+    const {contest_id, title, score, rating, statement, explanation, time_limit_ms, memory_limit_mb} = req.body;
 
     if (
         !contest_id ||
@@ -66,6 +66,8 @@ const createProblem = asyncHandler(async (req, res) => {
         rating: Number(rating),
         statement,
         explanation,
+        time_limit_ms: time_limit_ms !== undefined ? Number(time_limit_ms) : 2000,
+        memory_limit_mb: memory_limit_mb !== undefined ? Number(memory_limit_mb) : 256,
     });
 
     const problem = await Problem.findById(insertId);
@@ -92,6 +94,8 @@ const updateProblem = asyncHandler(async (req, res) => {
         rating = row.rating,
         statement = row.statement,
         explanation = row.explanation,
+        time_limit_ms = row.time_limit_ms,
+        memory_limit_mb = row.memory_limit_mb,
     } = req.body;
 
     if (Number(score) < 0 || Number(score) > 5000) {
@@ -107,6 +111,8 @@ const updateProblem = asyncHandler(async (req, res) => {
         rating: Number(rating),
         statement,
         explanation,
+        time_limit_ms: Number(time_limit_ms),
+        memory_limit_mb: Number(memory_limit_mb),
     });
 
     const updated = await Problem.findById(Number(id));

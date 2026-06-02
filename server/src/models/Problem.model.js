@@ -8,11 +8,13 @@ class Problem {
         rating,
         statement,
         explanation,
+        time_limit_ms,
+        memory_limit_mb,
     }) {
         const [result] = await pool.query(
-            `INSERT INTO problems (contest_id, title, score, rating, statement, explanation)
-             VALUES (?, ?, ?, ?, ?, ?)`,
-            [contest_id, title, score, rating, statement, explanation ?? null]
+            `INSERT INTO problems (contest_id, title, score, rating, statement, explanation, time_limit_ms, memory_limit_mb)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+            [contest_id, title, score, rating, statement, explanation ?? null, time_limit_ms, memory_limit_mb]
         );
         return result.insertId;
     }
@@ -67,13 +69,14 @@ class Problem {
 
     static async update(
         problem_id,
-        {title, score, rating, statement, explanation}
+        {title, score, rating, statement, explanation, time_limit_ms, memory_limit_mb}
     ) {
         const [result] = await pool.query(
             `UPDATE problems
-             SET title = ?, score = ?, rating = ?, statement = ?, explanation = ?
+             SET title = ?, score = ?, rating = ?, statement = ?, explanation = ?,
+                 time_limit_ms = ?, memory_limit_mb = ?
              WHERE problem_id = ?`,
-            [title, score, rating, statement, explanation ?? null, problem_id]
+            [title, score, rating, statement, explanation ?? null, time_limit_ms, memory_limit_mb, problem_id]
         );
         return result;
     }

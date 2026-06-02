@@ -53,6 +53,9 @@ CREATE TABLE IF NOT EXISTS problems (
 
     score INT NOT NULL,
     rating INT NOT NULL,
+    
+    time_limit_ms INT NOT NULL DEFAULT 2000,
+    memory_limit_mb INT NOT NULL DEFAULT 256,
 
     statement LONGTEXT NOT NULL,
 
@@ -91,6 +94,7 @@ CREATE TABLE IF NOT EXISTS submissions (
 
     verdict ENUM(
         'pending',
+        'running',
         'accepted',
         'wrong_answer',
         'runtime_error',

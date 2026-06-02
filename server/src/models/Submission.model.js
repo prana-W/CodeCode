@@ -66,6 +66,29 @@ class Submission {
         );
         return rows[0];
     }
+
+    static async findForJudge(submission_id) {
+        const [rows] = await pool.query(
+            `SELECT s.submission_id, s.source_code, s.language,
+                    p.time_limit_ms, p.memory_limit_mb,
+                    tc.input_data, tc.expected_output
+             FROM submissions s
+             JOIN problems p ON s.problem_id = p.problem_id
+             LEFT JOIN test_cases tc ON tc.problem_id = p.problem_id
+             WHERE s.submission_id = ?`,
+            [submission_id]
+        );
+        return rows[0];
+    }
+
+    static async setVerdict(submission_id, verdict, execution_time_ms = null, memory_used_kb = null) {
+        await pool.query(
+            `UPDATE submissions
+             SET verdict = ?, execution_time_ms = ?, memory_used_kb = ?
+             WHERE submission_id = ?`,
+            [verdict, execution_time_ms, memory_used_kb, submission_id]
+        );
+    }
 }
 
 export default Submission;
