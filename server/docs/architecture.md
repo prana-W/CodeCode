@@ -1,15 +1,17 @@
-# CodeCode — System Architecture & Submission Flow
+# CodeCode — System Architecture
 
 ## Directory Structure
 
 ```
 server/
 ├── src/
-│   ├── index.js                     # Entry point — starts HTTP server, connects to MySQL
-│   ├── app.js                       # Express app — registers middleware and all routers
+│   ├── index.js                     # Entry point — starts HTTP server, registers cron jobs
+│   ├── app.js                       # Express app — registers middleware, routers, Swagger UI
 │   │
 │   ├── config/
-│   │   └── redis.js                 # ioredis connection instance shared by Queue and Worker
+│   │   ├── redis.js                 # ioredis connection instance shared by Queue and Worker
+│   │   ├── swagger.js               # swagger-jsdoc spec — full OpenAPI definition for all routes
+│   │   └── aiConfig.js              # SYSTEM_PROMPT constant for the CodeCode AI Assistant
 │   │
 │   ├── constants/
 │   │   ├── statusCode.js            # HTTP status code constants
@@ -17,45 +19,69 @@ server/
 │   │
 │   ├── controllers/
 │   │   ├── auth.controller.js       # register, login, logout
-│   │   ├── contest.controller.js    # CRUD + GET for contests
+│   │   ├── checkHealth.controller.js# GET /api/v1 — returns server time + DB timestamp
+│   │   ├── contest.controller.js    # CRUD, verify, register, leaderboard, finalize
 │   │   ├── problem.controller.js    # CRUD + GET for problems (with time/memory limits)
 │   │   ├── testcase.controller.js   # CRUD + GET for test cases
-│   │   └── submission.controller.js # createSubmission, getContestSubmissions, getSubmissionById
+│   │   ├── submission.controller.js # createSubmission, getContestSubmissions, getSubmissionById
+│   │   ├── user.controller.js       # getUserById, updateUser, deleteUser
+│   │   └── ai.controller.js         # askAssistant — proxies prompt to AI service
+│   │
+│   ├── cron/
+│   │   └── contestEvaluation.cron.js# node-cron job (every 5 min) — auto-finalizes ended contests
 │   │
 │   ├── db/
 │   │   ├── db.js                    # mysql2 connection pool
 │   │   ├── connectDB.js             # connects pool on startup
-│   │   ├── schema.sql               # Full DB schema
-│   │   └── migration_judge_limits.sql  # Adds time_limit_ms, memory_limit_mb, 'running' verdict
+│   │   ├── schema.sql               # Full DB schema (all 6 tables)
+│   │   └── test_queries.sql         # Ad-hoc SQL scratch queries
 │   │
 │   ├── middlewares/
 │   │   ├── index.js                 # Re-exports verifyToken, verifyAdmin, errorHandler
 │   │   ├── verifyToken.js           # Decodes JWT cookie → attaches req.userId, req.role
 │   │   ├── verifyAdmin.js           # Blocks non-admin requests with 403
-│   │   └── errorHandler.js          # Global Express error handler
+│   │   ├── errorHandler.js          # Global Express error handler
+│   │   └── rateLimit.middleware.js  # express-rate-limit instances (see Rate Limiting section)
 │   │
 │   ├── models/
-│   │   ├── User.model.js            # create, findById, findByEmail, findByUsername
-│   │   ├── Contest.model.js         # create, findById, findAll (JOIN), update, setVerified, delete
+│   │   ├── User.model.js            # create, findById, findByEmail, findByUsername,
+│   │   │                            #   getAll, update, delete, updateRating (transactional)
+│   │   ├── Contest.model.js         # create, findById, findAll, update, setVerified, delete,
+│   │   │                            #   getPendingEvaluations, updateEvaluationStatus
 │   │   ├── Problem.model.js         # create, findById, findWithContest, findAllByContest,
 │   │   │                            #   findByIdWithSampleTestCases, update, delete
 │   │   ├── TestCase.model.js        # create, findById, findWithContest, findByProblemId,
 │   │   │                            #   findAllByProblem, update, delete
-│   │   └── Submission.model.js      # create, findById, findWithContest, findAllByContest,
-│   │                                #   findByIdWithContest, findForJudge, setVerdict
+│   │   ├── Submission.model.js      # create, findById, findWithContest, findAllByContest,
+│   │   │                            #   findByIdWithContest, findForJudge, setVerdict
+│   │   ├── ContestRegistration.model.js  # register, findByUserAndContest, findContestTimes,
+│   │   │                                 #   getParticipantsWithRating, updateDelta
+│   │   └── ContestStanding.model.js # getLeaderboard — ranked standings by final_score
 │   │
 │   ├── queues/
 │   │   └── submissionQueue.js       # BullMQ Queue("submission-queue") — jobs are added here
 │   │
 │   ├── routes/
 │   │   ├── auth.routes.js
-│   │   ├── contest.routes.js
+│   │   ├── contest.routes.js        # Includes register, leaderboard, finalize endpoints
 │   │   ├── problem.routes.js
 │   │   ├── testcase.routes.js
-│   │   └── submission.routes.js
+│   │   ├── submission.routes.js
+│   │   ├── user.routes.js           # getUserById, updateUser, deleteUser
+│   │   ├── ai.routes.js             # POST /ask — AI assistant (aiLimiter applied)
+│   │   └── admin.routes.js          # Empty placeholder for future admin-only routes
 │   │
 │   ├── services/
-│   │   └── judge.js                 # Core Docker execution logic — runJudge()
+│   │   ├── judge.service.js         # Core Docker execution logic — runJudge()
+│   │   ├── contest.service.js       # Elo-like rating delta calculation — deltaCalculation()
+│   │   └── ai.service.js            # generateHint() — calls local Ollama /api/chat
+│   │
+│   ├── sockets/
+│   │   ├── index.js                 # initializeSocket(httpServer) — creates Socket.IO server
+│   │   ├── socket.js                # registerSockets(io) — attaches auth middleware + handlers
+│   │   ├── controllers/             # (empty — placeholder for future socket event handlers)
+│   │   └── middlewares/
+│   │       └── verifyAccessToken.middleware.js  # Socket.IO auth: reads socket.handshake.auth.accessToken
 │   │
 │   ├── utility/
 │   │   ├── index.js                 # Re-exports ApiError, ApiResponse, asyncHandler
@@ -77,8 +103,11 @@ server/
 
 1. Loads `.env` via `dotenv`.
 2. Calls `connectToDatabase()` (`src/db/connectDB.js`) — tests the `mysql2` pool connection.
-3. Creates an `http.Server` from the Express `app`.
-4. Starts listening on `process.env.PORT` (default `8000`).
+3. Imports `src/cron/contestEvaluation.cron.js` — **registers the cron job** (runs every 5 minutes).
+4. Creates an `http.Server` from the Express `app`.
+5. Starts listening on `process.env.PORT` (default `8000`).
+
+> Socket.IO (`src/sockets/`) is scaffolded but the `initializeSocket` call is not yet wired in `index.js`. It will be attached to the `httpServer` when real-time features are activated.
 
 ### Process 2 — Judge Worker (`src/workers/judgeWorker.js`)
 
@@ -100,9 +129,9 @@ Body: { problem_id, language, source_code }
 
 | Step | File                                            | What happens                                                                                              |
 | ---- | ----------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
-| 1    | `app.js`                                        | Request hits Express; `morgan` logs it                                                                    |
+| 1    | `app.js`                                        | Request hits Express; `morgan` logs it; `apiLimiter` checks IP rate limit                                |
 | 2    | `middlewares/verifyToken.js`                    | JWT from the `token` cookie is verified; `req.userId` and `req.role` attached                             |
-| 3    | `routes/submission.routes.js`                   | Matched to `router.post('/', createSubmission)`                                                           |
+| 3    | `routes/submission.routes.js`                   | Matched to `router.post('/', submissionLimiter, createSubmission)`                                        |
 | 4    | `controllers/submission.controller.js`          | `createSubmission` handler runs                                                                           |
 | 5    | Validation                                      | Checks `problem_id`, `language` (must be `cpp/c/java/python/javascript`), `source_code` are present       |
 | 6    | `models/Submission.findWithContest(problem_id)` | Single JOIN: `submissions → problems → contests` — returns `contest_authored_by` and `contest_start_time` |
@@ -128,14 +157,14 @@ job.data = { submissionId: 42 }
 | 1    | `Submission.findForJudge(submissionId)`                 | Single 3-table JOIN: `submissions → problems → test_cases`. Returns `source_code`, `language`, `time_limit_ms`, `memory_limit_mb`, `input_data`, `expected_output` |
 | 2    | Guard check                                             | If no row found → log error, return. If `input_data` is null (no test case registered) → set verdict `runtime_error`, return                                       |
 | 3    | `Submission.setVerdict(id, 'running')`                  | Updates DB row: `verdict = 'running'`                                                                                                                              |
-| 4    | `runJudge(data)`                                        | Calls the judge service (`src/services/judge.js`) — see Phase 4                                                                                                    |
+| 4    | `runJudge(data)`                                        | Calls the judge service (`src/services/judge.service.js`) — see Phase 4                                                                                            |
 | 5    | `Submission.setVerdict(id, verdict, execution_time_ms)` | Writes final verdict and timing back to DB                                                                                                                         |
 
 ---
 
-## Phase 4 — Docker Execution (`src/services/judge.js`)
+## Phase 4 — Docker Execution (`src/services/judge.service.js`)
 
-`runJudge()` receives: `{ source_code, language, input_data, expected_output, time_limit_ms, memory_limit_mb }`
+`runJudge()` receives: `{ submission_id, source_code, language, input_data, expected_output, time_limit_ms, memory_limit_mb }`
 
 ### Step 1 — Prepare temp directory
 
@@ -150,11 +179,11 @@ job.data = { submissionId: 42 }
 | `python`     | `main.py`    |
 | `javascript` | `main.js`    |
 
-- `input_data` is explicitly written to `input.txt` inside the sandbox directory.
+- `input_data` is written to `input.txt` inside the sandbox directory.
 
 ### Step 2 — Build `run.sh`
 
-`buildRunScript(language, timeoutSecs)` generates a shell script written to `sandbox/submission-<submission_id>/run.sh`:
+`buildRunScript(language, timeoutSecs)` generates a shell script written to `sandbox/submission-<id>/run.sh`:
 
 **Compiled languages (C, C++, Java):**
 
@@ -191,14 +220,15 @@ docker run --rm \
 ```
 
 **Docker images used:**
-| Language | Image |
-|----------|-------|
-| `cpp`, `c` | `gcc:latest` |
-| `java` | `openjdk:21-slim` |
-| `python` | `python:3.12-slim` |
-| `javascript` | `node:22-slim` |
 
-Node.js enforces an outer timeout of `time_limit_ms + 10_000ms` (10s buffer for Docker startup overhead).
+| Language           | Image              |
+| ------------------ | ------------------ |
+| `cpp`, `c`         | `gcc:latest`       |
+| `java`             | `openjdk:21-slim`  |
+| `python`           | `python:3.12-slim` |
+| `javascript`       | `node:22-slim`     |
+
+Node.js enforces an outer timeout of `time_limit_ms + 10_000ms` (10s buffer for Docker startup overhead). `maxBuffer` is capped at 10 MB to prevent stdout flooding.
 
 ### Step 4 — Exit code → Verdict mapping
 
@@ -248,6 +278,114 @@ The submission row now has its final state. The client can poll `GET /api/v1/sub
 
 ---
 
+## Phase 6 — Contest Finalization (Cron + Admin Trigger)
+
+After a contest ends, ratings are calculated via an **Elo-like delta system**.
+
+### Automatic: Cron Job (`src/cron/contestEvaluation.cron.js`)
+
+Runs **every 5 minutes** via `node-cron`.
+
+1. Queries `contests` for rows where `contest_end_time < NOW()` AND `contest_evaluation = 'pending'`.
+2. For each matching contest, sets `contest_evaluation = 'running'`.
+3. Calls `deltaCalculation(contestId)` (see below).
+4. On success → sets `contest_evaluation = 'completed'`.
+5. On failure → reverts to `'pending'` so it will be retried next cycle.
+
+### Manual: Admin Endpoint
+
+```
+POST /api/v1/contests/:id/finalize
+Cookie: token=<admin JWT>
+```
+
+Guarded by `verifyAdmin`. Same `deltaCalculation()` call with the same status state machine (`pending → running → completed`), but triggered on-demand instead of by the cron.
+
+### Delta Calculation (`src/services/contest.service.js`)
+
+`deltaCalculation(contestId)`:
+
+1. Fetches all registered participants with their `currentRating` and `final_score` (score minus penalty minutes), ordered by rank.
+2. For each participant `i`, computes **expected wins** against all other participants using the Elo probability formula: `P(i beats j) = 1 / (1 + 10^((Rj - Ri) / 400))`.
+3. Derives `expectedRank = n - expectedWins`.
+4. Computes raw delta: `delta = K * (expectedRank - actualRank)` where `K = 4`.
+5. Applies a **zero-sum correction**: subtracts `round(sumDelta / n)` from every delta so the total change across the field sums to zero.
+6. Floors each new rating at `RATING_FLOOR = 400`.
+7. Runs a single **MySQL transaction**:
+   - `ContestRegistration.updateDelta()` — writes `delta` and `final_rating` to the registration row.
+   - `User.updateRating()` — updates `users.rating` and `users.max_rating`.
+8. Rolls back the transaction if any update fails.
+
+---
+
+## AI Assistant (`src/services/ai.service.js`)
+
+```
+POST /api/v1/ai/ask
+Cookie: token=<JWT>
+Body: { prompt: "What is a segment tree?" }
+```
+
+- Requires a valid JWT (`verifyToken`).
+- Rate-limited by `aiLimiter` (100 requests / 5 minutes per IP).
+- Calls a **local Ollama instance** at `OLLAMA_URL/api/chat` using the model specified by `OLLAMA_MODEL`.
+- The system prompt (`src/config/aiConfig.js`) enforces strict rules: **no code, no pseudocode, no implementation details** — only conceptual explanations and hints.
+- Returns `{ hint: "<AI response text>" }`.
+
+---
+
+## Rate Limiting (`src/middlewares/rateLimit.middleware.js`)
+
+All rate limiters use `express-rate-limit` with `standardHeaders: true`.
+
+| Limiter                    | Applied to                        | Window       | Limit |
+| -------------------------- | --------------------------------- | ------------ | ----- |
+| `apiLimiter`               | All `/api/*` routes               | 15 min       | 100   |
+| `authLimiter`              | `POST /auth/register`, `/login`   | 15 min       | 10    |
+| `submissionLimiter`        | `POST /submissions`               | 1 min        | 5     |
+| `contestCreationLimiter`   | `POST /contests`                  | 1 hour       | 5     |
+| `contestRegistrationLimiter`| `POST /contests/register`        | 10 min       | 10    |
+| `profileUpdateLimiter`     | `PATCH /users/:id`                | 15 min       | 15    |
+| `aiLimiter`                | `POST /ai/ask`                    | 5 min        | 100   |
+
+---
+
+## Swagger / API Documentation
+
+- **Package**: `swagger-jsdoc` + `swagger-ui-express`
+- **Spec**: defined inline in `src/config/swagger.js` (full OpenAPI 3.0 definition for all routes and schemas).
+- **Served at**: both `/` (root) and `/api-docs` — both render the interactive Swagger UI.
+- **Title**: "CodeCode API Docs"
+
+---
+
+## Socket.IO Layer (`src/sockets/`)
+
+Scaffolded but not yet fully activated in production startup.
+
+| File                                             | Purpose                                                   |
+| ------------------------------------------------ | --------------------------------------------------------- |
+| `sockets/index.js`                               | `initializeSocket(httpServer)` — creates `Server` with CORS `*` |
+| `sockets/socket.js`                              | `registerSockets(io)` — wires auth middleware + connection/disconnect logging |
+| `sockets/middlewares/verifyAccessToken.middleware.js` | Reads `socket.handshake.auth.accessToken`, verifies JWT via `ACCESS_TOKEN_SECRET`, attaches `socket.userId` |
+| `sockets/controllers/`                           | Empty — placeholder for future real-time event handlers   |
+
+---
+
+## Database Schema (6 tables)
+
+| Table                   | Key columns                                                                                          |
+| ----------------------- | ---------------------------------------------------------------------------------------------------- |
+| `users`                 | `id`, `username`, `name`, `institute`, `email`, `password`, `rating`, `max_rating`, `role`, `created_at` |
+| `contests`              | `id`, `title`, `description`, `isVerified`, `authored_by`, `contest_start_time`, `contest_end_time`, `contest_evaluation ENUM(pending,running,completed)`, `division TINYINT(1–5)` |
+| `problems`              | `problem_id`, `contest_id`, `title`, `score`, `rating`, `time_limit_ms`, `memory_limit_mb`, `statement`, `explanation` |
+| `test_cases`            | `test_case_id`, `problem_id` (UNIQUE), `input_data`, `expected_output`, `is_sample`                  |
+| `submissions`           | `submission_id`, `problem_id`, `submitted_by`, `submitted_at`, `verdict ENUM(...)`, `language ENUM(...)`, `source_code`, `execution_time_ms`, `memory_used_kb` |
+| `contest_standings`     | `(contest_id, user_id, problem_id)` PK, `accepted_submission_id` — one row per solved problem per user |
+| `contest_registrations` | `registration_id`, `contest_id`, `user_id`, `registered_at`, `delta`, `final_rating` — one row per participant |
+
+---
+
 ## Data Flow Diagram
 
 ```
@@ -257,10 +395,12 @@ Client (Frontend)
     ▼
 Express App (src/app.js)
     │
+    ├── apiLimiter (express-rate-limit)
     ├── verifyToken (middlewares/verifyToken.js)
     │       └── Decode JWT cookie → req.userId, req.role
     │
     ├── submission.routes.js → submission.controller.js
+    │       ├── submissionLimiter (rate limit 5/min)
     │       ├── Validate input fields
     │       ├── Submission.findWithContest()   ← MySQL JOIN
     │       ├── Access control check (start time, role)
@@ -279,7 +419,7 @@ Judge Worker (src/workers/judgeWorker.js)  ← runs in separate process
     ├── Submission.setVerdict('running')    ← UPDATE MySQL
     │
     ▼
-Judge Service (src/services/judge.js)
+Judge Service (src/services/judge.service.js)
     │
     ├── Write source file, input.txt + run.sh to sandbox/submission-<id>/
     ├── docker run (--name, --network=none, --memory, --cpus, -v)
@@ -296,6 +436,20 @@ judgeWorker.js
 MySQL submissions table
     └── verdict = 'accepted' | 'wrong_answer' | 'time_limit_exceeded' |
                  'memory_limit_exceeded' | 'compilation_error' | 'runtime_error'
+
+─────────────────────────────────────────────────────
+
+Cron (every 5 min, runs inside API server process)
+    │
+    ├── Contest.getPendingEvaluations()     ← ended contests with evaluation='pending'
+    ├── Contest.updateEvaluationStatus('running')
+    ├── deltaCalculation(contestId)         ← contest.service.js
+    │       ├── ContestRegistration.getParticipantsWithRating()  ← ranked by final_score
+    │       ├── Elo probability + zero-sum correction
+    │       └── DB Transaction:
+    │               ├── ContestRegistration.updateDelta()
+    │               └── User.updateRating()
+    └── Contest.updateEvaluationStatus('completed' | 'pending')
 ```
 
 ---
@@ -304,16 +458,23 @@ MySQL submissions table
 
 | Package                       | Role                                                                         |
 | ----------------------------- | ---------------------------------------------------------------------------- |
-| `express`                     | HTTP server framework                                                        |
+| `express`                     | HTTP server framework (v5)                                                   |
 | `mysql2`                      | MySQL connection pool with Promise support                                   |
 | `jsonwebtoken`                | JWT signing and verification                                                 |
 | `bcrypt`                      | Password hashing (12 salt rounds)                                            |
 | `cookie-parser`               | Parses `httpOnly` JWT cookie from requests                                   |
 | `bullmq`                      | Job queue built on Redis — `Queue` (producer) + `Worker` (consumer)          |
 | `ioredis`                     | Redis client used by BullMQ; `maxRetriesPerRequest: null` required by BullMQ |
+| `node-cron`                   | Schedules the contest evaluation cron job (every 5 minutes)                  |
+| `express-rate-limit`          | IP-based rate limiting for API abuse prevention                              |
+| `swagger-jsdoc`               | Generates OpenAPI spec from JSDoc comments + inline definition               |
+| `swagger-ui-express`          | Serves interactive Swagger UI at `/` and `/api-docs`                         |
+| `socket.io`                   | WebSocket layer for future real-time features (scaffolded)                   |
 | `concurrently`                | Runs API server and judge worker as two parallel `nodemon` processes in dev  |
 | `morgan`                      | HTTP request logger                                                          |
 | `dotenv`                      | Loads `.env` into `process.env`                                              |
+| `cors`                        | Configures allowed origins from `CORS_ORIGIN` env variable                  |
+| `ngrok`                       | (Commented out) Tunnel for exposing local server publicly                    |
 | `child_process` (Node stdlib) | `execFile` to spawn the `docker run` command                                 |
 | `fs/promises` (Node stdlib)   | Async file I/O for writing source files and cleanup                          |
 
@@ -321,14 +482,17 @@ MySQL submissions table
 
 ## Environment Variables (`.env`)
 
-| Key              | Purpose                           |
-| ---------------- | --------------------------------- |
-| `PORT`           | HTTP server port (default `8000`) |
-| `MYSQL_HOST`     | MySQL host                        |
-| `MYSQL_USER`     | MySQL user                        |
-| `MYSQL_PASSWORD` | MySQL password                    |
-| `MYSQL_DB`       | Database name (`codecode_v0`)     |
-| `JWT_SECRET`     | Secret key for signing JWTs       |
-| `JWT_EXPIRES_IN` | JWT expiry (default `7d`)         |
-| `REDIS_PORT`     | Redis port (default `6379`)       |
-| `CORS_ORIGIN`    | Comma-separated allowed origins   |
+| Key                   | Purpose                                             |
+| --------------------- | --------------------------------------------------- |
+| `PORT`                | HTTP server port (default `8000`)                   |
+| `MYSQL_HOST`          | MySQL host                                          |
+| `MYSQL_USER`          | MySQL user                                          |
+| `MYSQL_PASSWORD`      | MySQL password                                      |
+| `MYSQL_DB`            | Database name (`codecode_v0`)                       |
+| `JWT_SECRET`          | Secret key for signing/verifying HTTP JWT cookies   |
+| `JWT_EXPIRES_IN`      | JWT expiry (default `7d`)                           |
+| `ACCESS_TOKEN_SECRET` | Secret key for Socket.IO access tokens              |
+| `REDIS_PORT`          | Redis port (default `6379`)                         |
+| `CORS_ORIGIN`         | Comma-separated allowed origins                     |
+| `OLLAMA_URL`          | Base URL of the local Ollama instance               |
+| `OLLAMA_MODEL`        | Model name to use for the AI assistant (e.g. `gemma3:4b`) |
