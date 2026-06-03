@@ -9,6 +9,7 @@ const checkHealth = asyncHandler(async (req, res) => {
         new ApiResponse(statusCode.OK, 'Server is running!', {
             serverTime: new Date(),
             databaseTime: rows[0]['current_timestamp()'],
+            message: 'To view api documentation, visit /api-docs'
         })
     );
 });

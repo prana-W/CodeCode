@@ -37,7 +37,7 @@ app.use(cookieParser());
 // API Routes
 app.use('/api/', apiLimiter);
 
-app.use('/', swaggerUi.serve, swaggerUi.setup(swaggerDefinition, {customSiteTitle: 'CodeCode API Docs'}));
+app.get('/', checkHealth);
 app.get('/api/v1', checkHealth);
 
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDefinition, {customSiteTitle: 'CodeCode API Docs'}));
