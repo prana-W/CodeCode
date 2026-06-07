@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useOutletContext, useLocation } from 'react-router-dom';
 import { toast } from 'sonner';
 import { RefreshCcw, Loader2, Code2, ListChecks } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -26,13 +26,17 @@ function getVerdictStyle(verdict) {
 
 export default function ContestSubmissionsTab() {
     const { id } = useParams();
+    const location = useLocation();
+    const { problems } = useOutletContext();
     const [submissions, setSubmissions] = useState([]);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
 
-    const fetchSubmissions = useCallback(async (isRefresh = false) => {
+    const autoRefresh = location.state?.autoRefresh;
+
+    const fetchSubmissions = async (isRefresh = false) => {
         if (isRefresh) setRefreshing(true);
-        else setLoading(true);
+        else if (submissions.length === 0) setLoading(true);
 
         try {
             const res = await api.get(`/submissions?contest_id=${id}`);
@@ -43,11 +47,31 @@ export default function ContestSubmissionsTab() {
             setLoading(false);
             setRefreshing(false);
         }
-    }, [id]);
+    };
 
     useEffect(() => {
         fetchSubmissions();
-    }, [fetchSubmissions]);
+        
+        let intervalId;
+        let timeoutId;
+        
+        if (autoRefresh) {
+            // Auto refresh every 5 seconds
+            intervalId = setInterval(() => {
+                fetchSubmissions(true);
+            }, 5000);
+            
+            // Stop auto-refresh after 30 seconds
+            timeoutId = setTimeout(() => {
+                clearInterval(intervalId);
+            }, 30000);
+        }
+        
+        return () => {
+            if (intervalId) clearInterval(intervalId);
+            if (timeoutId) clearTimeout(timeoutId);
+        };
+    }, [id, autoRefresh]);
 
     return (
         <div className="space-y-4">

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { useParams, useNavigate, useOutletContext, useLocation } from 'react-router-dom';
 import { toast } from 'sonner';
 import { Send, Loader2, Code2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -12,38 +12,22 @@ export default function ContestSubmitTab() {
     const { id } = useParams();
     const navigate = useNavigate();
     const location = useLocation();
-    const preselectedProblem = location.state?.preselectProblem || '';
+    const { problems } = useOutletContext();
+    const preselectedProblem = location.state?.preselectedProblem || (problems.length > 0 ? problems[0].problem_id : '');
 
-    const [problems, setProblems] = useState([]);
-    const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
-
     const [form, setForm] = useState({
         problem_id: preselectedProblem,
         language: 'cpp',
         source_code: ''
     });
 
+    // If not preselected, default to the first problem when problems load
     useEffect(() => {
-        const fetchProblems = async () => {
-            setLoading(true);
-            try {
-                const res = await api.get(`/problems?contest_id=${id}`);
-                const data = res.data.data || [];
-                setProblems(data);
-                
-                // If not preselected, default to the first problem
-                if (!preselectedProblem && data.length > 0) {
-                    setForm(prev => ({ ...prev, problem_id: data[0].problem_id }));
-                }
-            } catch (err) {
-                toast.error('Failed to load problems for submission.');
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchProblems();
-    }, [id, preselectedProblem]);
+        if (!preselectedProblem && problems.length > 0) {
+            setForm(prev => ({ ...prev, problem_id: problems[0].problem_id }));
+        }
+    }, [problems, preselectedProblem]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -60,21 +44,13 @@ export default function ContestSubmitTab() {
                 source_code: form.source_code
             });
             toast.success('Code submitted successfully!');
-            navigate(`/contest/${id}/submissions`);
+            navigate(`/contest/${id}/submissions`, { state: { autoRefresh: true } });
         } catch (err) {
             toast.error(err?.response?.data?.message || 'Failed to submit code.');
         } finally {
             setSubmitting(false);
         }
     };
-
-    if (loading) {
-        return (
-            <div className="flex justify-center py-12">
-                <Loader2 className="w-6 h-6 animate-spin text-primary" />
-            </div>
-        );
-    }
 
     if (problems.length === 0) {
         return (

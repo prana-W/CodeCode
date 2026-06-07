@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useOutletContext } from 'react-router-dom';
 import { toast } from 'sonner';
 import { Trophy, FileText, CheckCircle2, Loader2, BarChart2 } from 'lucide-react';
 import api from '@/lib/axios';
@@ -8,26 +8,10 @@ const PROBLEM_LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
 export default function ContestProblemsTab() {
     const { id } = useParams();
+    const { problems } = useOutletContext();
     const navigate = useNavigate();
-    const [problems, setProblems] = useState([]);
     const [countsMap, setCountsMap] = useState({}); // { problem_id: count }
     const [solvedSet, setSolvedSet] = useState(new Set());
-    const [loading, setLoading] = useState(true);
-
-    useEffect(() => {
-        const fetchProblems = async () => {
-            setLoading(true);
-            try {
-                const res = await api.get(`/problems?contest_id=${id}`);
-                setProblems(res.data.data || []);
-            } catch (err) {
-                toast.error('Failed to load problems.');
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchProblems();
-    }, [id]);
 
     useEffect(() => {
         const fetchSolved = async () => {
@@ -62,15 +46,7 @@ export default function ContestProblemsTab() {
         return () => clearInterval(interval);
     }, [id, problems]);
 
-    if (loading) {
-        return (
-            <div className="flex justify-center py-12">
-                <Loader2 className="w-6 h-6 animate-spin text-primary" />
-            </div>
-        );
-    }
-
-    if (problems.length === 0) {
+    if (!problems || problems.length === 0) {
         return (
             <div className="text-center py-16 border border-dashed rounded-xl bg-card">
                 <Trophy className="w-10 h-10 text-muted-foreground/40 mx-auto mb-3" />

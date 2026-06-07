@@ -8,21 +8,26 @@ export default function ContestParticipationLayout() {
     const { id } = useParams();
     const navigate = useNavigate();
     const [contest, setContest] = useState(null);
+    const [problems, setProblems] = useState([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const fetchContest = async () => {
+        const fetchData = async () => {
             setLoading(true);
             try {
-                const res = await api.get(`/contests/${id}`);
-                setContest(res.data.data);
+                const [contestRes, problemsRes] = await Promise.all([
+                    api.get(`/contests/${id}`),
+                    api.get(`/problems?contest_id=${id}`)
+                ]);
+                setContest(contestRes.data.data);
+                setProblems(problemsRes.data.data || []);
             } catch (err) {
                 navigate('/contests');
             } finally {
                 setLoading(false);
             }
         };
-        fetchContest();
+        fetchData();
     }, [id, navigate]);
 
     if (loading) {
@@ -85,7 +90,7 @@ export default function ContestParticipationLayout() {
             </div>
 
             <main className="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 py-8">
-                <Outlet context={{ contest }} />
+                <Outlet context={{ contest, problems }} />
             </main>
         </div>
     );

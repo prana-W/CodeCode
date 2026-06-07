@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useOutletContext } from 'react-router-dom';
 import { toast } from 'sonner';
 import { Trophy, Loader2, RotateCw } from 'lucide-react';
 import api from '@/lib/axios';
@@ -9,19 +9,10 @@ const PROBLEM_LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
 export default function ContestLeaderboardTab() {
     const { id } = useParams();
+    const { problems } = useOutletContext();
     const [leaderboard, setLeaderboard] = useState([]);
-    const [problems, setProblems] = useState([]);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
-
-    const fetchProblems = async () => {
-        try {
-            const res = await api.get(`/problems?contest_id=${id}`);
-            setProblems(res.data.data || []);
-        } catch (err) {
-            // Error handling ignored to not spam toasts
-        }
-    };
 
     const fetchLeaderboard = async (isManual = false) => {
         if (isManual) setRefreshing(true);
@@ -33,14 +24,13 @@ export default function ContestLeaderboardTab() {
             if (isManual) toast.error('Failed to update leaderboard');
         } finally {
             if (isManual) setRefreshing(false);
+            setLoading(false);
         }
     };
 
     useEffect(() => {
         setLoading(true);
-        Promise.all([fetchProblems(), fetchLeaderboard()]).then(() => {
-            setLoading(false);
-        });
+        fetchLeaderboard();
         
         const interval = setInterval(() => {
             fetchLeaderboard();
