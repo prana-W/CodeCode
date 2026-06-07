@@ -33,9 +33,23 @@ class Contest {
 
     static async findAll() {
         const [rows] = await pool.query(
-            `SELECT c.id, c.title, c.authored_by, c.isVerified, c.contest_start_time, c.contest_end_time, u.name AS authored_by_name
+            `SELECT c.id, c.title, c.authored_by, c.division, c.description, c.isVerified, c.contest_start_time, c.contest_end_time, u.name AS authored_by_name
              FROM contests c
              JOIN users u ON c.authored_by = u.id`
+        );
+        return rows;
+    }
+
+    static async findByAuthor(userId) {
+        const [rows] = await pool.query(
+            `SELECT c.id, c.title, c.division, c.description, c.isVerified,
+                    c.contest_start_time, c.contest_end_time, c.contest_evaluation,
+                    c.authored_by, u.name AS authored_by_name
+             FROM contests c
+             JOIN users u ON c.authored_by = u.id
+             WHERE c.authored_by = ?
+             ORDER BY c.created_on DESC`,
+            [userId]
         );
         return rows;
     }

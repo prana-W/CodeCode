@@ -6,6 +6,7 @@ import {
     deleteContest,
     getContestById,
     getAllContests,
+    getMyContests,
     getLeaderboard,
     registerForContest,
     checkRegistration,
@@ -24,6 +25,7 @@ router.use(verifyToken);
 
 router.post('/', contestCreationLimiter, createContest);
 router.get('/', getAllContests);
+router.get('/my', getMyContests);
 router.get('/:id', getContestById);
 router.get('/:id/leaderboard', getLeaderboard);
 router.post('/register', contestRegistrationLimiter, registerForContest);

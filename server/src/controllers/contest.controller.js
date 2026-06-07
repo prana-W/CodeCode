@@ -195,6 +195,19 @@ const getAllContests = asyncHandler(async (req, res) => {
         );
 });
 
+const getMyContests = asyncHandler(async (req, res) => {
+    const contests = await Contest.findByAuthor(req.userId);
+    return res
+        .status(statusCode.OK)
+        .json(
+            new ApiResponse(
+                statusCode.OK,
+                'Your contests fetched.',
+                contests
+            )
+        );
+});
+
 const getLeaderboard = asyncHandler(async (req, res) => {
     const {id} = req.params;
 
@@ -412,6 +425,7 @@ export {
     deleteContest,
     getContestById,
     getAllContests,
+    getMyContests,
     getLeaderboard,
     registerForContest,
     checkRegistration,

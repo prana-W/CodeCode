@@ -118,3 +118,142 @@
         @apply bg-background text-foreground;
     }
 }
+
+/* ── Design Contest: Division badge colors ───────────────────────────── */
+.div-badge-1 { background: oklch(0.65 0.22 25); color: white; }
+.div-badge-2 { background: oklch(0.60 0.20 250); color: white; }
+.div-badge-3 { background: oklch(0.68 0.17 155); color: white; }
+.div-badge-4 { background: oklch(0.62 0.20 300); color: white; }
+.div-badge-5 { background: oklch(0.55 0.03 260); color: white; }
+
+/* ── Status pulse animations ─────────────────────────────────────────── */
+@keyframes status-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+}
+.status-dot {
+    width: 8px; height: 8px;
+    border-radius: 9999px;
+    display: inline-block;
+    flex-shrink: 0;
+}
+.status-upcoming {
+    background: oklch(0.75 0.18 85);
+    animation: status-pulse 2s ease-in-out infinite;
+}
+.status-running {
+    background: oklch(0.72 0.19 145);
+    animation: status-pulse 1.2s ease-in-out infinite;
+}
+.status-past {
+    background: oklch(0.60 0.02 260);
+}
+
+/* ── Contest card hover ──────────────────────────────────────────────── */
+.contest-card {
+    transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+.contest-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px oklch(0 0 0 / 8%);
+}
+
+/* ── Filter tab active underline ─────────────────────────────────────── */
+.filter-tab {
+    position: relative;
+    padding-bottom: 8px;
+    transition: color 0.15s ease;
+}
+.filter-tab::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 2px;
+    background: transparent;
+    border-radius: 1px;
+    transition: background 0.15s ease;
+}
+.filter-tab.active {
+    color: var(--primary);
+}
+.filter-tab.active::after {
+    background: var(--primary);
+}
+
+/* ── Skeleton shimmer ────────────────────────────────────────────────── */
+@keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+}
+.skeleton {
+    background: linear-gradient(90deg,
+        var(--muted) 25%,
+        var(--accent) 50%,
+        var(--muted) 75%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.8s ease-in-out infinite;
+    border-radius: var(--radius);
+}
+
+/* ── Markdown editor overrides ───────────────────────────────────────── */
+.w-md-editor {
+    background-color: var(--card) !important;
+    border-color: var(--border) !important;
+    color: var(--foreground) !important;
+    border-radius: var(--radius) !important;
+}
+.w-md-editor .w-md-editor-toolbar {
+    background-color: var(--secondary) !important;
+    border-color: var(--border) !important;
+}
+.w-md-editor .w-md-editor-toolbar li > button {
+    color: var(--muted-foreground) !important;
+}
+.w-md-editor .w-md-editor-toolbar li > button:hover {
+    color: var(--foreground) !important;
+}
+.w-md-editor-text-pre,
+.w-md-editor-text-input,
+.w-md-editor-text {
+    color: var(--foreground) !important;
+    font-size: 14px !important;
+}
+.wmde-markdown {
+    background-color: var(--card) !important;
+    color: var(--foreground) !important;
+}
+.wmde-markdown code {
+    background-color: var(--muted) !important;
+    color: var(--foreground) !important;
+}
+
+/* ── Breadcrumb styling ──────────────────────────────────────────────── */
+.breadcrumb-link {
+    color: var(--muted-foreground);
+    transition: color 0.15s ease;
+    text-decoration: none;
+    font-size: 0.875rem;
+}
+.breadcrumb-link:hover {
+    color: var(--primary);
+}
+.breadcrumb-sep {
+    color: var(--muted-foreground);
+    margin: 0 0.5rem;
+    font-size: 0.75rem;
+}
+
+/* ── Problem letter badge (A, B, C...) ───────────────────────────────── */
+.problem-letter {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 0.875rem;
+    background: var(--primary);
+    color: var(--primary-foreground);
+    flex-shrink: 0;
+}

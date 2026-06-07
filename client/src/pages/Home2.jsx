@@ -538,14 +538,12 @@ const Home2 = () => {
 
     return (
         <div className="min-h-screen flex flex-col">
-            <Navbar user={user} onLogin={login} onLogout={logout} />
             <main className="flex-1">
                 <HeroHeader user={user} onLogin={login} />
                 <FeaturesSection />
                 <ContestsSection />
                 <DesignContestSection />
             </main>
-            <FooterComponent />
         </div>
     );
 };

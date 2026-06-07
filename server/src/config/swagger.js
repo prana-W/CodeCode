@@ -227,6 +227,29 @@ const swaggerDefinition = {
                 },
             },
         },
+        '/contests/my': {
+            get: {
+                tags: ['Contests'],
+                summary: 'List all contests created by the logged-in user',
+                description:
+                    'Returns all contests authored by the current user, including division, ' +
+                    'description, verification status, and evaluation status. Ordered by creation date (newest first).',
+                responses: {
+                    200: {
+                        description: 'List of user\'s contests',
+                        content: {
+                            'application/json': {
+                                schema: {
+                                    type: 'array',
+                                    items: {$ref: '#/components/schemas/Contest'},
+                                },
+                            },
+                        },
+                    },
+                    401: {description: 'Not authenticated'},
+                },
+            },
+        },
         '/contests/{id}': {
             get: {
                 tags: ['Contests'],

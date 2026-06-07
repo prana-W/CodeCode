@@ -150,6 +150,35 @@ _Note: All endpoints require authentication._
     }
     ```
 
+### 2b. View My Contests
+
+- **Method**: `GET`
+- **Route**: `/my`
+- **Access**: Authenticated. Returns only the contests created by the logged-in user.
+- **Description**: Fetches all contests authored by the current user, including division, description, verification status, and evaluation status. Ordered by creation date (newest first).
+- **Success Response (200 OK)**:
+    ```json
+    {
+        "statusCode": 200,
+        "success": true,
+        "message": "Your contests fetched.",
+        "data": [
+            {
+                "id": 1,
+                "title": "CodeCode Grand Prix Div. 2",
+                "description": "Weekly contest for Div 2 coders",
+                "division": 2,
+                "isVerified": false,
+                "contest_start_time": "2026-06-03T18:00:00.000Z",
+                "contest_end_time": "2026-06-03T20:00:00.000Z",
+                "contest_evaluation": "pending",
+                "authored_by": 1,
+                "authored_by_name": "Alex Mercer"
+            }
+        ]
+    }
+    ```
+
 ### 3. View Particular Contest
 
 - **Method**: `GET`
