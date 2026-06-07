@@ -15,7 +15,7 @@ const createContest = asyncHandler(async (req, res) => {
         );
     }
 
-    const {title, description, contest_start_time, contest_end_time, division} =
+    const {title, description, contest_start_time, contest_end_time, division, ai_assistance} =
         req.body;
 
     if (!title || !contest_start_time || !contest_end_time || !division) {
@@ -46,6 +46,7 @@ const createContest = asyncHandler(async (req, res) => {
         contest_start_time,
         contest_end_time,
         division: Number(division),
+        ai_assistance: !!ai_assistance,
     });
 
     const contest = await Contest.findById(insertId);
@@ -81,6 +82,7 @@ const updateContest = asyncHandler(async (req, res) => {
         division = contest.division,
         contest_start_time = contest.contest_start_time,
         contest_end_time = contest.contest_end_time,
+        ai_assistance = contest.ai_assistance,
     } = req.body;
 
     if (![1, 2, 3, 4, 5].includes(Number(division))) {
@@ -102,6 +104,7 @@ const updateContest = asyncHandler(async (req, res) => {
         division: Number(division),
         contest_start_time,
         contest_end_time,
+        ai_assistance: !!ai_assistance,
     });
 
     const updated = await Contest.findById(id);

@@ -8,9 +8,18 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import api from '@/lib/axios';
 
-export default function HelpPanel() {
+export default function HelpPanel({ contest }) {
+    const isPastEnd = contest && new Date(contest.contest_end_time) < new Date();
+    const allowAI = contest ? (isPastEnd || contest.ai_assistance) : false;
+
     const [isOpen, setIsOpen] = useState(false);
-    const [activeTab, setActiveTab] = useState('ai'); // 'ai' | 'wiki'
+    const [activeTab, setActiveTab] = useState(allowAI ? 'ai' : 'wiki'); // 'ai' | 'wiki'
+
+    useEffect(() => {
+        if (!allowAI && activeTab === 'ai') {
+            setActiveTab('wiki');
+        }
+    }, [allowAI, activeTab]);
 
     // AI Chat State
     const [messages, setMessages] = useState([
@@ -97,16 +106,18 @@ export default function HelpPanel() {
                 >
                     {/* Navigation Tabs */}
                     <div className="flex border-b border-border bg-muted/10 shrink-0">
-                        <button
-                            onClick={() => setActiveTab('ai')}
-                            className={`flex-1 pt-1 pb-2 text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 border-b-2 transition-all ${activeTab === 'ai'
-                                ? 'border-primary text-primary bg-background/50'
-                                : 'border-transparent text-muted-foreground hover:text-foreground'
-                                }`}
-                        >
-                            <Sparkles className="w-3.5 h-3.5" />
-                            AI Assistant
-                        </button>
+                        {!!allowAI && (
+                            <button
+                                onClick={() => setActiveTab('ai')}
+                                className={`flex-1 pt-1 pb-2 text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 border-b-2 transition-all ${activeTab === 'ai'
+                                    ? 'border-primary text-primary bg-background/50'
+                                    : 'border-transparent text-muted-foreground hover:text-foreground'
+                                    }`}
+                            >
+                                <Sparkles className="w-3.5 h-3.5" />
+                                AI Assistant
+                            </button>
+                        )}
                         <button
                             onClick={() => setActiveTab('wiki')}
                             className={`flex-1 pt-1 pb-2 text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 border-b-2 transition-all ${activeTab === 'wiki'
@@ -123,7 +134,7 @@ export default function HelpPanel() {
                     <div className="flex-1 overflow-hidden relative flex flex-col bg-card">
 
                         {/* Tab 1: AI Assistant */}
-                        {activeTab === 'ai' && (
+                        {!!allowAI && activeTab === 'ai' && (
                             <div className="flex-1 flex flex-col overflow-hidden">
                                 <div className="flex-1 overflow-y-auto p-4 space-y-4 min-h-0">
                                     {messages.map((msg, i) => (

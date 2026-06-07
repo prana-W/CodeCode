@@ -8,10 +8,11 @@ class Contest {
         contest_start_time,
         contest_end_time,
         division,
+        ai_assistance,
     }) {
         const [result] = await pool.query(
-            `INSERT INTO contests (title, description, authored_by, contest_start_time, contest_end_time, division)
-             VALUES (?, ?, ?, ?, ?, ?)`,
+            `INSERT INTO contests (title, description, authored_by, contest_start_time, contest_end_time, division, ai_assistance)
+             VALUES (?, ?, ?, ?, ?, ?, ?)`,
             [
                 title,
                 description ?? null,
@@ -19,6 +20,7 @@ class Contest {
                 contest_start_time,
                 contest_end_time,
                 division,
+                ai_assistance ?? false,
             ]
         );
         return result.insertId;
@@ -44,7 +46,7 @@ class Contest {
 
     static async findAll() {
         const [rows] = await pool.query(
-            `SELECT c.id, c.title, c.authored_by, c.division, c.description, c.isVerified, c.contest_start_time, c.contest_end_time, u.name AS authored_by_name
+            `SELECT c.id, c.title, c.authored_by, c.division, c.description, c.isVerified, c.contest_start_time, c.contest_end_time, c.ai_assistance, u.name AS authored_by_name
              FROM contests c
              JOIN users u ON c.authored_by = u.id`
         );
@@ -55,7 +57,7 @@ class Contest {
         const [rows] = await pool.query(
             `SELECT c.id, c.title, c.division, c.description, c.isVerified,
                     c.contest_start_time, c.contest_end_time, c.contest_evaluation,
-                    c.authored_by, u.name AS authored_by_name
+                    c.ai_assistance, c.authored_by, u.name AS authored_by_name
              FROM contests c
              JOIN users u ON c.authored_by = u.id
              WHERE c.authored_by = ?
@@ -67,17 +69,18 @@ class Contest {
 
     static async update(
         id,
-        {description, division, contest_start_time, contest_end_time}
+        {description, division, contest_start_time, contest_end_time, ai_assistance}
     ) {
         const [result] = await pool.query(
             `UPDATE contests
-             SET description = ?, division = ?, contest_start_time = ?, contest_end_time = ?
+             SET description = ?, division = ?, contest_start_time = ?, contest_end_time = ?, ai_assistance = ?
              WHERE id = ?`,
             [
                 description ?? null,
                 division,
                 contest_start_time,
                 contest_end_time,
+                ai_assistance ?? false,
                 id,
             ]
         );

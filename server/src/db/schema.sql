@@ -34,6 +34,8 @@ CREATE TABLE IF NOT EXISTS contests (
     contest_start_time DATETIME NOT NULL,
     contest_end_time DATETIME NOT NULL,
     
+    ai_assistance BOOL DEFAULT FALSE,
+    
     contest_evaluation ENUM(
         'pending',
         'running',

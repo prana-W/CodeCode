@@ -11,6 +11,7 @@ import {
     Clock,
     FileText,
     AlertTriangle,
+    Info,
 } from 'lucide-react';
 import {Button} from '@/components/ui/button';
 import {Input} from '@/components/ui/input';
@@ -37,6 +38,7 @@ export default function ContestEditPage() {
         division: '',
         contest_start_time: '',
         contest_end_time: '',
+        ai_assistance: false,
     });
     const [loading, setLoading] = useState(!isNew);
     const [saving, setSaving] = useState(false);
@@ -71,6 +73,7 @@ export default function ContestEditPage() {
                     contest_end_time: formatForDatetimeLocal(
                         c.contest_end_time
                     ),
+                    ai_assistance: !!c.ai_assistance,
                 });
             } catch (err) {
                 toast.error(
@@ -85,7 +88,7 @@ export default function ContestEditPage() {
     }, [id, isNew, navigate]);
 
     const set = (field) => (e) =>
-        setForm((p) => ({...p, [field]: e?.target?.value ?? e}));
+        setForm((p) => ({...p, [field]: e?.target?.type === 'checkbox' ? e.target.checked : (e?.target?.value ?? e)}));
 
     const validate = () => {
         if (isNew && !form.title.trim()) {
@@ -121,6 +124,7 @@ export default function ContestEditPage() {
                     division: Number(form.division),
                     contest_start_time: form.contest_start_time,
                     contest_end_time: form.contest_end_time,
+                    ai_assistance: form.ai_assistance,
                 });
                 contestId = res.data.data.id;
                 toast.success(`Contest "${form.title}" created!`);
@@ -130,6 +134,7 @@ export default function ContestEditPage() {
                     division: Number(form.division),
                     contest_start_time: form.contest_start_time,
                     contest_end_time: form.contest_end_time,
+                    ai_assistance: form.ai_assistance,
                 });
                 toast.success('Contest updated successfully.');
             }
@@ -319,6 +324,28 @@ export default function ContestEditPage() {
                                 </div>
                             </div>
                         )}
+                    </section>
+
+                    {/* AI Assistance Section */}
+                    <section className="space-y-2">
+                        <div className="flex items-center gap-2">
+                            <input
+                                type="checkbox"
+                                id="ai-assistance"
+                                checked={form.ai_assistance}
+                                onChange={set('ai_assistance')}
+                                className="w-4 h-4 rounded border-border"
+                            />
+                            <Label htmlFor="ai-assistance" className="text-sm font-semibold uppercase tracking-wide flex items-center gap-2 cursor-pointer">
+                                Allow AI Assistance
+                                <div className="group relative flex items-center">
+                                    <Info className="w-4 h-4 text-muted-foreground hover:text-foreground transition-colors" />
+                                    <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 hidden group-hover:block w-48 bg-popover text-popover-foreground text-xs rounded-md shadow-md p-2 z-10 border border-border">
+                                        give users access to Deco, coding assistant tool during the contest
+                                    </div>
+                                </div>
+                            </Label>
+                        </div>
                     </section>
 
                     {/* Schedule Section */}
