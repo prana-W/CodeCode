@@ -143,10 +143,14 @@ export default function ContestSubmissionsTab() {
                                     </td>
                                     <td className="px-6 py-3 text-center">
                                         {(() => {
-                                            const v = getVerdictDetails(sub.verdict);
+                                            const v = getVerdictDetails(
+                                                sub.verdict
+                                            );
                                             return (
-                                                <span className={`inline-flex px-2 py-1 rounded text-xs ${v.colorClass}`}>
-                                                     {v.label}
+                                                <span
+                                                    className={`inline-flex px-2 py-1 rounded text-xs ${v.colorClass}`}
+                                                >
+                                                    {v.label}
                                                 </span>
                                             );
                                         })()}

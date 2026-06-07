@@ -88,7 +88,13 @@ export default function ContestEditPage() {
     }, [id, isNew, navigate]);
 
     const set = (field) => (e) =>
-        setForm((p) => ({...p, [field]: e?.target?.type === 'checkbox' ? e.target.checked : (e?.target?.value ?? e)}));
+        setForm((p) => ({
+            ...p,
+            [field]:
+                e?.target?.type === 'checkbox'
+                    ? e.target.checked
+                    : (e?.target?.value ?? e),
+        }));
 
     const validate = () => {
         if (isNew && !form.title.trim()) {
@@ -336,12 +342,16 @@ export default function ContestEditPage() {
                                 onChange={set('ai_assistance')}
                                 className="w-4 h-4 rounded border-border"
                             />
-                            <Label htmlFor="ai-assistance" className="text-sm font-semibold uppercase tracking-wide flex items-center gap-2 cursor-pointer">
+                            <Label
+                                htmlFor="ai-assistance"
+                                className="text-sm font-semibold uppercase tracking-wide flex items-center gap-2 cursor-pointer"
+                            >
                                 Allow AI Assistance
                                 <div className="group relative flex items-center">
                                     <Info className="w-4 h-4 text-muted-foreground hover:text-foreground transition-colors" />
                                     <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 hidden group-hover:block w-48 bg-popover text-popover-foreground text-xs rounded-md shadow-md p-2 z-10 border border-border">
-                                        give users access to Deco, coding assistant tool during the contest
+                                        give users access to Deco, coding
+                                        assistant tool during the contest
                                     </div>
                                 </div>
                             </Label>

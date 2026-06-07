@@ -145,7 +145,9 @@ function ContestRow({contest, regStatus, onRegister, onUnregister}) {
     const handleRegister = async () => {
         setActing(true);
         try {
-            const res = await api.post('/contests/register', {contest_id: contest.id});
+            const res = await api.post('/contests/register', {
+                contest_id: contest.id,
+            });
             toast.success(`Registered for "${contest.title}"!`);
             onRegister(contest.id, res.data.data);
         } catch (err) {
@@ -221,9 +223,13 @@ function ContestRow({contest, regStatus, onRegister, onUnregister}) {
                             )}
                             {regStatus?.total_registered !== undefined && (
                                 <span className="inline-flex items-center gap-1 text-xs text-muted-foreground font-medium">
-                                    <span className="text-muted-foreground/30">•</span>
+                                    <span className="text-muted-foreground/30">
+                                        •
+                                    </span>
                                     <Users className="w-3.5 h-3.5 text-muted-foreground/60" />
-                                    <span>{regStatus.total_registered} registered</span>
+                                    <span>
+                                        {regStatus.total_registered} registered
+                                    </span>
                                 </span>
                             )}
                         </div>
@@ -382,10 +388,14 @@ export default function ContestsPage() {
             ...prev,
             [contestId]: {
                 is_registered: true,
-                registered_at: regData?.registered_at || new Date().toISOString(),
-                total_registered: regData?.total_registered !== undefined
-                    ? regData.total_registered
-                    : (prev[contestId]?.total_registered !== undefined ? prev[contestId].total_registered + 1 : 1),
+                registered_at:
+                    regData?.registered_at || new Date().toISOString(),
+                total_registered:
+                    regData?.total_registered !== undefined
+                        ? regData.total_registered
+                        : prev[contestId]?.total_registered !== undefined
+                          ? prev[contestId].total_registered + 1
+                          : 1,
             },
         }));
     };
@@ -395,9 +405,10 @@ export default function ContestsPage() {
             ...prev,
             [contestId]: {
                 is_registered: false,
-                total_registered: prev[contestId]?.total_registered !== undefined
-                    ? Math.max(0, prev[contestId].total_registered - 1)
-                    : 0,
+                total_registered:
+                    prev[contestId]?.total_registered !== undefined
+                        ? Math.max(0, prev[contestId].total_registered - 1)
+                        : 0,
             },
         }));
     };

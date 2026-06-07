@@ -101,21 +101,29 @@ export default function EvaluateContestsPage() {
 
         try {
             const response = await api.post(`/contests/${contestId}/finalize`);
-            toast.success(response.data?.message || 'Contest evaluation triggered successfully.');
+            toast.success(
+                response.data?.message ||
+                    'Contest evaluation triggered successfully.'
+            );
             // Update status to 'completed'
             setContests((prev) =>
                 prev.map((c) =>
-                    c.id === contestId ? {...c, contest_evaluation: 'completed'} : c
+                    c.id === contestId
+                        ? {...c, contest_evaluation: 'completed'}
+                        : c
                 )
             );
         } catch (err) {
             toast.error(
-                err?.response?.data?.message || 'Failed to trigger contest evaluation.'
+                err?.response?.data?.message ||
+                    'Failed to trigger contest evaluation.'
             );
             // Revert status to 'pending'
             setContests((prev) =>
                 prev.map((c) =>
-                    c.id === contestId ? {...c, contest_evaluation: 'pending'} : c
+                    c.id === contestId
+                        ? {...c, contest_evaluation: 'pending'}
+                        : c
                 )
             );
         } finally {
@@ -158,7 +166,9 @@ export default function EvaluateContestsPage() {
                     new Date(a.contest_end_time).getTime() -
                     new Date(b.contest_end_time).getTime();
             } else if (sortField === 'status') {
-                cmp = (a.contest_evaluation || '').localeCompare(b.contest_evaluation || '');
+                cmp = (a.contest_evaluation || '').localeCompare(
+                    b.contest_evaluation || ''
+                );
             }
             return sortDir === 'asc' ? cmp : -cmp;
         });
@@ -168,9 +178,12 @@ export default function EvaluateContestsPage() {
 
     const counts = {
         all: contests.length,
-        pending: contests.filter((c) => c.contest_evaluation === 'pending').length,
-        running: contests.filter((c) => c.contest_evaluation === 'running').length,
-        completed: contests.filter((c) => c.contest_evaluation === 'completed').length,
+        pending: contests.filter((c) => c.contest_evaluation === 'pending')
+            .length,
+        running: contests.filter((c) => c.contest_evaluation === 'running')
+            .length,
+        completed: contests.filter((c) => c.contest_evaluation === 'completed')
+            .length,
     };
 
     const SortHeader = ({field, children, className = ''}) => (
@@ -201,7 +214,8 @@ export default function EvaluateContestsPage() {
                                     Admin: Evaluate Contests
                                 </h1>
                                 <p className="text-sm text-muted-foreground mt-0.5">
-                                    Trigger Elo rating updates and finalize results for ended contests.
+                                    Trigger Elo rating updates and finalize
+                                    results for ended contests.
                                 </p>
                             </div>
                         </div>
@@ -212,7 +226,9 @@ export default function EvaluateContestsPage() {
                             disabled={loading}
                             className="gap-1.5"
                         >
-                            <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
+                            <RefreshCw
+                                className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`}
+                            />
                             Refresh
                         </Button>
                     </div>
@@ -305,16 +321,25 @@ export default function EvaluateContestsPage() {
                         <table className="w-full">
                             <thead className="bg-muted/40">
                                 <tr>
-                                    <SortHeader field="title" className="text-left">
+                                    <SortHeader
+                                        field="title"
+                                        className="text-left"
+                                    >
                                         Contest
                                     </SortHeader>
                                     <th className="px-4 py-3 text-center text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                                         Division
                                     </th>
-                                    <SortHeader field="end" className="text-center">
+                                    <SortHeader
+                                        field="end"
+                                        className="text-center"
+                                    >
                                         End Time
                                     </SortHeader>
-                                    <SortHeader field="status" className="text-center">
+                                    <SortHeader
+                                        field="status"
+                                        className="text-center"
+                                    >
                                         Status
                                     </SortHeader>
                                     <th className="px-4 py-3 text-center text-xs font-semibold text-muted-foreground uppercase tracking-wider">
@@ -324,13 +349,20 @@ export default function EvaluateContestsPage() {
                             </thead>
                             <tbody>
                                 {filteredAndSorted.map((c) => {
-                                    const isEvaluating = evaluatingIds.has(c.id) || c.contest_evaluation === 'running';
+                                    const isEvaluating =
+                                        evaluatingIds.has(c.id) ||
+                                        c.contest_evaluation === 'running';
                                     return (
-                                        <tr key={c.id} className="group border-b border-border transition-colors hover:bg-muted/30">
+                                        <tr
+                                            key={c.id}
+                                            className="group border-b border-border transition-colors hover:bg-muted/30"
+                                        >
                                             {/* Contest details */}
                                             <td className="px-4 py-3.5">
                                                 <div className="flex items-center gap-3">
-                                                    <div className={`div-badge-${c.division} flex items-center justify-center w-9 h-9 rounded-lg text-[11px] font-bold shrink-0`}>
+                                                    <div
+                                                        className={`div-badge-${c.division} flex items-center justify-center w-9 h-9 rounded-lg text-[11px] font-bold shrink-0`}
+                                                    >
                                                         D{c.division}
                                                     </div>
                                                     <div className="min-w-0">
@@ -338,7 +370,8 @@ export default function EvaluateContestsPage() {
                                                             {c.title}
                                                         </div>
                                                         <div className="text-xs text-muted-foreground mt-0.5">
-                                                            By {c.authored_by_name}
+                                                            By{' '}
+                                                            {c.authored_by_name}
                                                         </div>
                                                     </div>
                                                 </div>
@@ -354,21 +387,27 @@ export default function EvaluateContestsPage() {
                                             {/* End time */}
                                             <td className="px-4 py-3.5 text-center">
                                                 <div className="text-sm text-foreground">
-                                                    {formatDate(c.contest_end_time)}
+                                                    {formatDate(
+                                                        c.contest_end_time
+                                                    )}
                                                 </div>
                                                 <div className="text-xs text-muted-foreground">
-                                                    {formatTime(c.contest_end_time)}
+                                                    {formatTime(
+                                                        c.contest_end_time
+                                                    )}
                                                 </div>
                                             </td>
 
                                             {/* Evaluation Status */}
                                             <td className="px-4 py-3.5 text-center">
-                                                {c.contest_evaluation === 'completed' ? (
+                                                {c.contest_evaluation ===
+                                                'completed' ? (
                                                     <span className="inline-flex items-center gap-1 text-xs text-green-600 font-medium px-2.5 py-1 bg-green-500/10 rounded-full">
                                                         <CheckCircle2 className="w-3.5 h-3.5" />
                                                         Completed
                                                     </span>
-                                                ) : c.contest_evaluation === 'running' ? (
+                                                ) : c.contest_evaluation ===
+                                                  'running' ? (
                                                     <span className="inline-flex items-center gap-1 text-xs text-blue-600 font-medium px-2.5 py-1 bg-blue-500/10 rounded-full">
                                                         <RefreshCw className="w-3.5 h-3.5 animate-spin" />
                                                         Evaluating
@@ -383,17 +422,23 @@ export default function EvaluateContestsPage() {
 
                                             {/* Action Button */}
                                             <td className="px-4 py-3.5 text-center">
-                                                {c.contest_evaluation === 'pending' ? (
+                                                {c.contest_evaluation ===
+                                                'pending' ? (
                                                     <Button
                                                         size="sm"
-                                                        onClick={() => handleEvaluate(c.id)}
+                                                        onClick={() =>
+                                                            handleEvaluate(c.id)
+                                                        }
                                                         disabled={isEvaluating}
                                                         className="gap-1.5 text-xs font-semibold px-4"
                                                     >
                                                         <Play className="w-3 h-3" />
-                                                        {isEvaluating ? 'Evaluating...' : 'Evaluate'}
+                                                        {isEvaluating
+                                                            ? 'Evaluating...'
+                                                            : 'Evaluate'}
                                                     </Button>
-                                                ) : c.contest_evaluation === 'running' ? (
+                                                ) : c.contest_evaluation ===
+                                                  'running' ? (
                                                     <Button
                                                         size="sm"
                                                         disabled

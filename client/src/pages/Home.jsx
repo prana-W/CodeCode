@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import {useState, useEffect, useRef} from 'react';
+import {useNavigate} from 'react-router-dom';
 import {
     Trophy,
     Users,
@@ -17,10 +17,10 @@ import {
     Star,
     GitCommitHorizontal,
 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import {Button} from '@/components/ui/button';
+import {Card, CardContent} from '@/components/ui/card';
 import api from '@/lib/axios';
-import { useAuth } from '@/context/AuthContext';
+import {useAuth} from '@/context/AuthContext';
 
 // ─── Animated counter hook ──────────────────────────────────────────────────
 
@@ -43,27 +43,35 @@ function useCountUp(target, duration = 1800, start = false) {
 
 // ─── Stat Card ──────────────────────────────────────────────────────────────
 
-function StatCard({ icon: Icon, label, value, color, delay = 0, animate }) {
+function StatCard({icon: Icon, label, value, color, delay = 0, animate}) {
     const count = useCountUp(value, 1600, animate);
-    const textColor = color.split(' ').find(c => c.startsWith('text-')) || '';
+    const textColor = color.split(' ').find((c) => c.startsWith('text-')) || '';
 
     return (
         <div
             className="relative group overflow-hidden rounded-2xl border border-border bg-card p-6 transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
-            style={{ animationDelay: `${delay}ms` }}
+            style={{animationDelay: `${delay}ms`}}
         >
-            <div className={`absolute inset-0 opacity-0 group-hover:opacity-5 transition-opacity duration-300 ${color}`} />
+            <div
+                className={`absolute inset-0 opacity-0 group-hover:opacity-5 transition-opacity duration-300 ${color}`}
+            />
 
             {/* Decorative background icon */}
-            <Icon className={`absolute -bottom-4 -right-4 w-28 h-28 opacity-5 group-hover:opacity-10 transition-opacity duration-300 ${textColor}`} />
+            <Icon
+                className={`absolute -bottom-4 -right-4 w-28 h-28 opacity-5 group-hover:opacity-10 transition-opacity duration-300 ${textColor}`}
+            />
 
-            <div className={`w-12 h-12 rounded-xl ${color} bg-opacity-10 flex items-center justify-center mb-4 relative z-10`}>
+            <div
+                className={`w-12 h-12 rounded-xl ${color} bg-opacity-10 flex items-center justify-center mb-4 relative z-10`}
+            >
                 <Icon className={`w-6 h-6`} />
             </div>
             <p className="text-3xl font-black text-foreground tabular-nums relative z-10">
                 {count.toLocaleString()}
             </p>
-            <p className="text-sm text-muted-foreground font-medium mt-1 relative z-10">{label}</p>
+            <p className="text-sm text-muted-foreground font-medium mt-1 relative z-10">
+                {label}
+            </p>
         </div>
     );
 }
@@ -71,11 +79,11 @@ function StatCard({ icon: Icon, label, value, color, delay = 0, animate }) {
 // ─── Mini heatmap decoration ─────────────────────────────────────────────────
 
 function MiniHeatmap() {
-    const cells = Array.from({ length: 7 * 20 }, (_, i) => {
+    const cells = Array.from({length: 7 * 20}, (_, i) => {
         const rand = Math.random();
         if (rand < 0.45) return 0;
         if (rand < 0.65) return 1;
-        if (rand < 0.80) return 2;
+        if (rand < 0.8) return 2;
         if (rand < 0.92) return 3;
         return 4;
     });
@@ -88,9 +96,9 @@ function MiniHeatmap() {
     ];
     return (
         <div className="flex gap-[3px]">
-            {Array.from({ length: 20 }, (_, col) => (
+            {Array.from({length: 20}, (_, col) => (
                 <div key={col} className="flex flex-col gap-[3px]">
-                    {Array.from({ length: 7 }, (_, row) => (
+                    {Array.from({length: 7}, (_, row) => (
                         <div
                             key={row}
                             className={`w-3 h-3 rounded-[2px] ${colors[cells[col * 7 + row]]}`}
@@ -111,9 +119,15 @@ function MiniRatingChart() {
     const h = 60;
     const w = 160;
     const pad = 4;
-    const xs = points.map((_, i) => pad + (i / (points.length - 1)) * (w - pad * 2));
-    const ys = points.map(p => h - pad - ((p - min) / (max - min)) * (h - pad * 2));
-    const pathD = xs.map((x, i) => `${i === 0 ? 'M' : 'L'}${x},${ys[i]}`).join(' ');
+    const xs = points.map(
+        (_, i) => pad + (i / (points.length - 1)) * (w - pad * 2)
+    );
+    const ys = points.map(
+        (p) => h - pad - ((p - min) / (max - min)) * (h - pad * 2)
+    );
+    const pathD = xs
+        .map((x, i) => `${i === 0 ? 'M' : 'L'}${x},${ys[i]}`)
+        .join(' ');
     const areaD = `${pathD} L${xs[xs.length - 1]},${h} L${xs[0]},${h} Z`;
     return (
         <svg width={w} height={h} className="overflow-visible">
@@ -124,7 +138,14 @@ function MiniRatingChart() {
                 </linearGradient>
             </defs>
             <path d={areaD} fill="url(#rg)" />
-            <path d={pathD} fill="none" stroke="#f97316" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            <path
+                d={pathD}
+                fill="none"
+                stroke="#f97316"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+            />
             {xs.map((x, i) => (
                 <circle key={i} cx={x} cy={ys[i]} r="3" fill="#f97316" />
             ))}
@@ -134,7 +155,7 @@ function MiniRatingChart() {
 
 // ─── Upcoming Contest Card ───────────────────────────────────────────────────
 
-function UpcomingContestCard({ contest }) {
+function UpcomingContestCard({contest}) {
     const navigate = useNavigate();
     const start = new Date(contest.contest_start_time);
     const end = new Date(contest.contest_end_time);
@@ -167,7 +188,9 @@ function UpcomingContestCard({ contest }) {
                 <Trophy className="w-5 h-5 text-primary group-hover:text-primary-foreground" />
             </div>
             <div className="flex-1 min-w-0">
-                <p className="font-semibold text-foreground text-sm truncate">{contest.title}</p>
+                <p className="font-semibold text-foreground text-sm truncate">
+                    {contest.title}
+                </p>
                 <div className="flex items-center gap-3 mt-1 flex-wrap">
                     <span className="text-xs text-muted-foreground flex items-center gap-1">
                         <Clock className="w-3 h-3" />
@@ -186,7 +209,9 @@ function UpcomingContestCard({ contest }) {
                 </div>
             </div>
             <div className="flex flex-col items-end gap-2 shrink-0">
-                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${divColors[contest.division] || 'bg-muted text-muted-foreground border-border'}`}>
+                <span
+                    className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${divColors[contest.division] || 'bg-muted text-muted-foreground border-border'}`}
+                >
                     {contest.division || 'Open'}
                 </span>
                 <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
@@ -197,15 +222,21 @@ function UpcomingContestCard({ contest }) {
 
 // ─── Feature Card ────────────────────────────────────────────────────────────
 
-function FeatureCard({ icon: Icon, title, description, accent, visual }) {
+function FeatureCard({icon: Icon, title, description, accent, visual}) {
     return (
         <div className="group relative overflow-hidden rounded-2xl border border-border bg-card p-6 hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
-            <div className={`absolute top-0 left-0 right-0 h-1 ${accent} opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />
-            <div className={`w-10 h-10 rounded-xl ${accent} bg-opacity-10 flex items-center justify-center mb-4`}>
+            <div
+                className={`absolute top-0 left-0 right-0 h-1 ${accent} opacity-0 group-hover:opacity-100 transition-opacity duration-300`}
+            />
+            <div
+                className={`w-10 h-10 rounded-xl ${accent} bg-opacity-10 flex items-center justify-center mb-4`}
+            >
                 <Icon className="w-5 h-5" />
             </div>
             <h3 className="font-bold text-foreground mb-2">{title}</h3>
-            <p className="text-sm text-muted-foreground leading-relaxed mb-4">{description}</p>
+            <p className="text-sm text-muted-foreground leading-relaxed mb-4">
+                {description}
+            </p>
             {visual && (
                 <div className="mt-2 opacity-70 group-hover:opacity-100 transition-opacity">
                     {visual}
@@ -217,9 +248,9 @@ function FeatureCard({ icon: Icon, title, description, accent, visual }) {
 
 // ─── Hero Section ────────────────────────────────────────────────────────────
 
-function HeroSection({ stats, loading }) {
+function HeroSection({stats, loading}) {
     const navigate = useNavigate();
-    const { user } = useAuth();
+    const {user} = useAuth();
 
     return (
         <section className="relative overflow-hidden min-h-[85vh] flex items-center">
@@ -247,9 +278,10 @@ function HeroSection({ stats, loading }) {
                                 Conquer.
                             </h1>
                             <p className="text-lg text-muted-foreground max-w-md leading-relaxed">
-                                Join a platform built for competitive programmers — with
-                                real-time contests, Elo-based ratings, detailed analytics, and a
-                                community that pushes you to be better.
+                                Join a platform built for competitive
+                                programmers — with real-time contests, Elo-based
+                                ratings, detailed analytics, and a community
+                                that pushes you to be better.
                             </p>
                         </div>
 
@@ -260,7 +292,8 @@ function HeroSection({ stats, loading }) {
                                     className="gap-2 rounded-xl font-bold px-6"
                                     onClick={() => navigate('/contests')}
                                 >
-                                    View Contests <ArrowRight className="w-4 h-4" />
+                                    View Contests{' '}
+                                    <ArrowRight className="w-4 h-4" />
                                 </Button>
                             ) : (
                                 <>
@@ -269,7 +302,8 @@ function HeroSection({ stats, loading }) {
                                         className="gap-2 rounded-xl font-bold px-6"
                                         onClick={() => navigate('/register')}
                                     >
-                                        Get Started <ArrowRight className="w-4 h-4" />
+                                        Get Started{' '}
+                                        <ArrowRight className="w-4 h-4" />
                                     </Button>
                                     <Button
                                         size="lg"
@@ -286,13 +320,32 @@ function HeroSection({ stats, loading }) {
                         {/* Quick stats strip */}
                         <div className="flex flex-wrap gap-6 pt-2">
                             {[
-                                { label: 'Active Users', value: loading ? '...' : stats.totalUsers.toLocaleString() },
-                                { label: 'Contests Held', value: loading ? '...' : stats.totalContests.toLocaleString() },
-                                { label: 'Submissions', value: loading ? '...' : stats.totalSubmissions.toLocaleString() },
+                                {
+                                    label: 'Active Users',
+                                    value: loading
+                                        ? '...'
+                                        : stats.totalUsers.toLocaleString(),
+                                },
+                                {
+                                    label: 'Contests Held',
+                                    value: loading
+                                        ? '...'
+                                        : stats.totalContests.toLocaleString(),
+                                },
+                                {
+                                    label: 'Submissions',
+                                    value: loading
+                                        ? '...'
+                                        : stats.totalSubmissions.toLocaleString(),
+                                },
                             ].map((s) => (
                                 <div key={s.label}>
-                                    <p className="text-2xl font-black text-foreground">{s.value}</p>
-                                    <p className="text-xs text-muted-foreground font-medium">{s.label}</p>
+                                    <p className="text-2xl font-black text-foreground">
+                                        {s.value}
+                                    </p>
+                                    <p className="text-xs text-muted-foreground font-medium">
+                                        {s.label}
+                                    </p>
                                 </div>
                             ))}
                         </div>
@@ -302,7 +355,7 @@ function HeroSection({ stats, loading }) {
                     <div className="relative hidden lg:block">
                         {/* Background glow */}
                         <div className="absolute inset-0 bg-gradient-to-tr from-primary/20 to-emerald-500/20 blur-3xl rounded-full opacity-50" />
-                        
+
                         {/* Editor window */}
                         <div className="relative rounded-2xl border border-border/50 bg-[#0d1117] shadow-2xl overflow-hidden transform transition-transform hover:scale-[1.02] duration-500">
                             {/* Editor header */}
@@ -318,23 +371,75 @@ function HeroSection({ stats, loading }) {
                             </div>
                             {/* Editor content */}
                             <div className="p-6 font-mono text-sm overflow-hidden leading-relaxed select-none">
-                                <div className="text-gray-400">#include &lt;iostream&gt;</div>
-                                <div className="text-gray-400">#include &lt;life.h&gt;</div>
-                                <div className="mt-1 text-purple-400">using namespace <span className="text-gray-200">std;</span></div>
-                                <div className="mt-4 text-blue-400">int <span className="text-yellow-200">main</span><span className="text-gray-200">() {"{"}</span></div>
-                                <div className="pl-4 text-purple-400">bool <span className="text-gray-200">alive = </span><span className="text-orange-400">true</span><span className="text-gray-200">;</span></div>
-                                <div className="mt-4 pl-4 text-purple-400">while <span className="text-gray-200">(alive) {"{"}</span></div>
-                                <div className="pl-8 text-blue-400">eat<span className="text-gray-200">();</span> <span className="text-gray-500">// fuel the body</span></div>
-                                <div className="pl-8 text-blue-400">sleep<span className="text-gray-200">();</span> <span className="text-gray-500">// clear the cache</span></div>
-                                <div className="pl-8 text-blue-400">code<span className="text-gray-200">();</span> <span className="text-gray-500">// change the world</span></div>
-                                <div className="pl-8 text-blue-400">repeat<span className="text-gray-200">();</span></div>
-                                <div className="pl-4 text-gray-200">{"}"}</div>
-                                <div className="mt-4 pl-4 text-purple-400">return <span className="text-orange-400">0</span><span className="text-gray-200">;</span></div>
-                                <div className="text-gray-200">{"}"}</div>
-                                
+                                <div className="text-gray-400">
+                                    #include &lt;iostream&gt;
+                                </div>
+                                <div className="text-gray-400">
+                                    #include &lt;life.h&gt;
+                                </div>
+                                <div className="mt-1 text-purple-400">
+                                    using namespace{' '}
+                                    <span className="text-gray-200">std;</span>
+                                </div>
+                                <div className="mt-4 text-blue-400">
+                                    int{' '}
+                                    <span className="text-yellow-200">
+                                        main
+                                    </span>
+                                    <span className="text-gray-200">
+                                        () {'{'}
+                                    </span>
+                                </div>
+                                <div className="pl-4 text-purple-400">
+                                    bool{' '}
+                                    <span className="text-gray-200">
+                                        alive ={' '}
+                                    </span>
+                                    <span className="text-orange-400">
+                                        true
+                                    </span>
+                                    <span className="text-gray-200">;</span>
+                                </div>
+                                <div className="mt-4 pl-4 text-purple-400">
+                                    while{' '}
+                                    <span className="text-gray-200">
+                                        (alive) {'{'}
+                                    </span>
+                                </div>
+                                <div className="pl-8 text-blue-400">
+                                    eat
+                                    <span className="text-gray-200">();</span>{' '}
+                                    <span className="text-gray-500">
+                                        // fuel the body
+                                    </span>
+                                </div>
+                                <div className="pl-8 text-blue-400">
+                                    sleep
+                                    <span className="text-gray-200">();</span>{' '}
+                                    <span className="text-gray-500">
+                                        // clear the cache
+                                    </span>
+                                </div>
+                                <div className="pl-8 text-blue-400">
+                                    code
+                                    <span className="text-gray-200">();</span>{' '}
+                                    <span className="text-gray-500">
+                                        // change the world
+                                    </span>
+                                </div>
+                                <div className="pl-8 text-blue-400">
+                                    repeat
+                                    <span className="text-gray-200">();</span>
+                                </div>
+                                <div className="pl-4 text-gray-200">{'}'}</div>
+                                <div className="mt-4 pl-4 text-purple-400">
+                                    return{' '}
+                                    <span className="text-orange-400">0</span>
+                                    <span className="text-gray-200">;</span>
+                                </div>
+                                <div className="text-gray-200">{'}'}</div>
                             </div>
                         </div>
-
                     </div>
                 </div>
             </div>
@@ -342,33 +447,61 @@ function HeroSection({ stats, loading }) {
     );
 }
 
-
-function StatsSection({ stats, loading }) {
+function StatsSection({stats, loading}) {
     const ref = useRef(null);
     const [visible, setVisible] = useState(false);
 
     useEffect(() => {
         const observer = new IntersectionObserver(
-            ([entry]) => { if (entry.isIntersecting) setVisible(true); },
-            { threshold: 0.3 }
+            ([entry]) => {
+                if (entry.isIntersecting) setVisible(true);
+            },
+            {threshold: 0.3}
         );
         if (ref.current) observer.observe(ref.current);
         return () => observer.disconnect();
     }, []);
 
     const items = [
-        { icon: Users, label: 'Total Users', value: stats.totalUsers, color: 'bg-blue-500 text-blue-500' },
-        { icon: Trophy, label: 'Contests Held', value: stats.totalContests, color: 'bg-amber-500 text-amber-500' },
-        { icon: Code2, label: 'Problems', value: stats.totalProblems, color: 'bg-purple-500 text-purple-500' },
-        { icon: BarChart2, label: 'Submissions', value: stats.totalSubmissions, color: 'bg-emerald-500 text-emerald-500' },
+        {
+            icon: Users,
+            label: 'Total Users',
+            value: stats.totalUsers,
+            color: 'bg-blue-500 text-blue-500',
+        },
+        {
+            icon: Trophy,
+            label: 'Contests Held',
+            value: stats.totalContests,
+            color: 'bg-amber-500 text-amber-500',
+        },
+        {
+            icon: Code2,
+            label: 'Problems',
+            value: stats.totalProblems,
+            color: 'bg-purple-500 text-purple-500',
+        },
+        {
+            icon: BarChart2,
+            label: 'Submissions',
+            value: stats.totalSubmissions,
+            color: 'bg-emerald-500 text-emerald-500',
+        },
     ];
 
     return (
-        <section className="py-20 px-4 bg-muted/30 border-y border-border" ref={ref}>
+        <section
+            className="py-20 px-4 bg-muted/30 border-y border-border"
+            ref={ref}
+        >
             <div className="max-w-7xl mx-auto">
                 <div className="text-center mb-12">
-                    <p className="text-xs font-bold uppercase tracking-widest text-primary mb-2">Platform Stats</p>
-                    <h2 className="text-3xl font-black text-foreground">Growing Every Day</h2>
+                    <p className="text-xs font-bold uppercase tracking-widest text-primary mb-2">
+                        Platform Stats
+                    </p>
+                    <h2 className="text-3xl font-black text-foreground">
+                        Growing Every Day
+                    </h2>
                 </div>
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
                     {items.map((item, i) => (
@@ -387,7 +520,7 @@ function StatsSection({ stats, loading }) {
 
 // ─── Upcoming Contests Section ───────────────────────────────────────────────
 
-function UpcomingContestsSection({ contests }) {
+function UpcomingContestsSection({contests}) {
     const navigate = useNavigate();
     return (
         <section className="py-20 px-4">
@@ -416,8 +549,12 @@ function UpcomingContestsSection({ contests }) {
                 {contests.length === 0 ? (
                     <div className="text-center py-16 rounded-2xl border border-dashed border-border bg-muted/20">
                         <Calendar className="w-10 h-10 text-muted-foreground/40 mx-auto mb-3" />
-                        <p className="text-muted-foreground font-medium">No upcoming contests this week.</p>
-                        <p className="text-sm text-muted-foreground/60 mt-1">Check back soon or design your own!</p>
+                        <p className="text-muted-foreground font-medium">
+                            No upcoming contests this week.
+                        </p>
+                        <p className="text-sm text-muted-foreground/60 mt-1">
+                            Check back soon or design your own!
+                        </p>
                     </div>
                 ) : (
                     <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -438,39 +575,45 @@ function FeaturesSection() {
         {
             icon: Activity,
             title: 'Submission Heatmap',
-            description: 'Visualize your coding consistency with a GitHub-style activity heatmap. Track daily submissions, build streaks, and see your progress across the entire year.',
+            description:
+                'Visualize your coding consistency with a GitHub-style activity heatmap. Track daily submissions, build streaks, and see your progress across the entire year.',
             accent: 'bg-emerald-500',
             visual: <MiniHeatmap />,
         },
         {
             icon: TrendingUp,
             title: 'Contest Rating Graph',
-            description: 'See your competitive journey at a glance. Every contest you participate in is plotted with your final rating, delta, and rank — just like Codeforces.',
+            description:
+                'See your competitive journey at a glance. Every contest you participate in is plotted with your final rating, delta, and rank — just like Codeforces.',
             accent: 'bg-orange-500',
             visual: <MiniRatingChart />,
         },
         {
             icon: Target,
             title: 'Elo-Based Rating System',
-            description: 'A fair, zero-sum Elo rating system that calculates your performance relative to other participants in every contest. Climb the divisions — Div. 1 through Div. 4.',
+            description:
+                'A fair, zero-sum Elo rating system that calculates your performance relative to other participants in every contest. Climb the divisions — Div. 1 through Div. 4.',
             accent: 'bg-amber-500',
         },
         {
             icon: Zap,
             title: 'Live Online Indicator',
-            description: 'Real-time presence tracking powered by Redis heartbeats. See how many users are active on the platform right now, and whether a user is currently online.',
+            description:
+                'Real-time presence tracking powered by Redis heartbeats. See how many users are active on the platform right now, and whether a user is currently online.',
             accent: 'bg-blue-500',
         },
         {
             icon: GitCommitHorizontal,
             title: 'Streak Tracking',
-            description: 'Stay consistent with current and longest streak tracking. The platform rewards discipline — every day you submit at least one accepted solution counts.',
+            description:
+                'Stay consistent with current and longest streak tracking. The platform rewards discipline — every day you submit at least one accepted solution counts.',
             accent: 'bg-emerald-500',
         },
         {
             icon: Star,
             title: 'AI Assistant',
-            description: 'Get conceptual hints from an in-built AI assistant during contests where AI assistance is enabled by the contest author — never the solution, just the right nudge.',
+            description:
+                'Get conceptual hints from an in-built AI assistant during contests where AI assistance is enabled by the contest author — never the solution, just the right nudge.',
             accent: 'bg-purple-500',
         },
     ];
@@ -486,8 +629,9 @@ function FeaturesSection() {
                         Everything You Need to Compete
                     </h2>
                     <p className="text-muted-foreground max-w-xl mx-auto text-sm leading-relaxed">
-                        Built with competitive programmers in mind. Rich analytics, real-time features,
-                        and a rating system that fairly measures your growth.
+                        Built with competitive programmers in mind. Rich
+                        analytics, real-time features, and a rating system that
+                        fairly measures your growth.
                     </p>
                 </div>
                 <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -504,7 +648,7 @@ function FeaturesSection() {
 
 function CTASection() {
     const navigate = useNavigate();
-    const { user } = useAuth();
+    const {user} = useAuth();
     if (user) return null;
     return (
         <section className="py-20 px-4">
@@ -516,8 +660,9 @@ function CTASection() {
                             Ready to Start Competing?
                         </h2>
                         <p className="text-primary-foreground/80 mb-8 max-w-md mx-auto">
-                            Create a free account and join thousands of programmers
-                            improving their skills one contest at a time.
+                            Create a free account and join thousands of
+                            programmers improving their skills one contest at a
+                            time.
                         </p>
                         <div className="flex flex-wrap gap-3 justify-center">
                             <Button
@@ -526,7 +671,8 @@ function CTASection() {
                                 className="gap-2 rounded-xl font-bold px-8"
                                 onClick={() => navigate('/register')}
                             >
-                                Create Free Account <ArrowRight className="w-4 h-4" />
+                                Create Free Account{' '}
+                                <ArrowRight className="w-4 h-4" />
                             </Button>
                             <Button
                                 size="lg"
@@ -559,7 +705,7 @@ export default function Home() {
     useEffect(() => {
         api.get('/statistics')
             .then((res) => setStats(res.data.data))
-            .catch(() => { }) // non-critical — show zeros
+            .catch(() => {}) // non-critical — show zeros
             .finally(() => setLoading(false));
     }, []);
 
