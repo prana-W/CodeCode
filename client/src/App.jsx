@@ -1,4 +1,6 @@
-import { Home2, NotFound, Login, Register, ContestsPage, ContestListPage, ContestEditPage, ProblemsPage, TestcasesPage, VerifyContestsPage, AdminContestDetailsPage, ContestParticipationLayout, ContestProblemsTab, ContestProblemView, ContestSubmitTab, ContestSubmissionsTab, ContestLeaderboardTab, AboutUs } from './pages/index.js';
+import { Home2, NotFound, Login, Register, ContestsPage, ContestListPage, ContestEditPage, ProblemsPage, TestcasesPage, VerifyContestsPage, AdminContestDetailsPage, ContestParticipationLayout, ContestProblemsTab, ContestProblemView, ContestSubmitTab, ContestSubmissionsTab, ContestLeaderboardTab, AboutUs, UserProfile, UserProfileEdit } from './pages/index.js';
+
+
 import ErrorBoundary from './components/ErrorBoundary.jsx';
 import { ThemeProvider } from "@/components/theme-provider";
 import Layout from './Layout.jsx';
@@ -45,6 +47,22 @@ const router = createBrowserRouter([
                 element: (
                     <ProtectedRoute>
                         <ContestsPage />
+                    </ProtectedRoute>
+                ),
+            },
+            {
+                path: 'user-profile',
+                element: (
+                    <ProtectedRoute>
+                        <UserProfile />
+                    </ProtectedRoute>
+                ),
+            },
+            {
+                path: 'user-profile/edit',
+                element: (
+                    <ProtectedRoute>
+                        <UserProfileEdit />
                     </ProtectedRoute>
                 ),
             },
