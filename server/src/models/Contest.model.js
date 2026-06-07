@@ -118,6 +118,24 @@ class Contest {
         );
         return result;
     }
+
+    static async getUpcomingPublic() {
+        const [rows] = await pool.query(
+            `SELECT c.id, c.title, c.division, c.contest_start_time, c.contest_end_time,
+                    u.name AS authored_by_name,
+                    COUNT(DISTINCT cr.user_id) AS registered_count
+             FROM contests c
+             JOIN users u ON c.authored_by = u.id
+             LEFT JOIN contest_registrations cr ON cr.contest_id = c.id
+             WHERE c.isVerified = 1
+               AND c.contest_start_time > NOW()
+               AND c.contest_start_time <= DATE_ADD(NOW(), INTERVAL 7 DAY)
+             GROUP BY c.id
+             ORDER BY c.contest_start_time ASC
+             LIMIT 10`
+        );
+        return rows;
+    }
 }
 
 export default Contest;

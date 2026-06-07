@@ -10,6 +10,7 @@ import testcaseRouter from './routes/testcase.routes.js';
 import submissionRouter from './routes/submission.routes.js';
 import userRouter from './routes/user.routes.js';
 import aiRouter from './routes/ai.routes.js';
+import statisticsRouter from './routes/statistics.routes.js';
 import morgan from 'morgan';
 import {apiLimiter} from './middlewares/rateLimit.middleware.js';
 import swaggerUi from 'swagger-ui-express';
@@ -53,6 +54,7 @@ app.use('/api/v1/testcases', testcaseRouter);
 app.use('/api/v1/submissions', submissionRouter);
 app.use('/api/v1/users', userRouter);
 app.use('/api/v1/ai', aiRouter);
+app.use('/api/v1/statistics', statisticsRouter);
 
 // Error Handling
 app.use(errorHandler());
