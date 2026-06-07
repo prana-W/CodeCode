@@ -16,6 +16,9 @@ export default function Footer() {
                 </div>
 
                 <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                    <Link to="/about" className="hover:text-foreground transition-colors font-medium">
+                        About Us
+                    </Link>
                     <a
                         href="https://github.com"
                         target="_blank"
