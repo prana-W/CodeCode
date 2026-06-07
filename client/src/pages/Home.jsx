@@ -18,11 +18,8 @@ import {
     GitCommitHorizontal,
 } from 'lucide-react';
 import {Button} from '@/components/ui/button';
-import {Card, CardContent} from '@/components/ui/card';
 import api from '@/lib/axios';
 import {useAuth} from '@/context/AuthContext';
-
-// ─── Animated counter hook ──────────────────────────────────────────────────
 
 function useCountUp(target, duration = 1800, start = false) {
     const [value, setValue] = useState(0);
@@ -41,8 +38,6 @@ function useCountUp(target, duration = 1800, start = false) {
     return value;
 }
 
-// ─── Stat Card ──────────────────────────────────────────────────────────────
-
 function StatCard({icon: Icon, label, value, color, delay = 0, animate}) {
     const count = useCountUp(value, 1600, animate);
     const textColor = color.split(' ').find((c) => c.startsWith('text-')) || '';
@@ -55,18 +50,15 @@ function StatCard({icon: Icon, label, value, color, delay = 0, animate}) {
             <div
                 className={`absolute inset-0 opacity-0 group-hover:opacity-5 transition-opacity duration-300 ${color}`}
             />
-
-            {/* Decorative background icon */}
             <Icon
                 className={`absolute -bottom-4 -right-4 w-28 h-28 opacity-5 group-hover:opacity-10 transition-opacity duration-300 ${textColor}`}
             />
-
             <div
                 className={`w-12 h-12 rounded-xl ${color} bg-opacity-10 flex items-center justify-center mb-4 relative z-10`}
             >
                 <Icon className={`w-6 h-6`} />
             </div>
-            <p className="text-3xl font-black text-foreground tabular-nums relative z-10">
+            <p className="text-3xl font-black text-foreground tabular-nums relative z-10 font-mono">
                 {count.toLocaleString()}
             </p>
             <p className="text-sm text-muted-foreground font-medium mt-1 relative z-10">
@@ -76,10 +68,8 @@ function StatCard({icon: Icon, label, value, color, delay = 0, animate}) {
     );
 }
 
-// ─── Mini heatmap decoration ─────────────────────────────────────────────────
-
 function MiniHeatmap() {
-    const cells = Array.from({length: 7 * 20}, (_, i) => {
+    const cells = Array.from({length: 7 * 20}, () => {
         const rand = Math.random();
         if (rand < 0.45) return 0;
         if (rand < 0.65) return 1;
@@ -109,8 +99,6 @@ function MiniHeatmap() {
         </div>
     );
 }
-
-// ─── Mini Rating Chart decoration ────────────────────────────────────────────
 
 function MiniRatingChart() {
     const points = [800, 950, 900, 1100, 1050, 1250, 1200, 1400, 1380, 1550];
@@ -153,8 +141,6 @@ function MiniRatingChart() {
     );
 }
 
-// ─── Upcoming Contest Card ───────────────────────────────────────────────────
-
 function UpcomingContestCard({contest}) {
     const navigate = useNavigate();
     const start = new Date(contest.contest_start_time);
@@ -168,9 +154,9 @@ function UpcomingContestCard({contest}) {
     const durationHrs = Math.round(durationMs / (1000 * 60 * 60));
 
     let timeLabel;
-    if (diffDays > 0) timeLabel = `Starts in ${diffDays}d ${diffHrs % 24}h`;
-    else if (diffHrs > 0) timeLabel = `Starts in ${diffHrs}h ${diffMins}m`;
-    else timeLabel = `Starts in ${diffMins}m`;
+    if (diffDays > 0) timeLabel = `${diffDays}d ${diffHrs % 24}h`;
+    else if (diffHrs > 0) timeLabel = `${diffHrs}h ${diffMins}m`;
+    else timeLabel = `${diffMins}m`;
 
     const divColors = {
         'Div. 1': 'bg-red-500/10 text-red-500 border-red-500/20',
@@ -191,18 +177,18 @@ function UpcomingContestCard({contest}) {
                 <p className="font-semibold text-foreground text-sm truncate">
                     {contest.title}
                 </p>
-                <div className="flex items-center gap-3 mt-1 flex-wrap">
-                    <span className="text-xs text-muted-foreground flex items-center gap-1">
-                        <Clock className="w-3 h-3" />
-                        {timeLabel}
+                <div className="flex items-center gap-3 mt-1 flex-wrap font-mono text-[10px] text-muted-foreground">
+                    <span className="flex items-center gap-1">
+                        <Clock className="w-3 h-3 shrink-0" />
+                        In {timeLabel}
                     </span>
-                    <span className="text-xs text-muted-foreground flex items-center gap-1">
-                        <Users className="w-3 h-3" />
+                    <span className="flex items-center gap-1">
+                        <Users className="w-3 h-3 shrink-0" />
                         {Number(contest.registered_count)} registered
                     </span>
                     {durationHrs > 0 && (
-                        <span className="text-xs text-muted-foreground flex items-center gap-1">
-                            <Calendar className="w-3 h-3" />
+                        <span className="flex items-center gap-1">
+                            <Calendar className="w-3 h-3 shrink-0" />
                             {durationHrs}h
                         </span>
                     )}
@@ -210,7 +196,7 @@ function UpcomingContestCard({contest}) {
             </div>
             <div className="flex flex-col items-end gap-2 shrink-0">
                 <span
-                    className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${divColors[contest.division] || 'bg-muted text-muted-foreground border-border'}`}
+                    className={`text-[10px] font-bold px-2 py-0.5 rounded-full border font-mono ${divColors[contest.division] || 'bg-muted text-muted-foreground border-border'}`}
                 >
                     {contest.division || 'Open'}
                 </span>
@@ -219,8 +205,6 @@ function UpcomingContestCard({contest}) {
         </div>
     );
 }
-
-// ─── Feature Card ────────────────────────────────────────────────────────────
 
 function FeatureCard({icon: Icon, title, description, accent, visual}) {
     return (
@@ -246,23 +230,18 @@ function FeatureCard({icon: Icon, title, description, accent, visual}) {
     );
 }
 
-// ─── Hero Section ────────────────────────────────────────────────────────────
-
 function HeroSection({stats, loading}) {
     const navigate = useNavigate();
     const {user} = useAuth();
 
     return (
         <section className="relative overflow-hidden min-h-[85vh] flex items-center">
-            {/* Gradient background */}
             <div className="absolute inset-0 bg-gradient-to-br from-background via-background to-primary/5" />
-            {/* Decorative blobs */}
             <div className="absolute top-20 right-10 w-96 h-96 bg-primary/5 rounded-full blur-3xl pointer-events-none" />
             <div className="absolute bottom-20 left-10 w-72 h-72 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none" />
 
             <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-16 w-full">
                 <div className="grid lg:grid-cols-2 gap-16 items-center">
-                    {/* Left side */}
                     <div className="space-y-8">
                         <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-semibold">
                             <Flame className="w-3.5 h-3.5" />
@@ -270,7 +249,7 @@ function HeroSection({stats, loading}) {
                         </div>
 
                         <div className="space-y-4">
-                            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-black tracking-tight text-foreground leading-[1.05]">
+                            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-serif font-bold tracking-tight text-foreground leading-[1.05]">
                                 Code.
                                 <br />
                                 <span className="text-primary">Compete.</span>
@@ -289,7 +268,7 @@ function HeroSection({stats, loading}) {
                             {user ? (
                                 <Button
                                     size="lg"
-                                    className="gap-2 rounded-xl font-bold px-6"
+                                    className="gap-2 rounded-xl font-bold px-6 text-xs uppercase tracking-wider"
                                     onClick={() => navigate('/contests')}
                                 >
                                     View Contests{' '}
@@ -299,7 +278,7 @@ function HeroSection({stats, loading}) {
                                 <>
                                     <Button
                                         size="lg"
-                                        className="gap-2 rounded-xl font-bold px-6"
+                                        className="gap-2 rounded-xl font-bold px-6 text-xs uppercase tracking-wider"
                                         onClick={() => navigate('/register')}
                                     >
                                         Get Started{' '}
@@ -308,7 +287,7 @@ function HeroSection({stats, loading}) {
                                     <Button
                                         size="lg"
                                         variant="outline"
-                                        className="gap-2 rounded-xl font-bold px-6"
+                                        className="gap-2 rounded-xl font-bold px-6 text-xs uppercase tracking-wider"
                                         onClick={() => navigate('/login')}
                                     >
                                         Sign In
@@ -317,8 +296,7 @@ function HeroSection({stats, loading}) {
                             )}
                         </div>
 
-                        {/* Quick stats strip */}
-                        <div className="flex flex-wrap gap-6 pt-2">
+                        <div className="flex flex-wrap gap-6 pt-2 font-mono">
                             {[
                                 {
                                     label: 'Active Users',
@@ -343,7 +321,7 @@ function HeroSection({stats, loading}) {
                                     <p className="text-2xl font-black text-foreground">
                                         {s.value}
                                     </p>
-                                    <p className="text-xs text-muted-foreground font-medium">
+                                    <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mt-0.5">
                                         {s.label}
                                     </p>
                                 </div>
@@ -351,14 +329,10 @@ function HeroSection({stats, loading}) {
                         </div>
                     </div>
 
-                    {/* Right side — Code Editor Mockup */}
                     <div className="relative hidden lg:block">
-                        {/* Background glow */}
                         <div className="absolute inset-0 bg-gradient-to-tr from-primary/20 to-emerald-500/20 blur-3xl rounded-full opacity-50" />
 
-                        {/* Editor window */}
                         <div className="relative rounded-2xl border border-border/50 bg-[#0d1117] shadow-2xl overflow-hidden transform transition-transform hover:scale-[1.02] duration-500">
-                            {/* Editor header */}
                             <div className="flex items-center px-4 py-3 border-b border-white/10 bg-[#161b22]">
                                 <div className="flex gap-2">
                                     <div className="w-3 h-3 rounded-full bg-red-500/80" />
@@ -369,7 +343,6 @@ function HeroSection({stats, loading}) {
                                     <Code2 className="w-3.5 h-3.5" /> main.cpp
                                 </div>
                             </div>
-                            {/* Editor content */}
                             <div className="p-6 font-mono text-sm overflow-hidden leading-relaxed select-none">
                                 <div className="text-gray-400">
                                     #include &lt;iostream&gt;
@@ -408,24 +381,15 @@ function HeroSection({stats, loading}) {
                                 </div>
                                 <div className="pl-8 text-blue-400">
                                     eat
-                                    <span className="text-gray-200">();</span>{' '}
-                                    <span className="text-gray-500">
-                                        // fuel the body
-                                    </span>
+                                    <span className="text-gray-200">();</span>
                                 </div>
                                 <div className="pl-8 text-blue-400">
                                     sleep
-                                    <span className="text-gray-200">();</span>{' '}
-                                    <span className="text-gray-500">
-                                        // clear the cache
-                                    </span>
+                                    <span className="text-gray-200">();</span>
                                 </div>
                                 <div className="pl-8 text-blue-400">
                                     code
-                                    <span className="text-gray-200">();</span>{' '}
-                                    <span className="text-gray-500">
-                                        // change the world
-                                    </span>
+                                    <span className="text-gray-200">();</span>
                                 </div>
                                 <div className="pl-8 text-blue-400">
                                     repeat
@@ -499,7 +463,7 @@ function StatsSection({stats, loading}) {
                     <p className="text-xs font-bold uppercase tracking-widest text-primary mb-2">
                         Platform Stats
                     </p>
-                    <h2 className="text-3xl font-black text-foreground">
+                    <h2 className="text-3xl font-bold font-serif text-foreground">
                         Growing Every Day
                     </h2>
                 </div>
@@ -518,8 +482,6 @@ function StatsSection({stats, loading}) {
     );
 }
 
-// ─── Upcoming Contests Section ───────────────────────────────────────────────
-
 function UpcomingContestsSection({contests}) {
     const navigate = useNavigate();
     return (
@@ -530,7 +492,7 @@ function UpcomingContestsSection({contests}) {
                         <p className="text-xs font-bold uppercase tracking-widest text-primary mb-2">
                             Upcoming
                         </p>
-                        <h2 className="text-3xl font-black text-foreground">
+                        <h2 className="text-3xl font-serif font-bold text-foreground">
                             Contests This Week
                         </h2>
                         <p className="text-muted-foreground mt-1 text-sm">
@@ -539,7 +501,7 @@ function UpcomingContestsSection({contests}) {
                     </div>
                     <Button
                         variant="outline"
-                        className="gap-2 rounded-xl"
+                        className="gap-2 rounded-xl text-xs font-semibold uppercase tracking-wider"
                         onClick={() => navigate('/contests')}
                     >
                         View All <ArrowRight className="w-4 h-4" />
@@ -567,8 +529,6 @@ function UpcomingContestsSection({contests}) {
         </section>
     );
 }
-
-// ─── Features Section ────────────────────────────────────────────────────────
 
 function FeaturesSection() {
     const features = [
@@ -625,7 +585,7 @@ function FeaturesSection() {
                     <p className="text-xs font-bold uppercase tracking-widest text-primary mb-2">
                         Features
                     </p>
-                    <h2 className="text-3xl font-black text-foreground mb-3">
+                    <h2 className="text-3xl font-serif font-bold text-foreground mb-3">
                         Everything You Need to Compete
                     </h2>
                     <p className="text-muted-foreground max-w-xl mx-auto text-sm leading-relaxed">
@@ -644,8 +604,6 @@ function FeaturesSection() {
     );
 }
 
-// ─── CTA Banner ──────────────────────────────────────────────────────────────
-
 function CTASection() {
     const navigate = useNavigate();
     const {user} = useAuth();
@@ -656,10 +614,10 @@ function CTASection() {
                 <div className="relative overflow-hidden rounded-3xl bg-primary px-8 py-14 text-center shadow-2xl shadow-primary/20">
                     <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_rgba(255,255,255,0.1),_transparent)]" />
                     <div className="relative">
-                        <h2 className="text-3xl sm:text-4xl font-black text-primary-foreground mb-4">
+                        <h2 className="text-3xl sm:text-4xl font-serif font-bold text-primary-foreground mb-4">
                             Ready to Start Competing?
                         </h2>
-                        <p className="text-primary-foreground/80 mb-8 max-w-md mx-auto">
+                        <p className="text-primary-foreground/80 mb-8 max-w-md mx-auto text-sm">
                             Create a free account and join thousands of
                             programmers improving their skills one contest at a
                             time.
@@ -668,7 +626,7 @@ function CTASection() {
                             <Button
                                 size="lg"
                                 variant="secondary"
-                                className="gap-2 rounded-xl font-bold px-8"
+                                className="gap-2 rounded-xl font-bold px-8 text-xs uppercase tracking-wider"
                                 onClick={() => navigate('/register')}
                             >
                                 Create Free Account{' '}
@@ -677,7 +635,7 @@ function CTASection() {
                             <Button
                                 size="lg"
                                 variant="ghost"
-                                className="gap-2 rounded-xl font-bold px-8 text-primary-foreground hover:text-primary-foreground hover:bg-white/10"
+                                className="gap-2 rounded-xl font-bold px-8 text-xs uppercase tracking-wider text-primary-foreground hover:text-primary-foreground hover:bg-white/10"
                                 onClick={() => navigate('/login')}
                             >
                                 Sign In
@@ -689,8 +647,6 @@ function CTASection() {
         </section>
     );
 }
-
-// ─── Home Page ────────────────────────────────────────────────────────────────
 
 export default function Home() {
     const [stats, setStats] = useState({
@@ -705,7 +661,7 @@ export default function Home() {
     useEffect(() => {
         api.get('/statistics')
             .then((res) => setStats(res.data.data))
-            .catch(() => {}) // non-critical — show zeros
+            .catch(() => {})
             .finally(() => setLoading(false));
     }, []);
 

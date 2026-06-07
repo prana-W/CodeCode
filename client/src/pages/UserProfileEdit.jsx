@@ -5,9 +5,6 @@ import {
     User as UserIcon,
     Mail,
     Building2,
-    TrendingUp,
-    Trophy,
-    Shield,
     Loader2,
     Save,
     AtSign,
@@ -18,9 +15,6 @@ import {Input} from '@/components/ui/input';
 import {Label} from '@/components/ui/label';
 import {
     Card,
-    CardHeader,
-    CardTitle,
-    CardDescription,
     CardContent,
     CardFooter,
 } from '@/components/ui/card';
@@ -64,7 +58,6 @@ export default function UserProfileEdit() {
                 const data = res.data.data;
                 setProfile(data);
 
-                // Initialize form values
                 const isPredefined = topInstitutes.includes(
                     data.institute || ''
                 );
@@ -116,14 +109,12 @@ export default function UserProfileEdit() {
             return;
         }
 
-        // Simple email regex
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(form.email)) {
             toast.error('Please enter a valid email address.');
             return;
         }
 
-        // Determine actual institute to send to server
         let finalInstitute = '';
         if (form.institute === 'Other') {
             finalInstitute = form.customInstitute.trim();
@@ -141,7 +132,6 @@ export default function UserProfileEdit() {
 
             const updatedProfile = res.data.data;
 
-            // Update AuthContext state & localStorage
             const updatedUserData = {...user, ...updatedProfile};
             setUser(updatedUserData);
             localStorage.setItem('user', JSON.stringify(updatedUserData));
@@ -185,14 +175,13 @@ export default function UserProfileEdit() {
     return (
         <div className="min-h-screen bg-background py-8">
             <div className="max-w-3xl mx-auto px-4 sm:px-6">
-                {/* Profile Title Header */}
                 <div className="flex items-center justify-between mb-8">
                     <div className="flex items-center gap-3">
                         <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-primary/10">
                             <UserIcon className="w-5 h-5 text-primary" />
                         </div>
                         <div>
-                            <h1 className="text-2xl font-bold tracking-tight text-foreground">
+                            <h1 className="text-2xl font-serif font-bold tracking-tight text-foreground">
                                 Edit Profile
                             </h1>
                             <p className="text-sm text-muted-foreground">
@@ -206,16 +195,14 @@ export default function UserProfileEdit() {
                         onClick={() =>
                             navigate(`/user-profile/${user.username}`)
                         }
-                        className="gap-1.5 text-xs text-muted-foreground hover:text-foreground"
+                        className="gap-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground hover:text-foreground"
                     >
                         <ArrowLeft className="w-4 h-4" />
                         Back to Profile
                     </Button>
                 </div>
 
-                {/* Single Large Card */}
                 <Card className="border-border overflow-hidden">
-                    {/* Top User Info summary (Not editable section) */}
                     <div className="bg-muted/30 p-6 border-b border-border flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6 text-center sm:text-left">
                         <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
                             <UserIcon className="w-10 h-10 text-primary" />
@@ -241,9 +228,7 @@ export default function UserProfileEdit() {
                     <form onSubmit={handleSubmit}>
                         <CardContent className="p-6 space-y-6">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                {/* Left form column: Name & Email */}
                                 <div className="space-y-4">
-                                    {/* Username (Disabled) */}
                                     <div className="space-y-1.5">
                                         <Label
                                             htmlFor="profile-username"
@@ -263,7 +248,6 @@ export default function UserProfileEdit() {
                                         </div>
                                     </div>
 
-                                    {/* Full Name */}
                                     <div className="space-y-1.5">
                                         <Label
                                             htmlFor="profile-name"
@@ -289,9 +273,7 @@ export default function UserProfileEdit() {
                                     </div>
                                 </div>
 
-                                {/* Right form column: Email & Institute */}
                                 <div className="space-y-4">
-                                    {/* Email Address */}
                                     <div className="space-y-1.5">
                                         <Label
                                             htmlFor="profile-email"
@@ -316,7 +298,6 @@ export default function UserProfileEdit() {
                                         </div>
                                     </div>
 
-                                    {/* Institute */}
                                     <div className="space-y-1.5">
                                         <Label
                                             htmlFor="profile-institute"
@@ -358,7 +339,6 @@ export default function UserProfileEdit() {
                                         </div>
                                     </div>
 
-                                    {/* Custom Institute (Text Input) */}
                                     {showCustomInstitute && (
                                         <div className="space-y-1.5 animate-in fade-in slide-in-from-top-1 duration-200">
                                             <Label
@@ -389,6 +369,7 @@ export default function UserProfileEdit() {
                             <Button
                                 type="button"
                                 variant="outline"
+                                className="text-xs font-semibold uppercase tracking-wider px-6"
                                 onClick={() =>
                                     navigate(`/user-profile/${user.username}`)
                                 }
@@ -398,7 +379,7 @@ export default function UserProfileEdit() {
                             </Button>
                             <Button
                                 type="submit"
-                                className="gap-2"
+                                className="gap-2 text-xs font-semibold uppercase tracking-wider px-6"
                                 disabled={updating}
                             >
                                 {updating ? (

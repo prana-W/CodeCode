@@ -328,7 +328,7 @@
 /* Running — primary green */
 .status-running {
     background: var(--primary);
-    animation: status-pulse 1.3s ease-in-out infinite;
+    /* animation: status-pulse 1.3s ease-in-out infinite; */
 }
 /* Past — muted, no animation */
 .status-past {

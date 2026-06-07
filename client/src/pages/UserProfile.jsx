@@ -11,8 +11,6 @@ import {
     Loader2,
     Edit3,
     AtSign,
-    CheckCircle2,
-    Code2,
 } from 'lucide-react';
 import {Button} from '@/components/ui/button';
 import {Card, CardContent, CardFooter} from '@/components/ui/card';
@@ -37,7 +35,6 @@ export default function UserProfile() {
     const [activityLoading, setActivityLoading] = useState(true);
     const [activityYear, setActivityYear] = useState(new Date().getFullYear());
 
-    // ── fetch profile ──────────────────────────────────────────────────────
     useEffect(() => {
         const fetch = async () => {
             if (!username) return;
@@ -56,7 +53,6 @@ export default function UserProfile() {
         fetch();
     }, [username]);
 
-    // ── fetch contest history ──────────────────────────────────────────────
     useEffect(() => {
         const fetch = async () => {
             if (!username) return;
@@ -67,7 +63,6 @@ export default function UserProfile() {
                 );
                 setHistory(res.data.data || []);
             } catch {
-                // silent — graph shows empty state
             } finally {
                 setHistoryLoading(false);
             }
@@ -75,7 +70,6 @@ export default function UserProfile() {
         fetch();
     }, [username]);
 
-    // ── fetch activity stats (year-aware) ──────────────────────────────────
     useEffect(() => {
         const fetch = async () => {
             if (!username) return;
@@ -86,7 +80,6 @@ export default function UserProfile() {
                 );
                 setActivityStats(res.data.data);
             } catch {
-                // silent
             } finally {
                 setActivityLoading(false);
             }
@@ -94,7 +87,6 @@ export default function UserProfile() {
         fetch();
     }, [username, activityYear]);
 
-    // ── loading / not-found states ─────────────────────────────────────────
     if (loading) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-background">
@@ -123,13 +115,12 @@ export default function UserProfile() {
     return (
         <div className="min-h-screen bg-background py-8">
             <div className="max-w-6xl mx-auto px-4 sm:px-6 space-y-6">
-                {/* ── page header ── */}
                 <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
                         <UserIcon className="w-5 h-5 text-primary" />
                     </div>
                     <div>
-                        <h1 className="text-2xl font-bold tracking-tight text-foreground">
+                        <h1 className="text-2xl font-serif font-bold tracking-tight text-foreground">
                             User Profile
                         </h1>
                         <p className="text-sm text-muted-foreground">
@@ -138,9 +129,7 @@ export default function UserProfile() {
                     </div>
                 </div>
 
-                {/* ── profile card ── */}
                 <Card className="border-border overflow-hidden">
-                    {/* banner */}
                     <div className="bg-muted/30 p-6 border-b border-border flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6 text-center sm:text-left">
                         <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
                             <UserIcon className="w-10 h-10 text-primary" />
@@ -181,11 +170,9 @@ export default function UserProfile() {
                         </div>
                     </div>
 
-                    {/* body: 2-column grid on md+ */}
                     <CardContent className="p-6 grid grid-cols-1 md:grid-cols-2 gap-8">
-                        {/* col 1 — account info */}
                         <div className="space-y-4">
-                            <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground/80 border-b border-border/40 pb-1">
+                            <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground/80 border-b border-border/40 pb-1">
                                 Account Information
                             </h3>
                             <div className="flex flex-col gap-1">
@@ -225,9 +212,8 @@ export default function UserProfile() {
                             )}
                         </div>
 
-                        {/* col 2 — rating */}
                         <div className="space-y-4">
-                            <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground/80 border-b border-border/40 pb-1">
+                            <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground/80 border-b border-border/40 pb-1">
                                 Rating &amp; Stats
                             </h3>
                             <div className="flex items-center justify-between border border-border/40 p-3.5 rounded-lg bg-muted/10">
@@ -236,7 +222,7 @@ export default function UserProfile() {
                                     Current Rating
                                 </span>
                                 <span
-                                    className={`font-extrabold text-2xl ${rank.colorClass}`}
+                                    className={`font-mono font-bold text-2xl ${rank.colorClass}`}
                                 >
                                     {profile.rating || 0}
                                 </span>
@@ -246,7 +232,7 @@ export default function UserProfile() {
                                     <Trophy className="w-4 h-4 text-amber-500" />
                                     Max Rating
                                 </span>
-                                <span className="font-extrabold text-2xl text-foreground">
+                                <span className="font-mono font-bold text-2xl text-foreground">
                                     {profile.max_rating || 0}
                                 </span>
                             </div>
@@ -257,7 +243,7 @@ export default function UserProfile() {
                         <CardFooter className="flex justify-end border-t border-border p-4 bg-muted/5">
                             <Button
                                 onClick={() => navigate('/user-profile/edit')}
-                                className="gap-2"
+                                className="gap-2 text-xs font-semibold uppercase tracking-wider px-6"
                             >
                                 <Edit3 className="w-4 h-4" />
                                 Update Profile
@@ -266,10 +252,8 @@ export default function UserProfile() {
                     )}
                 </Card>
 
-                {/* ── rating history graph ── */}
                 <RatingGraph history={history} loading={historyLoading} />
 
-                {/* ── activity heatmap ── */}
                 <ActivityHeatmap
                     stats={activityStats}
                     loading={activityLoading}

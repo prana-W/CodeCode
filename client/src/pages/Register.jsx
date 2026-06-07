@@ -26,6 +26,27 @@ import AuthBrand from '@/components/auth/AuthBrand';
 import {useAuth} from '@/context/AuthContext';
 import {INSTITUTES} from '@/constants/institutes';
 
+function getPasswordStrength(password) {
+    if (!password) return { score: 0, label: '', color: 'bg-muted', textColor: 'text-muted-foreground' };
+    let score = 0;
+    if (password.length >= 8) score++;
+    if (/[A-Z]/.test(password)) score++;
+    if (/[a-z]/.test(password)) score++;
+    if (/[0-9]/.test(password)) score++;
+    if (/[^A-Za-z0-9]/.test(password)) score++;
+
+    const finalScore = Math.min(score, 4);
+    
+    const strengthMap = [
+        { label: 'Very Weak', color: 'bg-red-500', textColor: 'text-red-500' },
+        { label: 'Weak', color: 'bg-orange-500', textColor: 'text-orange-500' },
+        { label: 'Medium', color: 'bg-yellow-500', textColor: 'text-yellow-500' },
+        { label: 'Strong', color: 'bg-blue-500', textColor: 'text-blue-500' },
+        { label: 'Very Strong', color: 'bg-emerald-500', textColor: 'text-emerald-500' },
+    ];
+    return { ...strengthMap[finalScore], score: finalScore };
+}
+
 export default function Register() {
     const navigate = useNavigate();
     const {register} = useAuth();
@@ -72,7 +93,6 @@ export default function Register() {
         }
 
         const payload = {username, name, email, password};
-        // institute is optional — only include if the user selected one
         if (institute) payload.institute = institute;
 
         setLoading(true);
@@ -90,19 +110,16 @@ export default function Register() {
         }
     };
 
-    // Split institutes: top institutes vs "Other"
     const topInstitutes = INSTITUTES.filter((i) => i !== 'Other');
     const otherOption = 'Other';
+    const strength = getPasswordStrength(form.password);
 
     return (
         <div className="min-h-screen flex bg-background">
-            {/* Left: brand panel */}
             <AuthBrand />
 
-            {/* Right: form (scrollable for smaller viewports) */}
             <div className="flex-1 flex items-start justify-center px-8 py-12 overflow-y-auto">
                 <div className="w-full max-w-md space-y-8">
-                    {/* Mobile-only logo */}
                     <div className="flex items-center gap-2 lg:hidden">
                         <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary">
                             <Code2 className="w-4 h-4 text-primary-foreground" />
@@ -112,9 +129,8 @@ export default function Register() {
                         </span>
                     </div>
 
-                    {/* Heading */}
                     <div className="space-y-1.5">
-                        <h1 className="text-3xl font-bold tracking-tight text-foreground">
+                        <h1 className="text-3xl font-serif font-bold tracking-tight text-foreground">
                             Create your account
                         </h1>
                         <p className="text-muted-foreground">
@@ -122,15 +138,12 @@ export default function Register() {
                         </p>
                     </div>
 
-                    {/* Form */}
                     <form
                         onSubmit={handleSubmit}
                         className="space-y-5"
                         noValidate
                     >
-                        {/* Username + Full name — 2 columns */}
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            {/* Username */}
                             <div className="space-y-2">
                                 <Label htmlFor="reg-username">
                                     Username{' '}
@@ -146,12 +159,11 @@ export default function Register() {
                                         placeholder="coder_x"
                                         value={form.username}
                                         onChange={handleChange}
-                                        className="pl-10"
+                                        className="pl-10 shadow-sm"
                                     />
                                 </div>
                             </div>
 
-                            {/* Full name */}
                             <div className="space-y-2">
                                 <Label htmlFor="reg-name">
                                     Full name{' '}
@@ -167,13 +179,12 @@ export default function Register() {
                                         placeholder="Alex Mercer"
                                         value={form.name}
                                         onChange={handleChange}
-                                        className="pl-10"
+                                        className="pl-10 shadow-sm"
                                     />
                                 </div>
                             </div>
                         </div>
 
-                        {/* Email */}
                         <div className="space-y-2">
                             <Label htmlFor="reg-email">
                                 Email address{' '}
@@ -189,12 +200,11 @@ export default function Register() {
                                     placeholder="you@example.com"
                                     value={form.email}
                                     onChange={handleChange}
-                                    className="pl-10"
+                                    className="pl-10 shadow-sm"
                                 />
                             </div>
                         </div>
 
-                        {/* Institute (optional) */}
                         <div className="space-y-2">
                             <Label htmlFor="reg-institute">
                                 Institute{' '}
@@ -210,7 +220,7 @@ export default function Register() {
                                 >
                                     <SelectTrigger
                                         id="reg-institute"
-                                        className="pl-10"
+                                        className="pl-10 shadow-sm"
                                     >
                                         <SelectValue placeholder="Select your institute" />
                                     </SelectTrigger>
@@ -229,109 +239,121 @@ export default function Register() {
                             </div>
                         </div>
 
-                        {/* Password + Confirm Password — 2 columns */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            {/* Password */}
-                            <div className="space-y-2">
-                                <Label htmlFor="reg-password">
-                                    Password{' '}
-                                    <span className="text-destructive">*</span>
-                                </Label>
-                                <div className="relative">
-                                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
-                                    <Input
-                                        id="reg-password"
-                                        name="password"
-                                        type={
-                                            showPassword ? 'text' : 'password'
-                                        }
-                                        autoComplete="new-password"
-                                        placeholder="••••••••"
-                                        value={form.password}
-                                        onChange={handleChange}
-                                        className="pl-10 pr-10"
-                                    />
-                                    <button
-                                        type="button"
-                                        aria-label={
-                                            showPassword
-                                                ? 'Hide password'
-                                                : 'Show password'
-                                        }
-                                        onClick={() =>
-                                            setShowPassword((v) => !v)
-                                        }
-                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                                    >
-                                        {showPassword ? (
-                                            <EyeOff className="w-4 h-4" />
-                                        ) : (
-                                            <Eye className="w-4 h-4" />
-                                        )}
-                                    </button>
-                                </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="reg-password">
+                                Password{' '}
+                                <span className="text-destructive">*</span>
+                            </Label>
+                            <div className="relative">
+                                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+                                <Input
+                                    id="reg-password"
+                                    name="password"
+                                    type={
+                                        showPassword ? 'text' : 'password'
+                                    }
+                                    autoComplete="new-password"
+                                    placeholder="••••••••"
+                                    value={form.password}
+                                    onChange={handleChange}
+                                    className="pl-10 pr-10 shadow-sm"
+                                />
+                                <button
+                                    type="button"
+                                    aria-label={
+                                        showPassword
+                                            ? 'Hide password'
+                                            : 'Show password'
+                                    }
+                                    onClick={() =>
+                                        setShowPassword((v) => !v)
+                                    }
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                                >
+                                    {showPassword ? (
+                                        <EyeOff className="w-4 h-4" />
+                                    ) : (
+                                        <Eye className="w-4 h-4" />
+                                    )}
+                                </button>
                             </div>
 
-                            {/* Confirm Password */}
-                            <div className="space-y-2">
-                                <Label htmlFor="reg-confirm-password">
-                                    Confirm{' '}
-                                    <span className="text-destructive">*</span>
-                                </Label>
-                                <div className="relative">
-                                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
-                                    <Input
-                                        id="reg-confirm-password"
-                                        name="confirmPassword"
-                                        type={
-                                            showConfirmPassword
-                                                ? 'text'
-                                                : 'password'
-                                        }
-                                        autoComplete="new-password"
-                                        placeholder="••••••••"
-                                        value={form.confirmPassword}
-                                        onChange={handleChange}
-                                        className="pl-10 pr-10"
-                                    />
-                                    <button
-                                        type="button"
-                                        aria-label={
-                                            showConfirmPassword
-                                                ? 'Hide password'
-                                                : 'Show password'
-                                        }
-                                        onClick={() =>
-                                            setShowConfirmPassword((v) => !v)
-                                        }
-                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                                    >
-                                        {showConfirmPassword ? (
-                                            <EyeOff className="w-4 h-4" />
-                                        ) : (
-                                            <Eye className="w-4 h-4" />
-                                        )}
-                                    </button>
+                            {form.password && (
+                                <div className="space-y-1.5 pt-1.5 animate-in fade-in slide-in-from-top-1 duration-200">
+                                    <div className="flex justify-between items-center text-[10px] font-semibold uppercase tracking-wider">
+                                        <span className="text-muted-foreground">Strength</span>
+                                        <span className={strength.textColor}>{strength.label}</span>
+                                    </div>
+                                    <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden flex gap-0.5">
+                                        {Array.from({length: 5}).map((_, i) => (
+                                            <div
+                                                key={i}
+                                                className={`h-full flex-1 transition-all duration-300 ${
+                                                    i <= strength.score ? strength.color : 'bg-muted/40'
+                                                }`}
+                                            />
+                                        ))}
+                                    </div>
                                 </div>
+                            )}
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label htmlFor="reg-confirm-password">
+                                Confirm Password{' '}
+                                <span className="text-destructive">*</span>
+                            </Label>
+                            <div className="relative">
+                                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+                                <Input
+                                    id="reg-confirm-password"
+                                    name="confirmPassword"
+                                    type={
+                                        showConfirmPassword
+                                            ? 'text'
+                                            : 'password'
+                                    }
+                                    autoComplete="new-password"
+                                    placeholder="••••••••"
+                                    value={form.confirmPassword}
+                                    onChange={handleChange}
+                                    className="pl-10 pr-10 shadow-sm"
+                                />
+                                <button
+                                    type="button"
+                                    aria-label={
+                                        showConfirmPassword
+                                            ? 'Hide password'
+                                            : 'Show password'
+                                    }
+                                    onClick={() =>
+                                        setShowConfirmPassword((v) => !v)
+                                    }
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                                >
+                                    {showConfirmPassword ? (
+                                        <EyeOff className="w-4 h-4" />
+                                    ) : (
+                                        <Eye className="w-4 h-4" />
+                                    )}
+                                </button>
                             </div>
                         </div>
 
-                        {/* Password hint */}
-                        <p className="text-xs text-muted-foreground -mt-2">
+                        <p className="text-[10px] text-muted-foreground">
                             Minimum 8 characters required.
                         </p>
 
                         <Button
                             id="register-submit"
                             type="submit"
-                            className="w-full"
+                            className="w-full text-xs font-semibold uppercase tracking-wider py-5 shadow-sm"
                             disabled={loading}
                         >
                             {loading ? 'Creating account…' : 'Create Account'}
                         </Button>
                     </form>
 
-                    {/* Divider */}
                     <div className="relative">
                         <div className="absolute inset-0 flex items-center">
                             <div className="w-full border-t border-border" />

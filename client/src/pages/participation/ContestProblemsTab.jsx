@@ -19,9 +19,7 @@ export default function ContestProblemsTab() {
                     `/submissions/solved?contest_id=${id}`
                 );
                 setSolvedSet(new Set(res.data.data || []));
-            } catch (err) {
-                // silent fail
-            }
+            } catch (err) {}
         };
         fetchSolved();
     }, [id]);
@@ -39,9 +37,7 @@ export default function ContestProblemsTab() {
                     newMap[item.problem_id] = item.total_submissions;
                 });
                 setCountsMap(newMap);
-            } catch (err) {
-                // silent fail
-            }
+            } catch (err) {}
         };
 
         fetchCounts();

@@ -44,13 +44,10 @@ export default function Login() {
 
     return (
         <div className="min-h-screen flex bg-background">
-            {/* Left: brand panel */}
             <AuthBrand />
 
-            {/* Right: form */}
             <div className="flex-1 flex items-center justify-center px-8 py-12">
                 <div className="w-full max-w-md space-y-8">
-                    {/* Mobile-only logo */}
                     <div className="flex items-center gap-2 lg:hidden">
                         <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary">
                             <Code2 className="w-4 h-4 text-primary-foreground" />
@@ -60,9 +57,8 @@ export default function Login() {
                         </span>
                     </div>
 
-                    {/* Heading */}
                     <div className="space-y-1.5">
-                        <h1 className="text-3xl font-bold tracking-tight text-foreground">
+                        <h1 className="text-3xl font-serif font-bold tracking-tight text-foreground">
                             Welcome back
                         </h1>
                         <p className="text-muted-foreground">
@@ -70,13 +66,11 @@ export default function Login() {
                         </p>
                     </div>
 
-                    {/* Form */}
                     <form
                         onSubmit={handleSubmit}
                         className="space-y-5"
                         noValidate
                     >
-                        {/* Email */}
                         <div className="space-y-2">
                             <Label htmlFor="login-email">Email address</Label>
                             <div className="relative">
@@ -89,12 +83,11 @@ export default function Login() {
                                     placeholder="you@example.com"
                                     value={form.email}
                                     onChange={handleChange}
-                                    className="pl-10"
+                                    className="pl-10 shadow-sm"
                                 />
                             </div>
                         </div>
 
-                        {/* Password */}
                         <div className="space-y-2">
                             <div className="flex items-center justify-between">
                                 <Label htmlFor="login-password">Password</Label>
@@ -115,7 +108,7 @@ export default function Login() {
                                     placeholder="••••••••"
                                     value={form.password}
                                     onChange={handleChange}
-                                    className="pl-10 pr-10"
+                                    className="pl-10 pr-10 shadow-sm"
                                 />
                                 <button
                                     type="button"
@@ -139,14 +132,13 @@ export default function Login() {
                         <Button
                             id="login-submit"
                             type="submit"
-                            className="w-full"
+                            className="w-full text-xs font-semibold uppercase tracking-wider py-5 shadow-sm"
                             disabled={loading}
                         >
                             {loading ? 'Signing in…' : 'Sign In'}
                         </Button>
                     </form>
 
-                    {/* Divider */}
                     <div className="relative">
                         <div className="absolute inset-0 flex items-center">
                             <div className="w-full border-t border-border" />
