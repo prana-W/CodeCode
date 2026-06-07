@@ -46,7 +46,7 @@ class Contest {
 
     static async findAll() {
         const [rows] = await pool.query(
-            `SELECT c.id, c.title, c.authored_by, c.division, c.description, c.isVerified, c.contest_start_time, c.contest_end_time, c.ai_assistance, u.name AS authored_by_name
+            `SELECT c.id, c.title, c.authored_by, c.division, c.description, c.isVerified, c.contest_start_time, c.contest_end_time, c.contest_evaluation, c.ai_assistance, u.name AS authored_by_name
              FROM contests c
              JOIN users u ON c.authored_by = u.id`
         );

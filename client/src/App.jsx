@@ -10,6 +10,7 @@ import {
     TestcasesPage,
     VerifyContestsPage,
     AdminContestDetailsPage,
+    EvaluateContestsPage,
     ContestParticipationLayout,
     ContestProblemsTab,
     ContestProblemView,
@@ -174,6 +175,14 @@ const router = createBrowserRouter([
                 element: (
                     <AdminRoute>
                         <AdminContestDetailsPage />
+                    </AdminRoute>
+                ),
+            },
+            {
+                path: 'admin/evaluate-contests',
+                element: (
+                    <AdminRoute>
+                        <EvaluateContestsPage />
                     </AdminRoute>
                 ),
             },

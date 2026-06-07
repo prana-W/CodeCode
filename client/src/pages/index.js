@@ -9,6 +9,7 @@ import ProblemsPage from './design-contest/ProblemsPage.jsx';
 import TestcasesPage from './design-contest/TestcasesPage.jsx';
 import VerifyContestsPage from './admin/VerifyContestsPage.jsx';
 import AdminContestDetailsPage from './admin/AdminContestDetailsPage.jsx';
+import EvaluateContestsPage from './admin/EvaluateContestsPage.jsx';
 
 import ContestParticipationLayout from './participation/ContestParticipationLayout.jsx';
 import ContestProblemsTab from './participation/ContestProblemsTab.jsx';
@@ -38,6 +39,7 @@ export {
     TestcasesPage,
     VerifyContestsPage,
     AdminContestDetailsPage,
+    EvaluateContestsPage,
     ContestParticipationLayout,
     ContestProblemsTab,
     ContestProblemView,

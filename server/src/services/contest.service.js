@@ -70,7 +70,8 @@ export const deltaCalculation = async (contestId) => {
                 contestId,
                 p.userId,
                 p.delta,
-                p.newRating
+                p.newRating,
+                p.actualRank
             );
 
             const [userRows] = await conn.query(

@@ -57,6 +57,7 @@ export default function Header() {
                 {to: '', label: 'HOME'},
                 {to: '/contests', label: 'CONTESTS'},
                 {to: '/admin/verify-contests', label: 'VERIFY CONTESTS'},
+                {to: '/admin/evaluate-contests', label: 'EVALUATE CONTESTS'},
                 {to: '/rankings', label: 'RANKINGS'},
                 {to: '/about', label: 'ABOUT'},
             ];

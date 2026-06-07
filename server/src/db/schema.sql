@@ -174,6 +174,7 @@ CREATE TABLE IF NOT EXISTS contest_registrations (
     delta INT DEFAULT 0,
     
     final_rating INT NOT NULL,
+    final_rank INT,
 	
     UNIQUE KEY unique_registration (
         contest_id,

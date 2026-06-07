@@ -791,7 +791,7 @@ Setup initial Backend server and connect to MySQL
 
 Added the updated commit_history notes, architecture and readme notes.
 
-## Commit - later 1
+## Commit - Later 1
 
 We have decoupled the compilation and execution part of the judge, as the compilation for with a cpp file having #include <bits/stdc++.h> was taking a lot of time and memory, as this statement requires a lot of time to bring together all the header files, so we have added the separate service for compilation of code. Now the workflow is like this:
 
@@ -804,3 +804,12 @@ We have decoupled the compilation and execution part of the judge, as the compil
 7. If the execution is successful, it updates the submission with the verdict and returns
 
 So, basically fixed 512 GB for compilation code docker container and variable memmory for running code docker container
+
+## Commit - Later 2
+
+- I have added total online users functionality, using Redis
+- Every 30 seconds a heartbeat is sent by the user at the server, the server adds the entry for it in redis with the username as key and TTL of 45 seconds, also it avoids duplicates. Now if user gets offline, the key auto-expires after 45 seconds, hence removing the count of the user from the total online users. We are sending the heartbeat by a simple POST method
+
+## Commit - Later 3
+
+- I have also added final ranking of each pariticipant in the contest registration table itself

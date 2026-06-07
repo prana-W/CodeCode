@@ -69,12 +69,12 @@ class ContestRegistration {
         return rows;
     }
 
-    static async updateDelta(conn, contest_id, user_id, delta, newRating) {
+    static async updateDelta(conn, contest_id, user_id, delta, newRating, finalRanking) {
         await conn.query(
             `UPDATE contest_registrations
-             SET delta = ?, final_rating = ?
+             SET delta = ?, final_rating = ?, final_rank = ?
              WHERE contest_id = ? AND user_id = ?`,
-            [delta, newRating, contest_id, user_id]
+            [delta, newRating, finalRanking, contest_id, user_id]
         );
     }
 
