@@ -1,26 +1,40 @@
-import { useState, useEffect, useRef } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
-import { toast } from 'sonner';
+import {useState, useEffect, useRef} from 'react';
+import {useParams, useNavigate, Link} from 'react-router-dom';
+import {toast} from 'sonner';
 import {
-    Plus, Pencil, Trash2, Save, LogOut, ChevronRight,
-    Star, Clock, Cpu, Hash, BookOpen, X,
+    Plus,
+    Pencil,
+    Trash2,
+    Save,
+    LogOut,
+    ChevronRight,
+    Star,
+    Clock,
+    Cpu,
+    Hash,
+    BookOpen,
+    X,
 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import {Button} from '@/components/ui/button';
+import {Input} from '@/components/ui/input';
+import {Label} from '@/components/ui/label';
 import MDEditor from '@uiw/react-md-editor';
 import api from '@/lib/axios';
 
 const EMPTY_FORM = {
-    title: '', score: '', rating: '',
-    statement: '', explanation: '',
-    time_limit_ms: '2000', memory_limit_mb: '256',
+    title: '',
+    score: '',
+    rating: '',
+    statement: '',
+    explanation: '',
+    time_limit_ms: '2000',
+    memory_limit_mb: '256',
 };
 
 const PROBLEM_LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
 // ─── Problem Card ────────────────────────────────────────────────────────
-function ProblemCard({ problem, index, isEditing, onEdit, onDelete, deleting }) {
+function ProblemCard({problem, index, isEditing, onEdit, onDelete, deleting}) {
     return (
         <div
             className={`rounded-xl border bg-card transition-all duration-200 ${
@@ -94,7 +108,7 @@ function ProblemCard({ problem, index, isEditing, onEdit, onDelete, deleting }) 
 
 // ─── Main Page ───────────────────────────────────────────────────────────
 export default function ProblemsPage() {
-    const { contestId } = useParams();
+    const {contestId} = useParams();
     const navigate = useNavigate();
     const formRef = useRef(null);
 
@@ -119,7 +133,9 @@ export default function ProblemsPage() {
                 setContestTitle(contestRes.data.data?.title || '');
                 setProblems(probRes.data.data || []);
             } catch (err) {
-                toast.error(err?.response?.data?.message || 'Failed to load data.');
+                toast.error(
+                    err?.response?.data?.message || 'Failed to load data.'
+                );
                 navigate('/design-contest');
             } finally {
                 setLoading(false);
@@ -147,7 +163,10 @@ export default function ProblemsPage() {
         setEditingId(problem.problem_id);
         setShowForm(true);
         setTimeout(() => {
-            formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            formRef.current?.scrollIntoView({
+                behavior: 'smooth',
+                block: 'start',
+            });
         }, 100);
     };
 
@@ -156,7 +175,10 @@ export default function ProblemsPage() {
         setEditingId(null);
         setShowForm(true);
         setTimeout(() => {
-            formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            formRef.current?.scrollIntoView({
+                behavior: 'smooth',
+                block: 'start',
+            });
         }, 100);
     };
 
@@ -166,10 +188,14 @@ export default function ProblemsPage() {
         try {
             await api.delete(`/problems/${problemId}`);
             toast.success('Problem deleted.');
-            setProblems((prev) => prev.filter((p) => p.problem_id !== problemId));
+            setProblems((prev) =>
+                prev.filter((p) => p.problem_id !== problemId)
+            );
             if (editingId === problemId) resetForm();
         } catch (err) {
-            toast.error(err?.response?.data?.message || 'Failed to delete problem.');
+            toast.error(
+                err?.response?.data?.message || 'Failed to delete problem.'
+            );
         } finally {
             setDeletingId(null);
         }
@@ -178,10 +204,14 @@ export default function ProblemsPage() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!form.title.trim()) return toast.error('Title is required.');
-        if (form.score === '' || isNaN(Number(form.score))) return toast.error('Score is required.');
-        if (Number(form.score) < 0 || Number(form.score) > 5000) return toast.error('Score must be 0–5000.');
-        if (form.rating === '' || isNaN(Number(form.rating))) return toast.error('Rating is required.');
-        if (!form.statement.trim()) return toast.error('Problem statement is required.');
+        if (form.score === '' || isNaN(Number(form.score)))
+            return toast.error('Score is required.');
+        if (Number(form.score) < 0 || Number(form.score) > 5000)
+            return toast.error('Score must be 0–5000.');
+        if (form.rating === '' || isNaN(Number(form.rating)))
+            return toast.error('Rating is required.');
+        if (!form.statement.trim())
+            return toast.error('Problem statement is required.');
 
         setSubmitting(true);
         try {
@@ -199,7 +229,10 @@ export default function ProblemsPage() {
                 await api.patch(`/problems/${editingId}`, payload);
                 toast.success('Problem updated.');
             } else {
-                await api.post('/problems', { contest_id: Number(contestId), ...payload });
+                await api.post('/problems', {
+                    contest_id: Number(contestId),
+                    ...payload,
+                });
                 toast.success('Problem created.');
             }
 
@@ -208,7 +241,9 @@ export default function ProblemsPage() {
             setProblems(res.data.data || []);
             resetForm();
         } catch (err) {
-            toast.error(err?.response?.data?.message || 'Failed to save problem.');
+            toast.error(
+                err?.response?.data?.message || 'Failed to save problem.'
+            );
         } finally {
             setSubmitting(false);
         }
@@ -239,11 +274,20 @@ export default function ProblemsPage() {
             <div className="border-b border-border bg-card/50">
                 <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8">
                     <nav className="flex items-center mb-4">
-                        <Link to="/design-contest" className="breadcrumb-link">My Contests</Link>
+                        <Link to="/design-contest" className="breadcrumb-link">
+                            My Contests
+                        </Link>
                         <span className="breadcrumb-sep">›</span>
-                        <Link to={`/design-contest/contest/${contestId}`} className="breadcrumb-link">{contestTitle}</Link>
+                        <Link
+                            to={`/design-contest/contest/${contestId}`}
+                            className="breadcrumb-link"
+                        >
+                            {contestTitle}
+                        </Link>
                         <span className="breadcrumb-sep">›</span>
-                        <span className="text-sm text-foreground font-medium">Problems</span>
+                        <span className="text-sm text-foreground font-medium">
+                            Problems
+                        </span>
                     </nav>
 
                     <div className="flex items-start justify-between gap-4">
@@ -256,7 +300,9 @@ export default function ProblemsPage() {
                                     Problems
                                 </h1>
                                 <p className="text-sm text-muted-foreground mt-0.5">
-                                    {problems.length} problem{problems.length !== 1 ? 's' : ''} in "{contestTitle}"
+                                    {problems.length} problem
+                                    {problems.length !== 1 ? 's' : ''} in "
+                                    {contestTitle}"
                                 </p>
                             </div>
                         </div>
@@ -320,14 +366,23 @@ export default function ProblemsPage() {
                         <form onSubmit={handleSubmit} className="space-y-8">
                             {/* Title */}
                             <section className="space-y-2">
-                                <Label htmlFor="prob-title" className="text-sm font-semibold">
-                                    Problem Title <span className="text-destructive">*</span>
+                                <Label
+                                    htmlFor="prob-title"
+                                    className="text-sm font-semibold"
+                                >
+                                    Problem Title{' '}
+                                    <span className="text-destructive">*</span>
                                 </Label>
                                 <Input
                                     id="prob-title"
                                     placeholder="e.g. Maximum Subarray Sum"
                                     value={form.title}
-                                    onChange={(e) => setForm((p) => ({ ...p, title: e.target.value }))}
+                                    onChange={(e) =>
+                                        setForm((p) => ({
+                                            ...p,
+                                            title: e.target.value,
+                                        }))
+                                    }
                                     className="text-base h-11"
                                 />
                             </section>
@@ -339,9 +394,15 @@ export default function ProblemsPage() {
                                 </h3>
                                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                                     <div className="space-y-1.5">
-                                        <Label htmlFor="prob-score" className="text-sm flex items-center gap-1">
+                                        <Label
+                                            htmlFor="prob-score"
+                                            className="text-sm flex items-center gap-1"
+                                        >
                                             <Star className="w-3.5 h-3.5 text-muted-foreground" />
-                                            Score <span className="text-destructive">*</span>
+                                            Score{' '}
+                                            <span className="text-destructive">
+                                                *
+                                            </span>
                                         </Label>
                                         <Input
                                             id="prob-score"
@@ -350,13 +411,24 @@ export default function ProblemsPage() {
                                             max={5000}
                                             placeholder="500"
                                             value={form.score}
-                                            onChange={(e) => setForm((p) => ({ ...p, score: e.target.value }))}
+                                            onChange={(e) =>
+                                                setForm((p) => ({
+                                                    ...p,
+                                                    score: e.target.value,
+                                                }))
+                                            }
                                         />
                                     </div>
                                     <div className="space-y-1.5">
-                                        <Label htmlFor="prob-rating" className="text-sm flex items-center gap-1">
+                                        <Label
+                                            htmlFor="prob-rating"
+                                            className="text-sm flex items-center gap-1"
+                                        >
                                             <Hash className="w-3.5 h-3.5 text-muted-foreground" />
-                                            Rating <span className="text-destructive">*</span>
+                                            Rating{' '}
+                                            <span className="text-destructive">
+                                                *
+                                            </span>
                                         </Label>
                                         <Input
                                             id="prob-rating"
@@ -364,11 +436,19 @@ export default function ProblemsPage() {
                                             min={0}
                                             placeholder="1400"
                                             value={form.rating}
-                                            onChange={(e) => setForm((p) => ({ ...p, rating: e.target.value }))}
+                                            onChange={(e) =>
+                                                setForm((p) => ({
+                                                    ...p,
+                                                    rating: e.target.value,
+                                                }))
+                                            }
                                         />
                                     </div>
                                     <div className="space-y-1.5">
-                                        <Label htmlFor="prob-time" className="text-sm flex items-center gap-1">
+                                        <Label
+                                            htmlFor="prob-time"
+                                            className="text-sm flex items-center gap-1"
+                                        >
                                             <Clock className="w-3.5 h-3.5 text-muted-foreground" />
                                             Time (ms)
                                         </Label>
@@ -378,11 +458,20 @@ export default function ProblemsPage() {
                                             min={100}
                                             placeholder="2000"
                                             value={form.time_limit_ms}
-                                            onChange={(e) => setForm((p) => ({ ...p, time_limit_ms: e.target.value }))}
+                                            onChange={(e) =>
+                                                setForm((p) => ({
+                                                    ...p,
+                                                    time_limit_ms:
+                                                        e.target.value,
+                                                }))
+                                            }
                                         />
                                     </div>
                                     <div className="space-y-1.5">
-                                        <Label htmlFor="prob-mem" className="text-sm flex items-center gap-1">
+                                        <Label
+                                            htmlFor="prob-mem"
+                                            className="text-sm flex items-center gap-1"
+                                        >
                                             <Cpu className="w-3.5 h-3.5 text-muted-foreground" />
                                             Memory (MB)
                                         </Label>
@@ -392,7 +481,13 @@ export default function ProblemsPage() {
                                             min={16}
                                             placeholder="256"
                                             value={form.memory_limit_mb}
-                                            onChange={(e) => setForm((p) => ({ ...p, memory_limit_mb: e.target.value }))}
+                                            onChange={(e) =>
+                                                setForm((p) => ({
+                                                    ...p,
+                                                    memory_limit_mb:
+                                                        e.target.value,
+                                                }))
+                                            }
                                         />
                                     </div>
                                 </div>
@@ -402,20 +497,30 @@ export default function ProblemsPage() {
                             <section className="space-y-3">
                                 <div>
                                     <Label className="text-sm font-semibold">
-                                        Problem Statement <span className="text-destructive">*</span>
+                                        Problem Statement{' '}
+                                        <span className="text-destructive">
+                                            *
+                                        </span>
                                     </Label>
                                     <p className="text-xs text-muted-foreground mt-0.5">
-                                        Full Markdown supported — use headers, bold, code blocks, LaTeX, tables, etc.
+                                        Full Markdown supported — use headers,
+                                        bold, code blocks, LaTeX, tables, etc.
                                     </p>
                                 </div>
                                 <div data-color-mode="light">
                                     <MDEditor
                                         value={form.statement}
-                                        onChange={(val) => setForm((p) => ({ ...p, statement: val || '' }))}
+                                        onChange={(val) =>
+                                            setForm((p) => ({
+                                                ...p,
+                                                statement: val || '',
+                                            }))
+                                        }
                                         height={320}
                                         preview="live"
                                         textareaProps={{
-                                            placeholder: 'Write the full problem statement here…\n\n## Input\nThe first line contains an integer **n**…\n\n## Output\nPrint the answer…',
+                                            placeholder:
+                                                'Write the full problem statement here…\n\n## Input\nThe first line contains an integer **n**…\n\n## Output\nPrint the answer…',
                                         }}
                                     />
                                 </div>
@@ -426,20 +531,29 @@ export default function ProblemsPage() {
                                 <div>
                                     <Label className="text-sm font-semibold">
                                         Explanation / Editorial
-                                        <span className="text-xs text-muted-foreground font-normal ml-2">(optional)</span>
+                                        <span className="text-xs text-muted-foreground font-normal ml-2">
+                                            (optional)
+                                        </span>
                                     </Label>
                                     <p className="text-xs text-muted-foreground mt-0.5">
-                                        Approach walkthrough, complexity analysis, or editorial notes.
+                                        Approach walkthrough, complexity
+                                        analysis, or editorial notes.
                                     </p>
                                 </div>
                                 <div data-color-mode="light">
                                     <MDEditor
                                         value={form.explanation}
-                                        onChange={(val) => setForm((p) => ({ ...p, explanation: val || '' }))}
+                                        onChange={(val) =>
+                                            setForm((p) => ({
+                                                ...p,
+                                                explanation: val || '',
+                                            }))
+                                        }
                                         height={200}
                                         preview="live"
                                         textareaProps={{
-                                            placeholder: 'Explain the approach, key observations, and complexity…',
+                                            placeholder:
+                                                'Explain the approach, key observations, and complexity…',
                                         }}
                                     />
                                 </div>
@@ -462,9 +576,12 @@ export default function ProblemsPage() {
                                 >
                                     <Save className="w-4 h-4" />
                                     {submitting
-                                        ? (editingId ? 'Updating…' : 'Creating…')
-                                        : (editingId ? 'Update Problem' : 'Create Problem')
-                                    }
+                                        ? editingId
+                                            ? 'Updating…'
+                                            : 'Creating…'
+                                        : editingId
+                                          ? 'Update Problem'
+                                          : 'Create Problem'}
                                 </Button>
                             </div>
                         </form>
@@ -483,7 +600,9 @@ export default function ProblemsPage() {
                     </Button>
                     <Button
                         id="continue-to-testcases"
-                        onClick={() => navigate(`/design-contest/testcases/${contestId}`)}
+                        onClick={() =>
+                            navigate(`/design-contest/testcases/${contestId}`)
+                        }
                         disabled={problems.length === 0}
                         className="gap-2"
                     >

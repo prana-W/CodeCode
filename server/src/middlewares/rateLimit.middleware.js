@@ -31,7 +31,7 @@ export const authLimiter = rateLimit({
 // Submission Limiter (Prevent Judge Spam)
 export const submissionLimiter = rateLimit({
     windowMs: 1 * 60 * 1000,
-    limit: 5, 
+    limit: 5,
     standardHeaders: true,
     legacyHeaders: false,
     message: {
@@ -58,7 +58,7 @@ export const contestCreationLimiter = rateLimit({
 // Profile Update Limiter
 export const profileUpdateLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
-    limit: 15, 
+    limit: 15,
     standardHeaders: true,
     legacyHeaders: false,
     message: {
@@ -85,7 +85,7 @@ export const contestRegistrationLimiter = rateLimit({
 // AI Assistant Limiter
 export const aiLimiter = rateLimit({
     windowMs: 5 * 60 * 1000, // 5 minutes
-    limit: 100, 
+    limit: 100,
     standardHeaders: true,
     legacyHeaders: false,
     message: {

@@ -1,26 +1,44 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { toast } from 'sonner';
+import {useState, useEffect} from 'react';
+import {useNavigate} from 'react-router-dom';
+import {toast} from 'sonner';
 import {
-    User as UserIcon, Mail, Building2, TrendingUp, Trophy,
-    Shield, Loader2, Save, AtSign, ArrowLeft
+    User as UserIcon,
+    Mail,
+    Building2,
+    TrendingUp,
+    Trophy,
+    Shield,
+    Loader2,
+    Save,
+    AtSign,
+    ArrowLeft,
 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import {Button} from '@/components/ui/button';
+import {Input} from '@/components/ui/input';
+import {Label} from '@/components/ui/label';
 import {
-    Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter
+    Card,
+    CardHeader,
+    CardTitle,
+    CardDescription,
+    CardContent,
+    CardFooter,
 } from '@/components/ui/card';
 import {
-    Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectSeparator
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+    SelectSeparator,
 } from '@/components/ui/select';
 import api from '@/lib/axios';
-import { useAuth } from '@/context/AuthContext';
-import { getRankDetails } from '@/constants/ratings';
-import { INSTITUTES } from '@/constants/institutes';
+import {useAuth} from '@/context/AuthContext';
+import {getRankDetails} from '@/constants/ratings';
+import {INSTITUTES} from '@/constants/institutes';
 
 export default function UserProfileEdit() {
-    const { user, setUser } = useAuth();
+    const {user, setUser} = useAuth();
     const navigate = useNavigate();
     const [profile, setProfile] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -45,20 +63,30 @@ export default function UserProfileEdit() {
                 const res = await api.get(`/users/${user.id}`);
                 const data = res.data.data;
                 setProfile(data);
-                
+
                 // Initialize form values
-                const isPredefined = topInstitutes.includes(data.institute || '');
+                const isPredefined = topInstitutes.includes(
+                    data.institute || ''
+                );
                 const hasInstitute = !!data.institute;
 
                 setForm({
                     name: data.name || '',
                     email: data.email || '',
-                    institute: hasInstitute ? (isPredefined ? data.institute : 'Other') : '',
-                    customInstitute: hasInstitute && !isPredefined ? data.institute : '',
+                    institute: hasInstitute
+                        ? isPredefined
+                            ? data.institute
+                            : 'Other'
+                        : '',
+                    customInstitute:
+                        hasInstitute && !isPredefined ? data.institute : '',
                 });
                 setShowCustomInstitute(hasInstitute && !isPredefined);
             } catch (err) {
-                toast.error(err?.response?.data?.message || 'Failed to load profile details.');
+                toast.error(
+                    err?.response?.data?.message ||
+                        'Failed to load profile details.'
+                );
             } finally {
                 setLoading(false);
             }
@@ -68,7 +96,7 @@ export default function UserProfileEdit() {
     }, [user?.id]);
 
     const handleChange = (e) => {
-        setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+        setForm((prev) => ({...prev, [e.target.name]: e.target.value}));
     };
 
     const handleInstituteChange = (value) => {
@@ -114,14 +142,16 @@ export default function UserProfileEdit() {
             const updatedProfile = res.data.data;
 
             // Update AuthContext state & localStorage
-            const updatedUserData = { ...user, ...updatedProfile };
+            const updatedUserData = {...user, ...updatedProfile};
             setUser(updatedUserData);
             localStorage.setItem('user', JSON.stringify(updatedUserData));
 
             toast.success('Profile updated successfully!');
             navigate(`/user-profile/${user.username}`);
         } catch (err) {
-            toast.error(err?.response?.data?.message || 'Failed to update profile.');
+            toast.error(
+                err?.response?.data?.message || 'Failed to update profile.'
+            );
         } finally {
             setUpdating(false);
         }
@@ -132,7 +162,9 @@ export default function UserProfileEdit() {
             <div className="min-h-screen flex items-center justify-center bg-background">
                 <div className="flex flex-col items-center gap-3">
                     <Loader2 className="w-8 h-8 animate-spin text-primary" />
-                    <p className="text-sm text-muted-foreground">Loading profile details...</p>
+                    <p className="text-sm text-muted-foreground">
+                        Loading profile details...
+                    </p>
                 </div>
             </div>
         );
@@ -141,7 +173,9 @@ export default function UserProfileEdit() {
     if (!profile) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-background">
-                <p className="text-muted-foreground">User profile could not be found.</p>
+                <p className="text-muted-foreground">
+                    User profile could not be found.
+                </p>
             </div>
         );
     }
@@ -151,7 +185,6 @@ export default function UserProfileEdit() {
     return (
         <div className="min-h-screen bg-background py-8">
             <div className="max-w-3xl mx-auto px-4 sm:px-6">
-                
                 {/* Profile Title Header */}
                 <div className="flex items-center justify-between mb-8">
                     <div className="flex items-center gap-3">
@@ -170,7 +203,9 @@ export default function UserProfileEdit() {
 
                     <Button
                         variant="ghost"
-                        onClick={() => navigate(`/user-profile/${user.username}`)}
+                        onClick={() =>
+                            navigate(`/user-profile/${user.username}`)
+                        }
                         className="gap-1.5 text-xs text-muted-foreground hover:text-foreground"
                     >
                         <ArrowLeft className="w-4 h-4" />
@@ -190,7 +225,9 @@ export default function UserProfileEdit() {
                                 <h2 className="text-xl font-bold text-foreground">
                                     {profile.name}
                                 </h2>
-                                <span className={`inline-flex items-center self-center gap-1 text-[11px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-background border border-border ${rank.colorClass}`}>
+                                <span
+                                    className={`inline-flex items-center self-center gap-1 text-[11px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-background border border-border ${rank.colorClass}`}
+                                >
                                     {rank.title}
                                 </span>
                             </div>
@@ -208,7 +245,10 @@ export default function UserProfileEdit() {
                                 <div className="space-y-4">
                                     {/* Username (Disabled) */}
                                     <div className="space-y-1.5">
-                                        <Label htmlFor="profile-username" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                                        <Label
+                                            htmlFor="profile-username"
+                                            className="text-xs font-semibold uppercase tracking-wider text-muted-foreground"
+                                        >
                                             Username
                                         </Label>
                                         <div className="relative">
@@ -225,8 +265,14 @@ export default function UserProfileEdit() {
 
                                     {/* Full Name */}
                                     <div className="space-y-1.5">
-                                        <Label htmlFor="profile-name" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                                            Full Name <span className="text-destructive">*</span>
+                                        <Label
+                                            htmlFor="profile-name"
+                                            className="text-xs font-semibold uppercase tracking-wider text-muted-foreground"
+                                        >
+                                            Full Name{' '}
+                                            <span className="text-destructive">
+                                                *
+                                            </span>
                                         </Label>
                                         <div className="relative">
                                             <UserIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
@@ -247,8 +293,14 @@ export default function UserProfileEdit() {
                                 <div className="space-y-4">
                                     {/* Email Address */}
                                     <div className="space-y-1.5">
-                                        <Label htmlFor="profile-email" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                                            Email Address <span className="text-destructive">*</span>
+                                        <Label
+                                            htmlFor="profile-email"
+                                            className="text-xs font-semibold uppercase tracking-wider text-muted-foreground"
+                                        >
+                                            Email Address{' '}
+                                            <span className="text-destructive">
+                                                *
+                                            </span>
                                         </Label>
                                         <div className="relative">
                                             <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
@@ -266,13 +318,18 @@ export default function UserProfileEdit() {
 
                                     {/* Institute */}
                                     <div className="space-y-1.5">
-                                        <Label htmlFor="profile-institute" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                                        <Label
+                                            htmlFor="profile-institute"
+                                            className="text-xs font-semibold uppercase tracking-wider text-muted-foreground"
+                                        >
                                             Institute
                                         </Label>
                                         <div className="relative">
                                             <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none z-10" />
                                             <Select
-                                                onValueChange={handleInstituteChange}
+                                                onValueChange={
+                                                    handleInstituteChange
+                                                }
                                                 value={form.institute}
                                             >
                                                 <SelectTrigger
@@ -282,11 +339,16 @@ export default function UserProfileEdit() {
                                                     <SelectValue placeholder="Select your institute" />
                                                 </SelectTrigger>
                                                 <SelectContent>
-                                                    {topInstitutes.map((inst) => (
-                                                        <SelectItem key={inst} value={inst}>
-                                                            {inst}
-                                                        </SelectItem>
-                                                    ))}
+                                                    {topInstitutes.map(
+                                                        (inst) => (
+                                                            <SelectItem
+                                                                key={inst}
+                                                                value={inst}
+                                                            >
+                                                                {inst}
+                                                            </SelectItem>
+                                                        )
+                                                    )}
                                                     <SelectSeparator />
                                                     <SelectItem value="Other">
                                                         Other / Custom
@@ -299,7 +361,10 @@ export default function UserProfileEdit() {
                                     {/* Custom Institute (Text Input) */}
                                     {showCustomInstitute && (
                                         <div className="space-y-1.5 animate-in fade-in slide-in-from-top-1 duration-200">
-                                            <Label htmlFor="profile-custom-institute" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                                            <Label
+                                                htmlFor="profile-custom-institute"
+                                                className="text-xs font-semibold uppercase tracking-wider text-muted-foreground"
+                                            >
                                                 Custom Institute Name
                                             </Label>
                                             <div className="relative">
@@ -324,7 +389,9 @@ export default function UserProfileEdit() {
                             <Button
                                 type="button"
                                 variant="outline"
-                                onClick={() => navigate(`/user-profile/${user.username}`)}
+                                onClick={() =>
+                                    navigate(`/user-profile/${user.username}`)
+                                }
                                 disabled={updating}
                             >
                                 Cancel
@@ -349,7 +416,6 @@ export default function UserProfileEdit() {
                         </CardFooter>
                     </form>
                 </Card>
-
             </div>
         </div>
     );

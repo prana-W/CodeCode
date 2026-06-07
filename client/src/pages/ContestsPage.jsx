@@ -1,15 +1,22 @@
-import { useState, useEffect, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { toast } from 'sonner';
+import {useState, useEffect, useMemo} from 'react';
+import {useNavigate} from 'react-router-dom';
+import {toast} from 'sonner';
 import {
-    Trophy, Calendar, Clock, Shield, Users,
-    LogIn, LogOut as LogOutIcon, ChevronRight,
-    Timer, ArrowUpDown,
+    Trophy,
+    Calendar,
+    Clock,
+    Shield,
+    Users,
+    LogIn,
+    LogOut as LogOutIcon,
+    ChevronRight,
+    Timer,
+    ArrowUpDown,
 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import {Button} from '@/components/ui/button';
 import api from '@/lib/axios';
-import { useAuth } from '@/context/AuthContext';
-import { DIV_LABELS } from '@/constants/ratings';
+import {useAuth} from '@/context/AuthContext';
+import {DIV_LABELS} from '@/constants/ratings';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────
 const REGISTRATION_WINDOW_MINUTES = 30;
@@ -26,7 +33,9 @@ function getContestStatus(contest) {
 function canRegister(contest) {
     const now = new Date();
     const start = new Date(contest.contest_start_time);
-    const deadline = new Date(start.getTime() + REGISTRATION_WINDOW_MINUTES * 60 * 1000);
+    const deadline = new Date(
+        start.getTime() + REGISTRATION_WINDOW_MINUTES * 60 * 1000
+    );
     const end = new Date(contest.contest_end_time);
     return now < deadline && now < end;
 }
@@ -43,13 +52,17 @@ function isContestStarted(contest) {
 
 function formatDate(iso) {
     return new Date(iso).toLocaleDateString('en-US', {
-        month: 'short', day: 'numeric', year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
     });
 }
 
 function formatTime(iso) {
     return new Date(iso).toLocaleTimeString('en-US', {
-        hour: '2-digit', minute: '2-digit', hour12: true,
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true,
     });
 }
 
@@ -80,7 +93,8 @@ function getTimeRemaining(iso) {
     const hours = Math.floor(diff / 3600000);
     const mins = Math.floor((diff % 3600000) / 60000);
     const secs = Math.floor((diff % 60000) / 1000);
-    if (hours > 0) return `${hours}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+    if (hours > 0)
+        return `${hours}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
     return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
 }
 
@@ -88,19 +102,29 @@ function getTimeRemaining(iso) {
 function SkeletonRow() {
     return (
         <tr>
-            <td className="px-4 py-4"><div className="skeleton h-5 w-48 rounded" /></td>
-            <td className="px-4 py-4"><div className="skeleton h-5 w-12 rounded-full mx-auto" /></td>
-            <td className="px-4 py-4"><div className="skeleton h-5 w-24 rounded mx-auto" /></td>
-            <td className="px-4 py-4"><div className="skeleton h-5 w-16 rounded mx-auto" /></td>
-            <td className="px-4 py-4"><div className="skeleton h-8 w-24 rounded mx-auto" /></td>
+            <td className="px-4 py-4">
+                <div className="skeleton h-5 w-48 rounded" />
+            </td>
+            <td className="px-4 py-4">
+                <div className="skeleton h-5 w-12 rounded-full mx-auto" />
+            </td>
+            <td className="px-4 py-4">
+                <div className="skeleton h-5 w-24 rounded mx-auto" />
+            </td>
+            <td className="px-4 py-4">
+                <div className="skeleton h-5 w-16 rounded mx-auto" />
+            </td>
+            <td className="px-4 py-4">
+                <div className="skeleton h-8 w-24 rounded mx-auto" />
+            </td>
         </tr>
     );
 }
 
 // ─── Contest Row ─────────────────────────────────────────────────────────
-function ContestRow({ contest, regStatus, onRegister, onUnregister }) {
+function ContestRow({contest, regStatus, onRegister, onUnregister}) {
     const navigate = useNavigate();
-    const { user } = useAuth();
+    const {user} = useAuth();
     const status = getContestStatus(contest);
     const [acting, setActing] = useState(false);
     const [, setTick] = useState(0);
@@ -121,7 +145,7 @@ function ContestRow({ contest, regStatus, onRegister, onUnregister }) {
     const handleRegister = async () => {
         setActing(true);
         try {
-            await api.post('/contests/register', { contest_id: contest.id });
+            await api.post('/contests/register', {contest_id: contest.id});
             toast.success(`Registered for "${contest.title}"!`);
             onRegister(contest.id);
         } catch (err) {
@@ -134,11 +158,15 @@ function ContestRow({ contest, regStatus, onRegister, onUnregister }) {
     const handleUnregister = async () => {
         setActing(true);
         try {
-            await api.delete('/contests/register', { data: { contest_id: contest.id } });
+            await api.delete('/contests/register', {
+                data: {contest_id: contest.id},
+            });
             toast.success(`Unregistered from "${contest.title}".`);
             onUnregister(contest.id);
         } catch (err) {
-            toast.error(err?.response?.data?.message || 'Failed to unregister.');
+            toast.error(
+                err?.response?.data?.message || 'Failed to unregister.'
+            );
         } finally {
             setActing(false);
         }
@@ -148,18 +176,28 @@ function ContestRow({ contest, regStatus, onRegister, onUnregister }) {
         navigate(`/contest/${contest.id}`);
     };
 
-    const div = DIV_LABELS[contest.division] || { label: `Div. ${contest.division}` };
-    const timeUntilStart = status === 'upcoming' ? getTimeUntil(contest.contest_start_time) : null;
-    const remaining = status === 'running' ? getTimeRemaining(contest.contest_end_time) : null;
+    const div = DIV_LABELS[contest.division] || {
+        label: `Div. ${contest.division}`,
+    };
+    const timeUntilStart =
+        status === 'upcoming' ? getTimeUntil(contest.contest_start_time) : null;
+    const remaining =
+        status === 'running'
+            ? getTimeRemaining(contest.contest_end_time)
+            : null;
 
     return (
-        <tr className={`group border-b border-border transition-colors hover:bg-muted/30 ${
-            status === 'running' ? 'bg-green-500/5' : ''
-        }`}>
+        <tr
+            className={`group border-b border-border transition-colors hover:bg-muted/30 ${
+                status === 'running' ? 'bg-green-500/5' : ''
+            }`}
+        >
             {/* Title + Author */}
             <td className="px-4 py-3.5">
                 <div className="flex items-center gap-3">
-                    <div className={`div-badge-${contest.division} flex items-center justify-center w-9 h-9 rounded-lg text-[11px] font-bold shrink-0`}>
+                    <div
+                        className={`div-badge-${contest.division} flex items-center justify-center w-9 h-9 rounded-lg text-[11px] font-bold shrink-0`}
+                    >
                         D{contest.division}
                     </div>
                     <div className="min-w-0">
@@ -188,22 +226,31 @@ function ContestRow({ contest, regStatus, onRegister, onUnregister }) {
 
             {/* Division */}
             <td className="px-4 py-3.5 text-center">
-                <span className={`div-badge-${contest.division} text-[10px] font-bold px-2 py-0.5 rounded-md`}>
+                <span
+                    className={`div-badge-${contest.division} text-[10px] font-bold px-2 py-0.5 rounded-md`}
+                >
                     {div.label}
                 </span>
             </td>
 
             {/* Start Time */}
             <td className="px-4 py-3.5 text-center">
-                <div className="text-sm text-foreground">{formatDate(contest.contest_start_time)}</div>
-                <div className="text-xs text-muted-foreground">{formatTime(contest.contest_start_time)}</div>
+                <div className="text-sm text-foreground">
+                    {formatDate(contest.contest_start_time)}
+                </div>
+                <div className="text-xs text-muted-foreground">
+                    {formatTime(contest.contest_start_time)}
+                </div>
             </td>
 
             {/* Duration */}
             <td className="px-4 py-3.5 text-center">
                 <span className="inline-flex items-center gap-1 text-sm text-muted-foreground">
                     <Timer className="w-3.5 h-3.5" />
-                    {formatDuration(contest.contest_start_time, contest.contest_end_time)}
+                    {formatDuration(
+                        contest.contest_start_time,
+                        contest.contest_end_time
+                    )}
                 </span>
             </td>
 
@@ -257,11 +304,15 @@ function ContestRow({ contest, regStatus, onRegister, onUnregister }) {
                         Registered
                     </span>
                 ) : isRegistered && status === 'past' ? (
-                    <span className="text-xs text-muted-foreground">Participated</span>
+                    <span className="text-xs text-muted-foreground">
+                        Participated
+                    </span>
                 ) : status === 'past' ? (
                     <span className="text-xs text-muted-foreground">Ended</span>
                 ) : (
-                    <span className="text-xs text-muted-foreground">Closed</span>
+                    <span className="text-xs text-muted-foreground">
+                        Closed
+                    </span>
                 )}
             </td>
         </tr>
@@ -270,7 +321,7 @@ function ContestRow({ contest, regStatus, onRegister, onUnregister }) {
 
 // ─── Main Page ───────────────────────────────────────────────────────────
 export default function ContestsPage() {
-    const { user } = useAuth();
+    const {user} = useAuth();
     const [contests, setContests] = useState([]);
     const [regMap, setRegMap] = useState({}); // { contest_id: { is_registered, registered_at } }
     const [loading, setLoading] = useState(true);
@@ -286,7 +337,9 @@ export default function ContestsPage() {
                 // Only show verified contests that haven't ended more than 7 days ago
                 const now = new Date();
                 const cutoff = new Date(now.getTime() - 7 * 86400000);
-                const visible = all.filter((c) => new Date(c.contest_end_time) > cutoff);
+                const visible = all.filter(
+                    (c) => new Date(c.contest_end_time) > cutoff
+                );
                 setContests(visible);
 
                 // Fetch registration status for each contest if user is logged in
@@ -295,17 +348,21 @@ export default function ContestsPage() {
                     await Promise.all(
                         visible.map(async (c) => {
                             try {
-                                const regRes = await api.get(`/contests/register/status?contest_id=${c.id}`);
+                                const regRes = await api.get(
+                                    `/contests/register/status?contest_id=${c.id}`
+                                );
                                 statuses[c.id] = regRes.data.data;
                             } catch {
-                                statuses[c.id] = { is_registered: false };
+                                statuses[c.id] = {is_registered: false};
                             }
                         })
                     );
                     setRegMap(statuses);
                 }
             } catch (err) {
-                toast.error(err?.response?.data?.message || 'Failed to load contests.');
+                toast.error(
+                    err?.response?.data?.message || 'Failed to load contests.'
+                );
             } finally {
                 setLoading(false);
             }
@@ -316,14 +373,17 @@ export default function ContestsPage() {
     const handleRegister = (contestId) => {
         setRegMap((prev) => ({
             ...prev,
-            [contestId]: { is_registered: true, registered_at: new Date().toISOString() },
+            [contestId]: {
+                is_registered: true,
+                registered_at: new Date().toISOString(),
+            },
         }));
     };
 
     const handleUnregister = (contestId) => {
         setRegMap((prev) => ({
             ...prev,
-            [contestId]: { is_registered: false },
+            [contestId]: {is_registered: false},
         }));
     };
 
@@ -337,8 +397,8 @@ export default function ContestsPage() {
     };
 
     // Categorize and sort
-    const { upcoming, running, past } = useMemo(() => {
-        const groups = { upcoming: [], running: [], past: [] };
+    const {upcoming, running, past} = useMemo(() => {
+        const groups = {upcoming: [], running: [], past: []};
         contests.forEach((c) => {
             const s = getContestStatus(c);
             groups[s].push(c);
@@ -347,14 +407,20 @@ export default function ContestsPage() {
         const comparator = (a, b) => {
             let cmp = 0;
             if (sortField === 'start') {
-                cmp = new Date(a.contest_start_time) - new Date(b.contest_start_time);
+                cmp =
+                    new Date(a.contest_start_time) -
+                    new Date(b.contest_start_time);
             } else if (sortField === 'title') {
                 cmp = a.title.localeCompare(b.title);
             } else if (sortField === 'div') {
                 cmp = a.division - b.division;
             } else if (sortField === 'duration') {
-                const dA = new Date(a.contest_end_time) - new Date(a.contest_start_time);
-                const dB = new Date(b.contest_end_time) - new Date(b.contest_start_time);
+                const dA =
+                    new Date(a.contest_end_time) -
+                    new Date(a.contest_start_time);
+                const dB =
+                    new Date(b.contest_end_time) -
+                    new Date(b.contest_start_time);
                 cmp = dA - dB;
             }
             return sortDir === 'desc' ? -cmp : cmp;
@@ -362,19 +428,24 @@ export default function ContestsPage() {
 
         groups.upcoming.sort(comparator);
         groups.running.sort(comparator);
-        groups.past.sort((a, b) => new Date(b.contest_start_time) - new Date(a.contest_start_time)); // past = newest first always
+        groups.past.sort(
+            (a, b) =>
+                new Date(b.contest_start_time) - new Date(a.contest_start_time)
+        ); // past = newest first always
 
         return groups;
     }, [contests, sortField, sortDir]);
 
-    const SortHeader = ({ field, children, className = '' }) => (
+    const SortHeader = ({field, children, className = ''}) => (
         <th
             className={`px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider cursor-pointer select-none transition-colors hover:text-foreground ${className}`}
             onClick={() => toggleSort(field)}
         >
             <span className="inline-flex items-center gap-1">
                 {children}
-                <ArrowUpDown className={`w-3 h-3 ${sortField === field ? 'text-primary' : 'text-muted-foreground/40'}`} />
+                <ArrowUpDown
+                    className={`w-3 h-3 ${sortField === field ? 'text-primary' : 'text-muted-foreground/40'}`}
+                />
             </span>
         </th>
     );
@@ -406,15 +477,27 @@ export default function ContestsPage() {
                         <table className="w-full">
                             <thead className="bg-muted/40">
                                 <tr>
-                                    <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground">Contest</th>
-                                    <th className="px-4 py-3 text-center text-xs font-semibold text-muted-foreground">Division</th>
-                                    <th className="px-4 py-3 text-center text-xs font-semibold text-muted-foreground">Start</th>
-                                    <th className="px-4 py-3 text-center text-xs font-semibold text-muted-foreground">Duration</th>
-                                    <th className="px-4 py-3 text-center text-xs font-semibold text-muted-foreground">Action</th>
+                                    <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground">
+                                        Contest
+                                    </th>
+                                    <th className="px-4 py-3 text-center text-xs font-semibold text-muted-foreground">
+                                        Division
+                                    </th>
+                                    <th className="px-4 py-3 text-center text-xs font-semibold text-muted-foreground">
+                                        Start
+                                    </th>
+                                    <th className="px-4 py-3 text-center text-xs font-semibold text-muted-foreground">
+                                        Duration
+                                    </th>
+                                    <th className="px-4 py-3 text-center text-xs font-semibold text-muted-foreground">
+                                        Action
+                                    </th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {[1, 2, 3, 4, 5].map((i) => <SkeletonRow key={i} />)}
+                                {[1, 2, 3, 4, 5].map((i) => (
+                                    <SkeletonRow key={i} />
+                                ))}
                             </tbody>
                         </table>
                     </div>
@@ -440,11 +523,33 @@ export default function ContestsPage() {
                                     <table className="w-full">
                                         <thead className="bg-green-500/10">
                                             <tr>
-                                                <SortHeader field="title" className="text-left">Contest</SortHeader>
-                                                <SortHeader field="div" className="text-center">Division</SortHeader>
-                                                <SortHeader field="start" className="text-center">Start</SortHeader>
-                                                <SortHeader field="duration" className="text-center">Duration</SortHeader>
-                                                <th className="px-4 py-3 text-center text-xs font-semibold text-muted-foreground uppercase tracking-wider">Action</th>
+                                                <SortHeader
+                                                    field="title"
+                                                    className="text-left"
+                                                >
+                                                    Contest
+                                                </SortHeader>
+                                                <SortHeader
+                                                    field="div"
+                                                    className="text-center"
+                                                >
+                                                    Division
+                                                </SortHeader>
+                                                <SortHeader
+                                                    field="start"
+                                                    className="text-center"
+                                                >
+                                                    Start
+                                                </SortHeader>
+                                                <SortHeader
+                                                    field="duration"
+                                                    className="text-center"
+                                                >
+                                                    Duration
+                                                </SortHeader>
+                                                <th className="px-4 py-3 text-center text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                                                    Action
+                                                </th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -454,7 +559,9 @@ export default function ContestsPage() {
                                                     contest={c}
                                                     regStatus={regMap[c.id]}
                                                     onRegister={handleRegister}
-                                                    onUnregister={handleUnregister}
+                                                    onUnregister={
+                                                        handleUnregister
+                                                    }
                                                 />
                                             ))}
                                         </tbody>
@@ -476,11 +583,33 @@ export default function ContestsPage() {
                                     <table className="w-full">
                                         <thead className="bg-muted/40">
                                             <tr>
-                                                <SortHeader field="title" className="text-left">Contest</SortHeader>
-                                                <SortHeader field="div" className="text-center">Division</SortHeader>
-                                                <SortHeader field="start" className="text-center">Start</SortHeader>
-                                                <SortHeader field="duration" className="text-center">Duration</SortHeader>
-                                                <th className="px-4 py-3 text-center text-xs font-semibold text-muted-foreground uppercase tracking-wider">Action</th>
+                                                <SortHeader
+                                                    field="title"
+                                                    className="text-left"
+                                                >
+                                                    Contest
+                                                </SortHeader>
+                                                <SortHeader
+                                                    field="div"
+                                                    className="text-center"
+                                                >
+                                                    Division
+                                                </SortHeader>
+                                                <SortHeader
+                                                    field="start"
+                                                    className="text-center"
+                                                >
+                                                    Start
+                                                </SortHeader>
+                                                <SortHeader
+                                                    field="duration"
+                                                    className="text-center"
+                                                >
+                                                    Duration
+                                                </SortHeader>
+                                                <th className="px-4 py-3 text-center text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                                                    Action
+                                                </th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -490,7 +619,9 @@ export default function ContestsPage() {
                                                     contest={c}
                                                     regStatus={regMap[c.id]}
                                                     onRegister={handleRegister}
-                                                    onUnregister={handleUnregister}
+                                                    onUnregister={
+                                                        handleUnregister
+                                                    }
                                                 />
                                             ))}
                                         </tbody>
@@ -512,11 +643,21 @@ export default function ContestsPage() {
                                     <table className="w-full">
                                         <thead className="bg-muted/40">
                                             <tr>
-                                                <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">Contest</th>
-                                                <th className="px-4 py-3 text-center text-xs font-semibold text-muted-foreground uppercase tracking-wider">Division</th>
-                                                <th className="px-4 py-3 text-center text-xs font-semibold text-muted-foreground uppercase tracking-wider">Start</th>
-                                                <th className="px-4 py-3 text-center text-xs font-semibold text-muted-foreground uppercase tracking-wider">Duration</th>
-                                                <th className="px-4 py-3 text-center text-xs font-semibold text-muted-foreground uppercase tracking-wider">Action</th>
+                                                <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                                                    Contest
+                                                </th>
+                                                <th className="px-4 py-3 text-center text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                                                    Division
+                                                </th>
+                                                <th className="px-4 py-3 text-center text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                                                    Start
+                                                </th>
+                                                <th className="px-4 py-3 text-center text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                                                    Duration
+                                                </th>
+                                                <th className="px-4 py-3 text-center text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                                                    Action
+                                                </th>
                                             </tr>
                                         </thead>
                                         <tbody className="opacity-60">
@@ -526,7 +667,9 @@ export default function ContestsPage() {
                                                     contest={c}
                                                     regStatus={regMap[c.id]}
                                                     onRegister={handleRegister}
-                                                    onUnregister={handleUnregister}
+                                                    onUnregister={
+                                                        handleUnregister
+                                                    }
                                                 />
                                             ))}
                                         </tbody>

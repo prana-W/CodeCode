@@ -1,28 +1,51 @@
-import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import {useState, useEffect} from 'react';
+import {Link} from 'react-router-dom';
+import {Button} from '@/components/ui/button';
 import {
-    Code2, Trophy, Zap, Users, Star, ArrowRight, Menu, X,
-    Github, Twitter, Linkedin, Globe, Eye, TrendingUp,
-    LogIn, UserPlus, LogOut, ChevronDown, Target, Award, Clock
+    Card,
+    CardContent,
+    CardHeader,
+    CardTitle,
+    CardDescription,
+} from '@/components/ui/card';
+import {
+    Code2,
+    Trophy,
+    Zap,
+    Users,
+    Star,
+    ArrowRight,
+    Menu,
+    X,
+    Github,
+    Twitter,
+    Linkedin,
+    Globe,
+    Eye,
+    TrendingUp,
+    LogIn,
+    UserPlus,
+    LogOut,
+    ChevronDown,
+    Target,
+    Award,
+    Clock,
 } from 'lucide-react';
 
 // ─── Mock Auth State (replace with real context later) ───────────────────────
 const useMockAuth = () => {
     const [user, setUser] = useState(null); // null = logged out
-    const login = () => setUser({ name: 'Pranav', rating: 1842 });
+    const login = () => setUser({name: 'Pranav', rating: 1842});
     const logout = () => setUser(null);
-    return { user, login, logout };
+    return {user, login, logout};
 };
 
-
 // ─── Header / Hero ────────────────────────────────────────────────────────────
-const HeroHeader = ({ user, onLogin }) => {
+const HeroHeader = ({user, onLogin}) => {
     const stats = [
-        { label: 'Active Coders', value: '12,400+', icon: Users },
-        { label: 'Contests Run', value: '340+', icon: Trophy },
-        { label: 'Problems Solved', value: '1.2M+', icon: Zap },
+        {label: 'Active Coders', value: '12,400+', icon: Users},
+        {label: 'Contests Run', value: '340+', icon: Trophy},
+        {label: 'Problems Solved', value: '1.2M+', icon: Zap},
     ];
 
     return (
@@ -42,7 +65,8 @@ const HeroHeader = ({ user, onLogin }) => {
                     backgroundImage:
                         'linear-gradient(oklch(0.922 0 0) 1px, transparent 1px), linear-gradient(90deg, oklch(0.922 0 0) 1px, transparent 1px)',
                     backgroundSize: '64px 64px',
-                    maskImage: 'radial-gradient(ellipse 80% 60% at 50% 0%, black 30%, transparent 80%)',
+                    maskImage:
+                        'radial-gradient(ellipse 80% 60% at 50% 0%, black 30%, transparent 80%)',
                 }}
             />
 
@@ -63,20 +87,27 @@ const HeroHeader = ({ user, onLogin }) => {
                     <br />
                     <span
                         className="text-transparent bg-clip-text"
-                        style={{ backgroundImage: 'linear-gradient(135deg, oklch(0.3 0 0), oklch(0.6 0 0))' }}
+                        style={{
+                            backgroundImage:
+                                'linear-gradient(135deg, oklch(0.3 0 0), oklch(0.6 0 0))',
+                        }}
                     >
                         Conquer.
                     </span>
                 </h1>
 
                 <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto mb-10 leading-relaxed">
-                    Join thousands of developers sharpening their skills through real-time coding contests,
-                    design challenges, and a thriving community of problem-solvers.
+                    Join thousands of developers sharpening their skills through
+                    real-time coding contests, design challenges, and a thriving
+                    community of problem-solvers.
                 </p>
 
                 <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
                     {user ? (
-                        <Button size="lg" className="gap-2 px-8 h-12 text-base font-semibold shadow-lg">
+                        <Button
+                            size="lg"
+                            className="gap-2 px-8 h-12 text-base font-semibold shadow-lg"
+                        >
                             <Trophy className="w-5 h-5" /> Browse Contests
                             <ArrowRight className="w-4 h-4 ml-1" />
                         </Button>
@@ -87,7 +118,8 @@ const HeroHeader = ({ user, onLogin }) => {
                                 onClick={onLogin}
                                 className="gap-2 px-8 h-12 text-base font-semibold shadow-lg"
                             >
-                                <UserPlus className="w-5 h-5" /> Get Started Free
+                                <UserPlus className="w-5 h-5" /> Get Started
+                                Free
                                 <ArrowRight className="w-4 h-4 ml-1" />
                             </Button>
                             <Button
@@ -104,11 +136,18 @@ const HeroHeader = ({ user, onLogin }) => {
 
                 {/* Stats Row */}
                 <div className="grid grid-cols-3 gap-4 max-w-lg mx-auto">
-                    {stats.map(({ label, value, icon: Icon }) => (
-                        <div key={label} className="flex flex-col items-center gap-1 p-3 rounded-xl bg-background/70 border border-border backdrop-blur shadow-sm">
+                    {stats.map(({label, value, icon: Icon}) => (
+                        <div
+                            key={label}
+                            className="flex flex-col items-center gap-1 p-3 rounded-xl bg-background/70 border border-border backdrop-blur shadow-sm"
+                        >
                             <Icon className="w-4 h-4 text-muted-foreground mb-1" />
-                            <span className="text-xl font-bold text-foreground">{value}</span>
-                            <span className="text-xs text-muted-foreground text-center leading-tight">{label}</span>
+                            <span className="text-xl font-bold text-foreground">
+                                {value}
+                            </span>
+                            <span className="text-xs text-muted-foreground text-center leading-tight">
+                                {label}
+                            </span>
                         </div>
                     ))}
                 </div>
@@ -168,12 +207,14 @@ const FeaturesSection = () => {
                         Everything you need to level up
                     </h2>
                     <p className="text-muted-foreground max-w-xl mx-auto">
-                        From beginner-friendly practice to elite-level competitions, CodeCode has the tools to take you further.
+                        From beginner-friendly practice to elite-level
+                        competitions, CodeCode has the tools to take you
+                        further.
                     </p>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {features.map(({ icon: Icon, title, desc }) => (
+                    {features.map(({icon: Icon, title, desc}) => (
                         <Card
                             key={title}
                             className="group border border-border hover:border-foreground/20 transition-all duration-300 hover:shadow-md hover:-translate-y-1 cursor-default"
@@ -182,10 +223,14 @@ const FeaturesSection = () => {
                                 <div className="w-10 h-10 rounded-lg bg-secondary flex items-center justify-center mb-2 group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
                                     <Icon className="w-5 h-5" />
                                 </div>
-                                <CardTitle className="text-base">{title}</CardTitle>
+                                <CardTitle className="text-base">
+                                    {title}
+                                </CardTitle>
                             </CardHeader>
                             <CardContent>
-                                <CardDescription className="text-sm leading-relaxed">{desc}</CardDescription>
+                                <CardDescription className="text-sm leading-relaxed">
+                                    {desc}
+                                </CardDescription>
                             </CardContent>
                         </Card>
                     ))}
@@ -198,9 +243,33 @@ const FeaturesSection = () => {
 // ─── Contests Section ─────────────────────────────────────────────────────────
 const ContestsSection = () => {
     const contests = [
-        { id: 1, title: 'Weekly Clash #47', type: 'Algorithm', status: 'Live', participants: 234, time: 'Ends in 2h 14m', difficulty: 'Medium' },
-        { id: 2, title: 'Grand Prix Round 12', type: 'Algorithm', status: 'Upcoming', participants: 891, time: 'Starts in 3 days', difficulty: 'Hard' },
-        { id: 3, title: 'Beginner Blitz', type: 'Algorithm', status: 'Upcoming', participants: 412, time: 'Starts in 1 day', difficulty: 'Easy' },
+        {
+            id: 1,
+            title: 'Weekly Clash #47',
+            type: 'Algorithm',
+            status: 'Live',
+            participants: 234,
+            time: 'Ends in 2h 14m',
+            difficulty: 'Medium',
+        },
+        {
+            id: 2,
+            title: 'Grand Prix Round 12',
+            type: 'Algorithm',
+            status: 'Upcoming',
+            participants: 891,
+            time: 'Starts in 3 days',
+            difficulty: 'Hard',
+        },
+        {
+            id: 3,
+            title: 'Beginner Blitz',
+            type: 'Algorithm',
+            status: 'Upcoming',
+            participants: 412,
+            time: 'Starts in 1 day',
+            difficulty: 'Easy',
+        },
     ];
 
     const statusColors = {
@@ -223,7 +292,9 @@ const ContestsSection = () => {
                         <p className="text-sm font-semibold text-muted-foreground uppercase tracking-widest mb-2">
                             Compete
                         </p>
-                        <h2 className="text-3xl sm:text-4xl font-bold text-foreground">Active Contests</h2>
+                        <h2 className="text-3xl sm:text-4xl font-bold text-foreground">
+                            Active Contests
+                        </h2>
                     </div>
                     <Button variant="outline" className="gap-2">
                         View All <ArrowRight className="w-4 h-4" />
@@ -241,18 +312,39 @@ const ContestsSection = () => {
                             </div>
                             <div className="flex-1 min-w-0">
                                 <div className="flex items-center gap-2 flex-wrap mb-1">
-                                    <span className="font-semibold text-foreground">{c.title}</span>
-                                    <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${statusColors[c.status]}`}>
-                                        {c.status === 'Live' && '● '}{c.status}
+                                    <span className="font-semibold text-foreground">
+                                        {c.title}
+                                    </span>
+                                    <span
+                                        className={`px-2 py-0.5 rounded-full text-xs font-medium ${statusColors[c.status]}`}
+                                    >
+                                        {c.status === 'Live' && '● '}
+                                        {c.status}
                                     </span>
                                 </div>
                                 <div className="flex items-center gap-3 text-xs text-muted-foreground flex-wrap">
-                                    <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{c.time}</span>
-                                    <span className="flex items-center gap-1"><Users className="w-3 h-3" />{c.participants} registered</span>
-                                    <span className={`font-medium ${difficultyColors[c.difficulty]}`}>{c.difficulty}</span>
+                                    <span className="flex items-center gap-1">
+                                        <Clock className="w-3 h-3" />
+                                        {c.time}
+                                    </span>
+                                    <span className="flex items-center gap-1">
+                                        <Users className="w-3 h-3" />
+                                        {c.participants} registered
+                                    </span>
+                                    <span
+                                        className={`font-medium ${difficultyColors[c.difficulty]}`}
+                                    >
+                                        {c.difficulty}
+                                    </span>
                                 </div>
                             </div>
-                            <Button size="sm" variant={c.status === 'Live' ? 'default' : 'outline'} className="shrink-0">
+                            <Button
+                                size="sm"
+                                variant={
+                                    c.status === 'Live' ? 'default' : 'outline'
+                                }
+                                className="shrink-0"
+                            >
                                 {c.status === 'Live' ? 'Join Now' : 'Register'}
                             </Button>
                         </div>
@@ -266,8 +358,22 @@ const ContestsSection = () => {
 // ─── Design Contest Section ───────────────────────────────────────────────────
 const DesignContestSection = () => {
     const contests = [
-        { id: 1, title: 'Dashboard Redesign Challenge', theme: 'SaaS Analytics', prize: '$500', deadline: '5 days left', entries: 48 },
-        { id: 2, title: 'Mobile-First Login Flow', theme: 'Fintech', prize: '$300', deadline: '12 days left', entries: 29 },
+        {
+            id: 1,
+            title: 'Dashboard Redesign Challenge',
+            theme: 'SaaS Analytics',
+            prize: '$500',
+            deadline: '5 days left',
+            entries: 48,
+        },
+        {
+            id: 2,
+            title: 'Mobile-First Login Flow',
+            theme: 'Fintech',
+            prize: '$300',
+            deadline: '12 days left',
+            entries: 29,
+        },
     ];
 
     return (
@@ -278,9 +384,12 @@ const DesignContestSection = () => {
                         <p className="text-sm font-semibold text-muted-foreground uppercase tracking-widest mb-2">
                             Design
                         </p>
-                        <h2 className="text-3xl sm:text-4xl font-bold text-foreground">Design Contests</h2>
+                        <h2 className="text-3xl sm:text-4xl font-bold text-foreground">
+                            Design Contests
+                        </h2>
                         <p className="text-muted-foreground mt-2 max-w-md">
-                            Put your design skills to the test. Create stunning UIs and win prizes.
+                            Put your design skills to the test. Create stunning
+                            UIs and win prizes.
                         </p>
                     </div>
                     <Button variant="outline" className="gap-2">
@@ -290,22 +399,36 @@ const DesignContestSection = () => {
 
                 <div className="grid sm:grid-cols-2 gap-6">
                     {contests.map((c) => (
-                        <Card key={c.id} className="group hover:shadow-lg hover:-translate-y-1 transition-all duration-300 border border-border hover:border-foreground/20 overflow-hidden">
+                        <Card
+                            key={c.id}
+                            className="group hover:shadow-lg hover:-translate-y-1 transition-all duration-300 border border-border hover:border-foreground/20 overflow-hidden"
+                        >
                             <div className="h-2 bg-primary w-full" />
                             <CardHeader>
                                 <div className="flex items-start justify-between gap-2">
-                                    <CardTitle className="text-base leading-snug">{c.title}</CardTitle>
-                                    <span className="px-2 py-1 bg-secondary rounded-md text-xs font-bold text-secondary-foreground shrink-0">{c.prize}</span>
+                                    <CardTitle className="text-base leading-snug">
+                                        {c.title}
+                                    </CardTitle>
+                                    <span className="px-2 py-1 bg-secondary rounded-md text-xs font-bold text-secondary-foreground shrink-0">
+                                        {c.prize}
+                                    </span>
                                 </div>
                                 <CardDescription>{c.theme}</CardDescription>
                             </CardHeader>
                             <CardContent>
                                 <div className="flex items-center justify-between text-xs text-muted-foreground mb-4">
-                                    <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{c.deadline}</span>
-                                    <span className="flex items-center gap-1"><Users className="w-3 h-3" />{c.entries} entries</span>
+                                    <span className="flex items-center gap-1">
+                                        <Clock className="w-3 h-3" />
+                                        {c.deadline}
+                                    </span>
+                                    <span className="flex items-center gap-1">
+                                        <Users className="w-3 h-3" />
+                                        {c.entries} entries
+                                    </span>
                                 </div>
                                 <Button size="sm" className="w-full gap-2">
-                                    Submit Design <ArrowRight className="w-3 h-3" />
+                                    Submit Design{' '}
+                                    <ArrowRight className="w-3 h-3" />
                                 </Button>
                             </CardContent>
                         </Card>
@@ -318,7 +441,7 @@ const DesignContestSection = () => {
 
 // ─── Home2 (Main Page) ────────────────────────────────────────────────────────
 const Home2 = () => {
-    const { user, login, logout } = useMockAuth();
+    const {user, login, logout} = useMockAuth();
 
     return (
         <div className="min-h-screen flex flex-col">

@@ -23,11 +23,25 @@ import UserProfile from './UserProfile.jsx';
 import UserProfileEdit from './UserProfileEdit.jsx';
 
 export {
-    Home, NotFound, Login, Register, Home2,
-    ContestsPage, AboutUs, UserProfile, UserProfileEdit,
-    ContestListPage, ContestEditPage, ProblemsPage, TestcasesPage,
-    VerifyContestsPage, AdminContestDetailsPage,
-    ContestParticipationLayout, ContestProblemsTab, ContestProblemView, ContestSubmitTab, ContestSubmissionsTab, ContestLeaderboardTab
+    Home,
+    NotFound,
+    Login,
+    Register,
+    Home2,
+    ContestsPage,
+    AboutUs,
+    UserProfile,
+    UserProfileEdit,
+    ContestListPage,
+    ContestEditPage,
+    ProblemsPage,
+    TestcasesPage,
+    VerifyContestsPage,
+    AdminContestDetailsPage,
+    ContestParticipationLayout,
+    ContestProblemsTab,
+    ContestProblemView,
+    ContestSubmitTab,
+    ContestSubmissionsTab,
+    ContestLeaderboardTab,
 };
-
-

@@ -1,22 +1,29 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { toast } from 'sonner';
+import {useState, useEffect} from 'react';
+import {useNavigate} from 'react-router-dom';
+import {toast} from 'sonner';
 import {
-    Plus, Trophy, Calendar, Clock, Shield, ShieldOff,
-    ChevronRight, Trash2, Search,
+    Plus,
+    Trophy,
+    Calendar,
+    Clock,
+    Shield,
+    ShieldOff,
+    ChevronRight,
+    Trash2,
+    Search,
 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import {Button} from '@/components/ui/button';
+import {Input} from '@/components/ui/input';
 import api from '@/lib/axios';
-import { useAuth } from '@/context/AuthContext';
+import {useAuth} from '@/context/AuthContext';
 
 const FILTERS = [
-    { key: 'all',        label: 'All' },
-    { key: 'upcoming',   label: 'Upcoming' },
-    { key: 'running',    label: 'Running' },
-    { key: 'past',       label: 'Past' },
-    { key: 'verified',   label: 'Verified' },
-    { key: 'unverified', label: 'Unverified' },
+    {key: 'all', label: 'All'},
+    {key: 'upcoming', label: 'Upcoming'},
+    {key: 'running', label: 'Running'},
+    {key: 'past', label: 'Past'},
+    {key: 'verified', label: 'Verified'},
+    {key: 'unverified', label: 'Unverified'},
 ];
 
 function getContestStatus(contest) {
@@ -30,13 +37,17 @@ function getContestStatus(contest) {
 
 function formatDate(iso) {
     return new Date(iso).toLocaleDateString('en-US', {
-        month: 'short', day: 'numeric', year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
     });
 }
 
 function formatTime(iso) {
     return new Date(iso).toLocaleTimeString('en-US', {
-        hour: '2-digit', minute: '2-digit', hour12: true,
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true,
     });
 }
 
@@ -76,27 +87,31 @@ function SkeletonCard() {
 }
 
 // ─── Contest Card ────────────────────────────────────────────────────────
-function ContestCard({ contest, onDelete }) {
+function ContestCard({contest, onDelete}) {
     const navigate = useNavigate();
     const status = getContestStatus(contest);
     const [deleting, setDeleting] = useState(false);
 
     const handleDelete = async (e) => {
         e.stopPropagation();
-        if (!confirm(`Delete "${contest.title}"? This cannot be undone.`)) return;
+        if (!confirm(`Delete "${contest.title}"? This cannot be undone.`))
+            return;
         setDeleting(true);
         try {
             await api.delete(`/contests/${contest.id}`);
             toast.success(`"${contest.title}" deleted.`);
             onDelete(contest.id);
         } catch (err) {
-            toast.error(err?.response?.data?.message || 'Failed to delete contest.');
+            toast.error(
+                err?.response?.data?.message || 'Failed to delete contest.'
+            );
         } finally {
             setDeleting(false);
         }
     };
 
-    const timeUntil = status === 'upcoming' ? getTimeUntil(contest.contest_start_time) : null;
+    const timeUntil =
+        status === 'upcoming' ? getTimeUntil(contest.contest_start_time) : null;
 
     return (
         <div
@@ -109,7 +124,9 @@ function ContestCard({ contest, onDelete }) {
                 <div className="flex items-start justify-between gap-3 mb-3">
                     <div className="flex items-center gap-3 min-w-0 flex-1">
                         {/* Division badge */}
-                        <div className={`div-badge-${contest.division} flex items-center justify-center w-10 h-10 rounded-lg text-xs font-bold shrink-0`}>
+                        <div
+                            className={`div-badge-${contest.division} flex items-center justify-center w-10 h-10 rounded-lg text-xs font-bold shrink-0`}
+                        >
                             D{contest.division}
                         </div>
                         <div className="min-w-0 flex-1">
@@ -117,8 +134,12 @@ function ContestCard({ contest, onDelete }) {
                                 {contest.title}
                             </h3>
                             <div className="flex items-center gap-2 mt-1">
-                                <span className={`status-dot status-${status}`} />
-                                <span className="text-xs text-muted-foreground capitalize">{status}</span>
+                                <span
+                                    className={`status-dot status-${status}`}
+                                />
+                                <span className="text-xs text-muted-foreground capitalize">
+                                    {status}
+                                </span>
                                 {timeUntil && (
                                     <span className="text-xs text-muted-foreground">
                                         · starts in {timeUntil}
@@ -154,8 +175,13 @@ function ContestCard({ contest, onDelete }) {
                     <span className="inline-flex items-center gap-1">
                         <Clock className="w-3 h-3" />
                         {(() => {
-                            const dur = (new Date(contest.contest_end_time) - new Date(contest.contest_start_time)) / 60000;
-                            return dur >= 60 ? `${Math.floor(dur / 60)}h ${dur % 60 ? `${dur % 60}m` : ''}` : `${dur}m`;
+                            const dur =
+                                (new Date(contest.contest_end_time) -
+                                    new Date(contest.contest_start_time)) /
+                                60000;
+                            return dur >= 60
+                                ? `${Math.floor(dur / 60)}h ${dur % 60 ? `${dur % 60}m` : ''}`
+                                : `${dur}m`;
                         })()}
                     </span>
                     {contest.isVerified ? (
@@ -185,7 +211,7 @@ function ContestCard({ contest, onDelete }) {
 // ─── Main Page ───────────────────────────────────────────────────────────
 export default function ContestListPage() {
     const navigate = useNavigate();
-    const { user } = useAuth();
+    const {user} = useAuth();
     const [contests, setContests] = useState([]);
     const [loading, setLoading] = useState(true);
     const [filter, setFilter] = useState('all');
@@ -198,7 +224,10 @@ export default function ContestListPage() {
                 const res = await api.get('/contests/my');
                 setContests(res.data.data || []);
             } catch (err) {
-                toast.error(err?.response?.data?.message || 'Failed to load your contests.');
+                toast.error(
+                    err?.response?.data?.message ||
+                        'Failed to load your contests.'
+                );
             } finally {
                 setLoading(false);
             }
@@ -213,32 +242,45 @@ export default function ContestListPage() {
     // Apply filters
     const filtered = contests.filter((c) => {
         // Text search
-        if (search && !c.title.toLowerCase().includes(search.toLowerCase())) return false;
+        if (search && !c.title.toLowerCase().includes(search.toLowerCase()))
+            return false;
 
         // Status filter
         const status = getContestStatus(c);
         switch (filter) {
-            case 'upcoming':   return status === 'upcoming';
-            case 'running':    return status === 'running';
-            case 'past':       return status === 'past';
-            case 'verified':   return c.isVerified;
-            case 'unverified': return !c.isVerified;
-            default:           return true;
+            case 'upcoming':
+                return status === 'upcoming';
+            case 'running':
+                return status === 'running';
+            case 'past':
+                return status === 'past';
+            case 'verified':
+                return c.isVerified;
+            case 'unverified':
+                return !c.isVerified;
+            default:
+                return true;
         }
     });
 
     // Count per filter for badges
     const counts = {};
-    FILTERS.forEach(({ key }) => {
+    FILTERS.forEach(({key}) => {
         counts[key] = contests.filter((c) => {
             const status = getContestStatus(c);
             switch (key) {
-                case 'upcoming':   return status === 'upcoming';
-                case 'running':    return status === 'running';
-                case 'past':       return status === 'past';
-                case 'verified':   return c.isVerified;
-                case 'unverified': return !c.isVerified;
-                default:           return true;
+                case 'upcoming':
+                    return status === 'upcoming';
+                case 'running':
+                    return status === 'running';
+                case 'past':
+                    return status === 'past';
+                case 'verified':
+                    return c.isVerified;
+                case 'unverified':
+                    return !c.isVerified;
+                default:
+                    return true;
             }
         }).length;
     });
@@ -254,12 +296,15 @@ export default function ContestListPage() {
                                 My Contests
                             </h1>
                             <p className="text-sm text-muted-foreground mt-1">
-                                Manage your designed contests, problems, and test cases.
+                                Manage your designed contests, problems, and
+                                test cases.
                             </p>
                         </div>
                         <Button
                             id="create-new-contest"
-                            onClick={() => navigate('/design-contest/contest/new')}
+                            onClick={() =>
+                                navigate('/design-contest/contest/new')
+                            }
                             className="gap-2 shrink-0"
                         >
                             <Plus className="w-4 h-4" />
@@ -286,22 +331,26 @@ export default function ContestListPage() {
 
                     {/* Filter tabs */}
                     <div className="flex items-center gap-1 border-b border-border overflow-x-auto pb-0">
-                        {FILTERS.map(({ key, label }) => (
+                        {FILTERS.map(({key, label}) => (
                             <button
                                 key={key}
                                 id={`filter-${key}`}
                                 onClick={() => setFilter(key)}
                                 className={`filter-tab text-sm font-medium px-3 py-2 whitespace-nowrap ${
-                                    filter === key ? 'active text-primary' : 'text-muted-foreground hover:text-foreground'
+                                    filter === key
+                                        ? 'active text-primary'
+                                        : 'text-muted-foreground hover:text-foreground'
                                 }`}
                             >
                                 {label}
                                 {counts[key] > 0 && (
-                                    <span className={`ml-1.5 text-xs px-1.5 py-0.5 rounded-full ${
-                                        filter === key
-                                            ? 'bg-primary/10 text-primary'
-                                            : 'bg-muted text-muted-foreground'
-                                    }`}>
+                                    <span
+                                        className={`ml-1.5 text-xs px-1.5 py-0.5 rounded-full ${
+                                            filter === key
+                                                ? 'bg-primary/10 text-primary'
+                                                : 'bg-muted text-muted-foreground'
+                                        }`}
+                                    >
                                         {counts[key]}
                                     </span>
                                 )}
@@ -313,7 +362,9 @@ export default function ContestListPage() {
                 {/* Contest grid */}
                 {loading ? (
                     <div className="grid gap-4 sm:grid-cols-2">
-                        {[1, 2, 3, 4].map((i) => <SkeletonCard key={i} />)}
+                        {[1, 2, 3, 4].map((i) => (
+                            <SkeletonCard key={i} />
+                        ))}
                     </div>
                 ) : filtered.length === 0 ? (
                     <div className="rounded-xl border border-dashed border-border py-16 text-center">
@@ -326,7 +377,9 @@ export default function ContestListPage() {
                         {contests.length === 0 && (
                             <Button
                                 className="mt-4 gap-2"
-                                onClick={() => navigate('/design-contest/contest/new')}
+                                onClick={() =>
+                                    navigate('/design-contest/contest/new')
+                                }
                             >
                                 <Plus className="w-4 h-4" />
                                 Create Your First Contest

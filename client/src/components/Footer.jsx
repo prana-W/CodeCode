@@ -1,5 +1,5 @@
-import { Code2, Github } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import {Code2, Github} from 'lucide-react';
+import {Link} from 'react-router-dom';
 
 export default function Footer() {
     return (
@@ -9,14 +9,19 @@ export default function Footer() {
                     <div className="flex items-center justify-center w-6 h-6 rounded-md bg-primary">
                         <Code2 className="w-3.5 h-3.5 text-primary-foreground" />
                     </div>
-                    <span className="text-sm font-semibold text-foreground">CodeCode</span>
+                    <span className="text-sm font-semibold text-foreground">
+                        CodeCode
+                    </span>
                     <span className="text-sm text-muted-foreground">
                         — Compete. Grow. Conquer.
                     </span>
                 </div>
 
                 <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                    <Link to="/about" className="hover:text-foreground transition-colors font-medium">
+                    <Link
+                        to="/about"
+                        className="hover:text-foreground transition-colors font-medium"
+                    >
                         About Us
                     </Link>
                     <a

@@ -1,22 +1,42 @@
-import { Home2, NotFound, Login, Register, ContestsPage, ContestListPage, ContestEditPage, ProblemsPage, TestcasesPage, VerifyContestsPage, AdminContestDetailsPage, ContestParticipationLayout, ContestProblemsTab, ContestProblemView, ContestSubmitTab, ContestSubmissionsTab, ContestLeaderboardTab, AboutUs, UserProfile, UserProfileEdit } from './pages/index.js';
-
+import {
+    Home2,
+    NotFound,
+    Login,
+    Register,
+    ContestsPage,
+    ContestListPage,
+    ContestEditPage,
+    ProblemsPage,
+    TestcasesPage,
+    VerifyContestsPage,
+    AdminContestDetailsPage,
+    ContestParticipationLayout,
+    ContestProblemsTab,
+    ContestProblemView,
+    ContestSubmitTab,
+    ContestSubmissionsTab,
+    ContestLeaderboardTab,
+    AboutUs,
+    UserProfile,
+    UserProfileEdit,
+} from './pages/index.js';
 
 import ErrorBoundary from './components/ErrorBoundary.jsx';
-import { ThemeProvider } from "@/components/theme-provider";
+import {ThemeProvider} from '@/components/theme-provider';
 import Layout from './Layout.jsx';
 
-import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom';
-import { useAuth } from './context/AuthContext.jsx';
+import {createBrowserRouter, RouterProvider, Navigate} from 'react-router-dom';
+import {useAuth} from './context/AuthContext.jsx';
 
-function ProtectedRoute({ children }) {
-    const { user } = useAuth();
+function ProtectedRoute({children}) {
+    const {user} = useAuth();
     if (!user) return <Navigate to="/login" replace />;
     return children;
 }
 
 /** Redirects non-admin users to home. */
-function AdminRoute({ children }) {
-    const { user } = useAuth();
+function AdminRoute({children}) {
+    const {user} = useAuth();
     if (!user || user.role !== 'admin') return <Navigate to="/" replace />;
     return children;
 }
@@ -76,29 +96,29 @@ const router = createBrowserRouter([
                 children: [
                     {
                         path: '',
-                        element: <Navigate to="problems" replace />
+                        element: <Navigate to="problems" replace />,
                     },
                     {
                         path: 'problems',
-                        element: <ContestProblemsTab />
+                        element: <ContestProblemsTab />,
                     },
                     {
                         path: 'problem/:problemId',
-                        element: <ContestProblemView />
+                        element: <ContestProblemView />,
                     },
                     {
                         path: 'submit',
-                        element: <ContestSubmitTab />
+                        element: <ContestSubmitTab />,
                     },
                     {
                         path: 'submissions',
-                        element: <ContestSubmissionsTab />
+                        element: <ContestSubmissionsTab />,
                     },
                     {
                         path: 'leaderboard',
-                        element: <ContestLeaderboardTab />
-                    }
-                ]
+                        element: <ContestLeaderboardTab />,
+                    },
+                ],
             },
             {
                 path: 'design-contest',

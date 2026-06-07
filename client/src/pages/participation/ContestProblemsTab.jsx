@@ -1,14 +1,14 @@
-import { useState, useEffect } from 'react';
-import { useParams, useNavigate, useOutletContext } from 'react-router-dom';
-import { toast } from 'sonner';
-import { Trophy, FileText, CheckCircle2, Loader2, BarChart2 } from 'lucide-react';
+import {useState, useEffect} from 'react';
+import {useParams, useNavigate, useOutletContext} from 'react-router-dom';
+import {toast} from 'sonner';
+import {Trophy, FileText, CheckCircle2, Loader2, BarChart2} from 'lucide-react';
 import api from '@/lib/axios';
 
 const PROBLEM_LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
 export default function ContestProblemsTab() {
-    const { id } = useParams();
-    const { problems } = useOutletContext();
+    const {id} = useParams();
+    const {problems} = useOutletContext();
     const navigate = useNavigate();
     const [countsMap, setCountsMap] = useState({}); // { problem_id: count }
     const [solvedSet, setSolvedSet] = useState(new Set());
@@ -16,7 +16,9 @@ export default function ContestProblemsTab() {
     useEffect(() => {
         const fetchSolved = async () => {
             try {
-                const res = await api.get(`/submissions/solved?contest_id=${id}`);
+                const res = await api.get(
+                    `/submissions/solved?contest_id=${id}`
+                );
                 setSolvedSet(new Set(res.data.data || []));
             } catch (err) {
                 // Ignore silent error
@@ -29,10 +31,12 @@ export default function ContestProblemsTab() {
         const fetchCounts = async () => {
             if (problems.length === 0) return;
             try {
-                const res = await api.get(`/submissions/counts?contest_id=${id}`);
+                const res = await api.get(
+                    `/submissions/counts?contest_id=${id}`
+                );
                 const data = res.data.data || [];
                 const newMap = {};
-                data.forEach(item => {
+                data.forEach((item) => {
                     newMap[item.problem_id] = item.total_submissions;
                 });
                 setCountsMap(newMap);
@@ -51,7 +55,9 @@ export default function ContestProblemsTab() {
             <div className="text-center py-16 border border-dashed rounded-xl bg-card">
                 <Trophy className="w-10 h-10 text-muted-foreground/40 mx-auto mb-3" />
                 <h3 className="font-semibold mb-1">No Problems Yet</h3>
-                <p className="text-sm text-muted-foreground">This contest currently has no active problems.</p>
+                <p className="text-sm text-muted-foreground">
+                    This contest currently has no active problems.
+                </p>
             </div>
         );
     }
@@ -61,8 +67,12 @@ export default function ContestProblemsTab() {
             <table className="w-full text-left">
                 <thead className="bg-muted/40 border-b border-border">
                     <tr>
-                        <th className="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider w-16 text-center">#</th>
-                        <th className="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Problem Name</th>
+                        <th className="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider w-16 text-center">
+                            #
+                        </th>
+                        <th className="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                            Problem Name
+                        </th>
                         <th className="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider w-32 text-center">
                             <span className="flex items-center justify-center gap-1.5">
                                 <BarChart2 className="w-3.5 h-3.5" />
@@ -77,9 +87,13 @@ export default function ContestProblemsTab() {
                         const submissions = countsMap[prob.problem_id] || 0;
                         const isSolved = solvedSet.has(prob.problem_id);
                         return (
-                            <tr 
+                            <tr
                                 key={prob.problem_id}
-                                onClick={() => navigate(`/contest/${id}/problem/${prob.problem_id}`)}
+                                onClick={() =>
+                                    navigate(
+                                        `/contest/${id}/problem/${prob.problem_id}`
+                                    )
+                                }
                                 className="group hover:bg-muted/30 transition-colors cursor-pointer"
                             >
                                 <td className="px-6 py-4 text-center relative">
@@ -97,9 +111,15 @@ export default function ContestProblemsTab() {
                                         {prob.title}
                                     </div>
                                     <div className="flex items-center gap-3 mt-1">
-                                        <span className="text-xs text-muted-foreground">Time limit: {prob.time_limit_ms} ms</span>
-                                        <span className="text-xs text-muted-foreground">Memory: {prob.memory_limit_mb} MB</span>
-                                        <span className="text-xs text-muted-foreground font-medium text-amber-600">{prob.score} pts</span>
+                                        <span className="text-xs text-muted-foreground">
+                                            Time limit: {prob.time_limit_ms} ms
+                                        </span>
+                                        <span className="text-xs text-muted-foreground">
+                                            Memory: {prob.memory_limit_mb} MB
+                                        </span>
+                                        <span className="text-xs text-muted-foreground font-medium text-amber-600">
+                                            {prob.score} pts
+                                        </span>
                                     </div>
                                 </td>
                                 <td className="px-6 py-4 text-center">

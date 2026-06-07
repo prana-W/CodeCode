@@ -1,23 +1,33 @@
-import { useState, useEffect } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
-import { toast } from 'sonner';
+import {useState, useEffect} from 'react';
+import {useParams, useNavigate, Link} from 'react-router-dom';
+import {toast} from 'sonner';
 import {
-    Trophy, ChevronRight, Save, LogOut, Trash2,
-    Calendar, Clock, FileText, AlertTriangle,
+    Trophy,
+    ChevronRight,
+    Save,
+    LogOut,
+    Trash2,
+    Calendar,
+    Clock,
+    FileText,
+    AlertTriangle,
 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
+import {Button} from '@/components/ui/button';
+import {Input} from '@/components/ui/input';
+import {Label} from '@/components/ui/label';
+import {Textarea} from '@/components/ui/textarea';
 import {
-    Select, SelectContent, SelectItem,
-    SelectTrigger, SelectValue,
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
 } from '@/components/ui/select';
 import api from '@/lib/axios';
-import { DIVISION_TIERS } from '@/constants/ratings';
+import {DIVISION_TIERS} from '@/constants/ratings';
 
 export default function ContestEditPage() {
-    const { id } = useParams();
+    const {id} = useParams();
     const navigate = useNavigate();
     const isNew = id === 'new' || !id;
 
@@ -55,11 +65,17 @@ export default function ContestEditPage() {
                     title: c.title || '',
                     description: c.description || '',
                     division: String(c.division || ''),
-                    contest_start_time: formatForDatetimeLocal(c.contest_start_time),
-                    contest_end_time: formatForDatetimeLocal(c.contest_end_time),
+                    contest_start_time: formatForDatetimeLocal(
+                        c.contest_start_time
+                    ),
+                    contest_end_time: formatForDatetimeLocal(
+                        c.contest_end_time
+                    ),
                 });
             } catch (err) {
-                toast.error(err?.response?.data?.message || 'Failed to load contest.');
+                toast.error(
+                    err?.response?.data?.message || 'Failed to load contest.'
+                );
                 navigate('/design-contest');
             } finally {
                 setLoading(false);
@@ -69,7 +85,7 @@ export default function ContestEditPage() {
     }, [id, isNew, navigate]);
 
     const set = (field) => (e) =>
-        setForm((p) => ({ ...p, [field]: e?.target?.value ?? e }));
+        setForm((p) => ({...p, [field]: e?.target?.value ?? e}));
 
     const validate = () => {
         if (isNew && !form.title.trim()) {
@@ -84,7 +100,9 @@ export default function ContestEditPage() {
             toast.error('Start and end times are required.');
             return false;
         }
-        if (new Date(form.contest_start_time) >= new Date(form.contest_end_time)) {
+        if (
+            new Date(form.contest_start_time) >= new Date(form.contest_end_time)
+        ) {
             toast.error('Start time must be before end time.');
             return false;
         }
@@ -122,21 +140,30 @@ export default function ContestEditPage() {
                 navigate('/design-contest');
             }
         } catch (err) {
-            toast.error(err?.response?.data?.message || 'Failed to save contest.');
+            toast.error(
+                err?.response?.data?.message || 'Failed to save contest.'
+            );
         } finally {
             setSaving(false);
         }
     };
 
     const handleDelete = async () => {
-        if (!confirm(`Delete "${contestData?.title || form.title}"? This action cannot be undone.`)) return;
+        if (
+            !confirm(
+                `Delete "${contestData?.title || form.title}"? This action cannot be undone.`
+            )
+        )
+            return;
         setDeleting(true);
         try {
             await api.delete(`/contests/${id}`);
             toast.success('Contest deleted.');
             navigate('/design-contest');
         } catch (err) {
-            toast.error(err?.response?.data?.message || 'Failed to delete contest.');
+            toast.error(
+                err?.response?.data?.message || 'Failed to delete contest.'
+            );
         } finally {
             setDeleting(false);
         }
@@ -170,10 +197,14 @@ export default function ContestEditPage() {
                 <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8">
                     {/* Breadcrumb */}
                     <nav className="flex items-center mb-4">
-                        <Link to="/design-contest" className="breadcrumb-link">My Contests</Link>
+                        <Link to="/design-contest" className="breadcrumb-link">
+                            My Contests
+                        </Link>
                         <span className="breadcrumb-sep">›</span>
                         <span className="text-sm text-foreground font-medium">
-                            {isNew ? 'New Contest' : contestData?.title || 'Edit Contest'}
+                            {isNew
+                                ? 'New Contest'
+                                : contestData?.title || 'Edit Contest'}
                         </span>
                     </nav>
 
@@ -215,7 +246,9 @@ export default function ContestEditPage() {
                             />
                         ) : (
                             <div className="flex items-center gap-3 px-4 py-3 rounded-lg bg-muted/50 border border-border">
-                                <span className="text-lg font-medium text-foreground">{contestData?.title}</span>
+                                <span className="text-lg font-medium text-foreground">
+                                    {contestData?.title}
+                                </span>
                                 <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded">
                                     Read-only
                                 </span>
@@ -230,7 +263,10 @@ export default function ContestEditPage() {
 
                     {/* Description Section */}
                     <section className="space-y-2">
-                        <Label htmlFor="contest-desc" className="text-sm font-semibold uppercase tracking-wide flex items-center gap-2">
+                        <Label
+                            htmlFor="contest-desc"
+                            className="text-sm font-semibold uppercase tracking-wide flex items-center gap-2"
+                        >
                             <FileText className="w-4 h-4 text-muted-foreground" />
                             Description
                         </Label>
@@ -246,26 +282,39 @@ export default function ContestEditPage() {
 
                     {/* Division Section */}
                     <section className="space-y-2">
-                        <Label htmlFor="contest-division" className="text-sm font-semibold uppercase tracking-wide flex items-center gap-2">
+                        <Label
+                            htmlFor="contest-division"
+                            className="text-sm font-semibold uppercase tracking-wide flex items-center gap-2"
+                        >
                             <Trophy className="w-4 h-4 text-muted-foreground" />
                             Division
                         </Label>
-                        <Select onValueChange={set('division')} value={form.division}>
-                            <SelectTrigger id="contest-division" className="max-w-xs">
+                        <Select
+                            onValueChange={set('division')}
+                            value={form.division}
+                        >
+                            <SelectTrigger
+                                id="contest-division"
+                                className="max-w-xs"
+                            >
                                 <SelectValue placeholder="Select division" />
                             </SelectTrigger>
                             <SelectContent>
-                                {DIVISION_TIERS.map(({ v, label, desc }) => (
+                                {DIVISION_TIERS.map(({v, label, desc}) => (
                                     <SelectItem key={v} value={v}>
                                         <span>{label}</span>
-                                        <span className="ml-2 text-xs text-muted-foreground">({desc})</span>
+                                        <span className="ml-2 text-xs text-muted-foreground">
+                                            ({desc})
+                                        </span>
                                     </SelectItem>
                                 ))}
                             </SelectContent>
                         </Select>
                         {form.division && (
                             <div className="flex items-center gap-2 mt-1">
-                                <div className={`div-badge-${form.division} text-xs font-bold px-2.5 py-1 rounded-md`}>
+                                <div
+                                    className={`div-badge-${form.division} text-xs font-bold px-2.5 py-1 rounded-md`}
+                                >
                                     Div. {form.division}
                                 </div>
                             </div>
@@ -280,7 +329,10 @@ export default function ContestEditPage() {
                         </h2>
                         <div className="grid sm:grid-cols-2 gap-4">
                             <div className="space-y-1.5">
-                                <Label htmlFor="contest-start" className="text-sm flex items-center gap-1.5">
+                                <Label
+                                    htmlFor="contest-start"
+                                    className="text-sm flex items-center gap-1.5"
+                                >
                                     <Clock className="w-3.5 h-3.5 text-muted-foreground" />
                                     Start Time
                                 </Label>
@@ -292,7 +344,10 @@ export default function ContestEditPage() {
                                 />
                             </div>
                             <div className="space-y-1.5">
-                                <Label htmlFor="contest-end" className="text-sm flex items-center gap-1.5">
+                                <Label
+                                    htmlFor="contest-end"
+                                    className="text-sm flex items-center gap-1.5"
+                                >
                                     <Clock className="w-3.5 h-3.5 text-muted-foreground" />
                                     End Time
                                 </Label>
@@ -306,10 +361,16 @@ export default function ContestEditPage() {
                         </div>
                         {form.contest_start_time && form.contest_end_time && (
                             <p className="text-xs text-muted-foreground">
-                                Duration: {(() => {
-                                    const dur = (new Date(form.contest_end_time) - new Date(form.contest_start_time)) / 60000;
+                                Duration:{' '}
+                                {(() => {
+                                    const dur =
+                                        (new Date(form.contest_end_time) -
+                                            new Date(form.contest_start_time)) /
+                                        60000;
                                     if (dur <= 0) return '—';
-                                    return dur >= 60 ? `${Math.floor(dur / 60)} hours ${dur % 60 ? `${dur % 60} minutes` : ''}` : `${dur} minutes`;
+                                    return dur >= 60
+                                        ? `${Math.floor(dur / 60)} hours ${dur % 60 ? `${dur % 60} minutes` : ''}`
+                                        : `${dur} minutes`;
                                 })()}
                             </p>
                         )}
@@ -322,9 +383,12 @@ export default function ContestEditPage() {
                                 <div className="flex items-center gap-3">
                                     <AlertTriangle className="w-5 h-5 text-destructive shrink-0" />
                                     <div>
-                                        <p className="text-sm font-medium text-foreground">Danger Zone</p>
+                                        <p className="text-sm font-medium text-foreground">
+                                            Danger Zone
+                                        </p>
                                         <p className="text-xs text-muted-foreground">
-                                            Deleting this contest will remove all its problems and test cases.
+                                            Deleting this contest will remove
+                                            all its problems and test cases.
                                         </p>
                                     </div>
                                 </div>

@@ -132,12 +132,29 @@ const swaggerDefinition = {
                         'application/json': {
                             schema: {
                                 type: 'object',
-                                required: ['username', 'name', 'email', 'password'],
+                                required: [
+                                    'username',
+                                    'name',
+                                    'email',
+                                    'password',
+                                ],
                                 properties: {
-                                    username: {type: 'string', example: 'coder_x'},
-                                    name: {type: 'string', example: 'Alex Mercer'},
-                                    email: {type: 'string', example: 'alex@example.com'},
-                                    password: {type: 'string', example: 'strongpassword123'},
+                                    username: {
+                                        type: 'string',
+                                        example: 'coder_x',
+                                    },
+                                    name: {
+                                        type: 'string',
+                                        example: 'Alex Mercer',
+                                    },
+                                    email: {
+                                        type: 'string',
+                                        example: 'alex@example.com',
+                                    },
+                                    password: {
+                                        type: 'string',
+                                        example: 'strongpassword123',
+                                    },
                                     institute: {type: 'string', example: 'MIT'},
                                 },
                             },
@@ -164,15 +181,24 @@ const swaggerDefinition = {
                                 type: 'object',
                                 required: ['email', 'password'],
                                 properties: {
-                                    email: {type: 'string', example: 'alex@example.com'},
-                                    password: {type: 'string', example: 'strongpassword123'},
+                                    email: {
+                                        type: 'string',
+                                        example: 'alex@example.com',
+                                    },
+                                    password: {
+                                        type: 'string',
+                                        example: 'strongpassword123',
+                                    },
                                 },
                             },
                         },
                     },
                 },
                 responses: {
-                    200: {description: 'Login successful — sets httpOnly token cookie'},
+                    200: {
+                        description:
+                            'Login successful — sets httpOnly token cookie',
+                    },
                     401: {description: 'Invalid credentials'},
                 },
             },
@@ -200,13 +226,34 @@ const swaggerDefinition = {
                         'application/json': {
                             schema: {
                                 type: 'object',
-                                required: ['title', 'contest_start_time', 'contest_end_time', 'division'],
+                                required: [
+                                    'title',
+                                    'contest_start_time',
+                                    'contest_end_time',
+                                    'division',
+                                ],
                                 properties: {
-                                    title: {type: 'string', example: 'CodeCode Grand Prix Div. 2'},
-                                    description: {type: 'string', example: 'Weekly contest'},
-                                    contest_start_time: {type: 'string', format: 'date-time'},
-                                    contest_end_time: {type: 'string', format: 'date-time'},
-                                    division: {type: 'integer', enum: [1, 2, 3, 4, 5], example: 2},
+                                    title: {
+                                        type: 'string',
+                                        example: 'CodeCode Grand Prix Div. 2',
+                                    },
+                                    description: {
+                                        type: 'string',
+                                        example: 'Weekly contest',
+                                    },
+                                    contest_start_time: {
+                                        type: 'string',
+                                        format: 'date-time',
+                                    },
+                                    contest_end_time: {
+                                        type: 'string',
+                                        format: 'date-time',
+                                    },
+                                    division: {
+                                        type: 'integer',
+                                        enum: [1, 2, 3, 4, 5],
+                                        example: 2,
+                                    },
                                 },
                             },
                         },
@@ -214,14 +261,18 @@ const swaggerDefinition = {
                 },
                 responses: {
                     201: {description: 'Contest created'},
-                    400: {description: 'Missing required fields or invalid division / times'},
+                    400: {
+                        description:
+                            'Missing required fields or invalid division / times',
+                    },
                     403: {description: 'Not allowed (admin cannot create)'},
                 },
             },
             get: {
                 tags: ['Contests'],
                 summary: 'List all visible contests',
-                description: 'Admins and creators see all contests. Regular users only see verified ones.',
+                description:
+                    'Admins and creators see all contests. Regular users only see verified ones.',
                 responses: {
                     200: {description: 'List of contests'},
                 },
@@ -236,12 +287,14 @@ const swaggerDefinition = {
                     'description, verification status, and evaluation status. Ordered by creation date (newest first).',
                 responses: {
                     200: {
-                        description: 'List of user\'s contests',
+                        description: "List of user's contests",
                         content: {
                             'application/json': {
                                 schema: {
                                     type: 'array',
-                                    items: {$ref: '#/components/schemas/Contest'},
+                                    items: {
+                                        $ref: '#/components/schemas/Contest',
+                                    },
                                 },
                             },
                         },
@@ -254,7 +307,14 @@ const swaggerDefinition = {
             get: {
                 tags: ['Contests'],
                 summary: 'Get a contest by ID',
-                parameters: [{in: 'path', name: 'id', required: true, schema: {type: 'integer'}}],
+                parameters: [
+                    {
+                        in: 'path',
+                        name: 'id',
+                        required: true,
+                        schema: {type: 'integer'},
+                    },
+                ],
                 responses: {
                     200: {description: 'Contest details'},
                     403: {description: 'Not verified and not admin/creator'},
@@ -265,7 +325,14 @@ const swaggerDefinition = {
                 tags: ['Contests'],
                 summary: 'Update a contest',
                 description: 'Creator only.',
-                parameters: [{in: 'path', name: 'id', required: true, schema: {type: 'integer'}}],
+                parameters: [
+                    {
+                        in: 'path',
+                        name: 'id',
+                        required: true,
+                        schema: {type: 'integer'},
+                    },
+                ],
                 requestBody: {
                     content: {
                         'application/json': {
@@ -273,9 +340,18 @@ const swaggerDefinition = {
                                 type: 'object',
                                 properties: {
                                     description: {type: 'string'},
-                                    division: {type: 'integer', enum: [1, 2, 3, 4, 5]},
-                                    contest_start_time: {type: 'string', format: 'date-time'},
-                                    contest_end_time: {type: 'string', format: 'date-time'},
+                                    division: {
+                                        type: 'integer',
+                                        enum: [1, 2, 3, 4, 5],
+                                    },
+                                    contest_start_time: {
+                                        type: 'string',
+                                        format: 'date-time',
+                                    },
+                                    contest_end_time: {
+                                        type: 'string',
+                                        format: 'date-time',
+                                    },
                                 },
                             },
                         },
@@ -291,7 +367,14 @@ const swaggerDefinition = {
                 tags: ['Contests'],
                 summary: 'Delete a contest',
                 description: 'Creator only.',
-                parameters: [{in: 'path', name: 'id', required: true, schema: {type: 'integer'}}],
+                parameters: [
+                    {
+                        in: 'path',
+                        name: 'id',
+                        required: true,
+                        schema: {type: 'integer'},
+                    },
+                ],
                 responses: {
                     200: {description: 'Contest deleted'},
                     403: {description: 'Not the contest creator'},
@@ -303,9 +386,18 @@ const swaggerDefinition = {
             get: {
                 tags: ['Contests'],
                 summary: 'Get contest leaderboard',
-                parameters: [{in: 'path', name: 'id', required: true, schema: {type: 'integer'}}],
+                parameters: [
+                    {
+                        in: 'path',
+                        name: 'id',
+                        required: true,
+                        schema: {type: 'integer'},
+                    },
+                ],
                 responses: {
-                    200: {description: 'Leaderboard rows sorted by final score'},
+                    200: {
+                        description: 'Leaderboard rows sorted by final score',
+                    },
                     403: {description: 'Contest not verified'},
                     404: {description: 'Contest not found'},
                 },
@@ -316,7 +408,14 @@ const swaggerDefinition = {
                 tags: ['Contests'],
                 summary: 'Toggle contest verification status',
                 description: 'Admin only.',
-                parameters: [{in: 'path', name: 'id', required: true, schema: {type: 'integer'}}],
+                parameters: [
+                    {
+                        in: 'path',
+                        name: 'id',
+                        required: true,
+                        schema: {type: 'integer'},
+                    },
+                ],
                 responses: {
                     200: {description: 'Verification status toggled'},
                     403: {description: 'Not admin'},
@@ -333,14 +432,27 @@ const swaggerDefinition = {
                     'updates `contest_registrations.delta`, `contest_registrations.final_rating`, ' +
                     '`users.rating`, and `users.max_rating` inside a single DB transaction. ' +
                     'Sets `contest_evaluation` to `completed` on success, reverts to `pending` on failure.',
-                parameters: [{in: 'path', name: 'id', required: true, schema: {type: 'integer'}}],
+                parameters: [
+                    {
+                        in: 'path',
+                        name: 'id',
+                        required: true,
+                        schema: {type: 'integer'},
+                    },
+                ],
                 responses: {
                     200: {description: 'Contest finalized successfully'},
                     400: {description: 'Contest has not ended yet'},
                     403: {description: 'Not admin'},
                     404: {description: 'Contest not found'},
-                    409: {description: 'Already finalized or finalization in progress'},
-                    500: {description: 'Delta calculation failed — status reverted to pending'},
+                    409: {
+                        description:
+                            'Already finalized or finalization in progress',
+                    },
+                    500: {
+                        description:
+                            'Delta calculation failed — status reverted to pending',
+                    },
                 },
             },
         },
@@ -350,7 +462,7 @@ const swaggerDefinition = {
                 summary: 'Register for a contest',
                 description:
                     'Registration is open from contest start until start + 30 minutes. ' +
-                    'Snapshots the user\'s current rating into `final_rating` on the registration row.',
+                    "Snapshots the user's current rating into `final_rating` on the registration row.",
                 requestBody: {
                     required: true,
                     content: {
@@ -368,7 +480,10 @@ const swaggerDefinition = {
                 responses: {
                     201: {description: 'Registered successfully'},
                     400: {description: 'contest_id missing'},
-                    403: {description: 'Contest ended or registration window closed'},
+                    403: {
+                        description:
+                            'Contest ended or registration window closed',
+                    },
                     404: {description: 'Contest not found'},
                     409: {description: 'Already registered'},
                 },
@@ -437,14 +552,30 @@ const swaggerDefinition = {
                         'application/json': {
                             schema: {
                                 type: 'object',
-                                required: ['contest_id', 'title', 'score', 'rating', 'statement'],
+                                required: [
+                                    'contest_id',
+                                    'title',
+                                    'score',
+                                    'rating',
+                                    'statement',
+                                ],
                                 properties: {
                                     contest_id: {type: 'integer'},
                                     title: {type: 'string'},
-                                    score: {type: 'integer', minimum: 0, maximum: 5000},
+                                    score: {
+                                        type: 'integer',
+                                        minimum: 0,
+                                        maximum: 5000,
+                                    },
                                     rating: {type: 'integer'},
-                                    time_limit_ms: {type: 'integer', default: 2000},
-                                    memory_limit_mb: {type: 'integer', default: 256},
+                                    time_limit_ms: {
+                                        type: 'integer',
+                                        default: 2000,
+                                    },
+                                    memory_limit_mb: {
+                                        type: 'integer',
+                                        default: 256,
+                                    },
                                     statement: {type: 'string'},
                                     explanation: {type: 'string'},
                                 },
@@ -460,12 +591,21 @@ const swaggerDefinition = {
             get: {
                 tags: ['Problems'],
                 summary: 'List all problems for a contest',
-                description: 'Normal users can only view after the contest starts.',
+                description:
+                    'Normal users can only view after the contest starts.',
                 parameters: [
-                    {in: 'query', name: 'contest_id', required: true, schema: {type: 'integer'}},
+                    {
+                        in: 'query',
+                        name: 'contest_id',
+                        required: true,
+                        schema: {type: 'integer'},
+                    },
                 ],
                 responses: {
-                    200: {description: 'List of problems (id + title only for regular users)'},
+                    200: {
+                        description:
+                            'List of problems (id + title only for regular users)',
+                    },
                     403: {description: 'Contest not started yet'},
                 },
             },
@@ -477,7 +617,14 @@ const swaggerDefinition = {
                 description:
                     'Rating is hidden from regular users until the contest ends. ' +
                     'Includes sample test cases automatically.',
-                parameters: [{in: 'path', name: 'id', required: true, schema: {type: 'integer'}}],
+                parameters: [
+                    {
+                        in: 'path',
+                        name: 'id',
+                        required: true,
+                        schema: {type: 'integer'},
+                    },
+                ],
                 responses: {
                     200: {description: 'Problem details'},
                     403: {description: 'Contest not started yet'},
@@ -488,7 +635,14 @@ const swaggerDefinition = {
                 tags: ['Problems'],
                 summary: 'Update a problem',
                 description: 'Contest creator only.',
-                parameters: [{in: 'path', name: 'id', required: true, schema: {type: 'integer'}}],
+                parameters: [
+                    {
+                        in: 'path',
+                        name: 'id',
+                        required: true,
+                        schema: {type: 'integer'},
+                    },
+                ],
                 requestBody: {
                     content: {
                         'application/json': {
@@ -515,7 +669,14 @@ const swaggerDefinition = {
                 tags: ['Problems'],
                 summary: 'Delete a problem',
                 description: 'Contest creator only.',
-                parameters: [{in: 'path', name: 'id', required: true, schema: {type: 'integer'}}],
+                parameters: [
+                    {
+                        in: 'path',
+                        name: 'id',
+                        required: true,
+                        schema: {type: 'integer'},
+                    },
+                ],
                 responses: {
                     200: {description: 'Problem deleted'},
                     403: {description: 'Not the contest creator'},
@@ -529,19 +690,33 @@ const swaggerDefinition = {
             post: {
                 tags: ['Test Cases'],
                 summary: 'Create a test case',
-                description: 'Contest creator only. Only one test case is allowed per problem.',
+                description:
+                    'Contest creator only. Only one test case is allowed per problem.',
                 requestBody: {
                     required: true,
                     content: {
                         'application/json': {
                             schema: {
                                 type: 'object',
-                                required: ['problem_id', 'input_data', 'expected_output'],
+                                required: [
+                                    'problem_id',
+                                    'input_data',
+                                    'expected_output',
+                                ],
                                 properties: {
                                     problem_id: {type: 'integer'},
-                                    input_data: {type: 'string', example: '10 20'},
-                                    expected_output: {type: 'string', example: '30'},
-                                    is_sample: {type: 'boolean', default: false},
+                                    input_data: {
+                                        type: 'string',
+                                        example: '10 20',
+                                    },
+                                    expected_output: {
+                                        type: 'string',
+                                        example: '30',
+                                    },
+                                    is_sample: {
+                                        type: 'boolean',
+                                        default: false,
+                                    },
                                 },
                             },
                         },
@@ -550,7 +725,10 @@ const swaggerDefinition = {
                 responses: {
                     201: {description: 'Test case created'},
                     403: {description: 'Not the contest creator'},
-                    409: {description: 'Test case already exists for this problem'},
+                    409: {
+                        description:
+                            'Test case already exists for this problem',
+                    },
                 },
             },
             get: {
@@ -558,7 +736,12 @@ const swaggerDefinition = {
                 summary: 'List all test cases for a problem',
                 description: 'Contest creator only.',
                 parameters: [
-                    {in: 'query', name: 'problem_id', required: true, schema: {type: 'integer'}},
+                    {
+                        in: 'query',
+                        name: 'problem_id',
+                        required: true,
+                        schema: {type: 'integer'},
+                    },
                 ],
                 responses: {
                     200: {description: 'List of test cases'},
@@ -571,7 +754,14 @@ const swaggerDefinition = {
                 tags: ['Test Cases'],
                 summary: 'Update a test case',
                 description: 'Contest creator only.',
-                parameters: [{in: 'path', name: 'id', required: true, schema: {type: 'integer'}}],
+                parameters: [
+                    {
+                        in: 'path',
+                        name: 'id',
+                        required: true,
+                        schema: {type: 'integer'},
+                    },
+                ],
                 requestBody: {
                     content: {
                         'application/json': {
@@ -596,7 +786,14 @@ const swaggerDefinition = {
                 tags: ['Test Cases'],
                 summary: 'Delete a test case',
                 description: 'Contest creator only.',
-                parameters: [{in: 'path', name: 'id', required: true, schema: {type: 'integer'}}],
+                parameters: [
+                    {
+                        in: 'path',
+                        name: 'id',
+                        required: true,
+                        schema: {type: 'integer'},
+                    },
+                ],
                 responses: {
                     200: {description: 'Test case deleted'},
                     403: {description: 'Not the contest creator'},
@@ -655,12 +852,22 @@ const swaggerDefinition = {
                         'application/json': {
                             schema: {
                                 type: 'object',
-                                required: ['problem_id', 'language', 'source_code'],
+                                required: [
+                                    'problem_id',
+                                    'language',
+                                    'source_code',
+                                ],
                                 properties: {
                                     problem_id: {type: 'integer'},
                                     language: {
                                         type: 'string',
-                                        enum: ['cpp', 'c', 'java', 'python', 'javascript'],
+                                        enum: [
+                                            'cpp',
+                                            'c',
+                                            'java',
+                                            'python',
+                                            'javascript',
+                                        ],
                                     },
                                     source_code: {type: 'string'},
                                 },
@@ -669,7 +876,9 @@ const swaggerDefinition = {
                     },
                 },
                 responses: {
-                    201: {description: 'Submission created, queued for judging'},
+                    201: {
+                        description: 'Submission created, queued for judging',
+                    },
                     403: {description: 'Contest not started yet'},
                 },
             },
@@ -680,7 +889,12 @@ const swaggerDefinition = {
                     'Regular users only see their own submissions. ' +
                     'Admins and contest creators see all. `source_code` is always hidden in lists.',
                 parameters: [
-                    {in: 'query', name: 'contest_id', required: true, schema: {type: 'integer'}},
+                    {
+                        in: 'query',
+                        name: 'contest_id',
+                        required: true,
+                        schema: {type: 'integer'},
+                    },
                 ],
                 responses: {
                     200: {description: 'List of submissions'},
@@ -691,11 +905,21 @@ const swaggerDefinition = {
             get: {
                 tags: ['Submissions'],
                 summary: 'Get a submission by ID',
-                description: 'Only the submitter, the contest creator, or an admin can view.',
-                parameters: [{in: 'path', name: 'id', required: true, schema: {type: 'integer'}}],
+                description:
+                    'Only the submitter, the contest creator, or an admin can view.',
+                parameters: [
+                    {
+                        in: 'path',
+                        name: 'id',
+                        required: true,
+                        schema: {type: 'integer'},
+                    },
+                ],
                 responses: {
                     200: {description: 'Full submission including source_code'},
-                    403: {description: 'Not authorized to view this submission'},
+                    403: {
+                        description: 'Not authorized to view this submission',
+                    },
                     404: {description: 'Submission not found'},
                 },
             },
@@ -706,7 +930,14 @@ const swaggerDefinition = {
             get: {
                 tags: ['Users'],
                 summary: 'Get user profile',
-                parameters: [{in: 'path', name: 'id', required: true, schema: {type: 'integer'}}],
+                parameters: [
+                    {
+                        in: 'path',
+                        name: 'id',
+                        required: true,
+                        schema: {type: 'integer'},
+                    },
+                ],
                 responses: {
                     200: {description: 'User details (password excluded)'},
                     404: {description: 'User not found'},
@@ -716,7 +947,14 @@ const swaggerDefinition = {
                 tags: ['Users'],
                 summary: 'Update user profile',
                 description: 'Can only update your own profile.',
-                parameters: [{in: 'path', name: 'id', required: true, schema: {type: 'integer'}}],
+                parameters: [
+                    {
+                        in: 'path',
+                        name: 'id',
+                        required: true,
+                        schema: {type: 'integer'},
+                    },
+                ],
                 requestBody: {
                     content: {
                         'application/json': {
@@ -742,8 +980,16 @@ const swaggerDefinition = {
             delete: {
                 tags: ['Users'],
                 summary: 'Delete user account',
-                description: 'Can only delete your own account. Clears the session cookie.',
-                parameters: [{in: 'path', name: 'id', required: true, schema: {type: 'integer'}}],
+                description:
+                    'Can only delete your own account. Clears the session cookie.',
+                parameters: [
+                    {
+                        in: 'path',
+                        name: 'id',
+                        required: true,
+                        schema: {type: 'integer'},
+                    },
+                ],
                 responses: {
                     200: {description: 'User deleted'},
                     403: {description: 'Not authorized'},
@@ -770,7 +1016,8 @@ const swaggerDefinition = {
                                 properties: {
                                     prompt: {
                                         type: 'string',
-                                        example: 'How do I find the longest palindromic substring?',
+                                        example:
+                                            'How do I find the longest palindromic substring?',
                                     },
                                 },
                             },

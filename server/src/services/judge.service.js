@@ -119,7 +119,7 @@ export async function runJudge({
         let stdout = '';
         let exitCode = 0;
         let killed = false;
-        
+
         // Compile Step
         let compilationError = '';
         if (['cpp', 'c', 'java'].includes(language)) {
@@ -127,25 +127,45 @@ export async function runJudge({
                 await execFileAsync(
                     'docker',
                     [
-                        'run', '--rm', '--network=none',
-                        `--name`, `compile-${submission_id}`,
-                        `--memory=${compileMemStr}`, '--memory-swap', compileMemStr,
+                        'run',
+                        '--rm',
+                        '--network=none',
+                        `--name`,
+                        `compile-${submission_id}`,
+                        `--memory=${compileMemStr}`,
+                        '--memory-swap',
+                        compileMemStr,
                         '--cpus=1',
-                        '-v', `${path.resolve(sandboxPath)}:/code`,
+                        '-v',
+                        `${path.resolve(sandboxPath)}:/code`,
                         DOCKER_IMAGES[language],
-                        'sh', '/code/compile.sh',
+                        'sh',
+                        '/code/compile.sh',
                     ],
-                    { timeout: 15000 } // 15s max compilation time
+                    {timeout: 15000} // 15s max compilation time
                 );
             } catch (err) {
                 exitCode = typeof err.code === 'number' ? err.code : 1;
                 if (exitCode === 100) {
                     try {
-                        compilationError = await fs.readFile(path.join(sandboxPath, 'compile.err'), 'utf8');
+                        compilationError = await fs.readFile(
+                            path.join(sandboxPath, 'compile.err'),
+                            'utf8'
+                        );
                     } catch {}
-                    return { verdict: 'compilation_error', execution_time_ms: 0, compilation_error: compilationError, actual_output: '' };
+                    return {
+                        verdict: 'compilation_error',
+                        execution_time_ms: 0,
+                        compilation_error: compilationError,
+                        actual_output: '',
+                    };
                 } else {
-                    return { verdict: 'runtime_error', execution_time_ms: 0, compilation_error: 'Compiler crashed or took too long.', actual_output: '' };
+                    return {
+                        verdict: 'runtime_error',
+                        execution_time_ms: 0,
+                        compilation_error: 'Compiler crashed or took too long.',
+                        actual_output: '',
+                    };
                 }
             }
         }

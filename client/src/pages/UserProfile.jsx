@@ -1,22 +1,34 @@
-import { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { toast } from 'sonner';
+import {useState, useEffect} from 'react';
+import {useNavigate, useParams} from 'react-router-dom';
+import {toast} from 'sonner';
 import {
-    User as UserIcon, Mail, Building2, TrendingUp, Trophy,
-    Shield, Loader2, Edit3, AtSign
+    User as UserIcon,
+    Mail,
+    Building2,
+    TrendingUp,
+    Trophy,
+    Shield,
+    Loader2,
+    Edit3,
+    AtSign,
 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import {Button} from '@/components/ui/button';
 import {
-    Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter
+    Card,
+    CardHeader,
+    CardTitle,
+    CardDescription,
+    CardContent,
+    CardFooter,
 } from '@/components/ui/card';
 import api from '@/lib/axios';
-import { useAuth } from '@/context/AuthContext';
-import { getRankDetails } from '@/constants/ratings';
+import {useAuth} from '@/context/AuthContext';
+import {getRankDetails} from '@/constants/ratings';
 
 export default function UserProfile() {
-    const { user } = useAuth();
+    const {user} = useAuth();
     const navigate = useNavigate();
-    const { username } = useParams();
+    const {username} = useParams();
     const [profile, setProfile] = useState(null);
     const [loading, setLoading] = useState(true);
 
@@ -28,7 +40,10 @@ export default function UserProfile() {
                 const res = await api.get(`/users/username/${username}`);
                 setProfile(res.data.data);
             } catch (err) {
-                toast.error(err?.response?.data?.message || 'Failed to load profile details.');
+                toast.error(
+                    err?.response?.data?.message ||
+                        'Failed to load profile details.'
+                );
             } finally {
                 setLoading(false);
             }
@@ -42,7 +57,9 @@ export default function UserProfile() {
             <div className="min-h-screen flex items-center justify-center bg-background">
                 <div className="flex flex-col items-center gap-3">
                     <Loader2 className="w-8 h-8 animate-spin text-primary" />
-                    <p className="text-sm text-muted-foreground">Loading profile details...</p>
+                    <p className="text-sm text-muted-foreground">
+                        Loading profile details...
+                    </p>
                 </div>
             </div>
         );
@@ -51,7 +68,9 @@ export default function UserProfile() {
     if (!profile) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-background">
-                <p className="text-muted-foreground">User profile could not be found.</p>
+                <p className="text-muted-foreground">
+                    User profile could not be found.
+                </p>
             </div>
         );
     }
@@ -61,7 +80,6 @@ export default function UserProfile() {
     return (
         <div className="min-h-screen bg-background py-8">
             <div className="max-w-3xl mx-auto px-4 sm:px-6">
-                
                 {/* Profile Title Header */}
                 <div className="flex items-center gap-3 mb-8">
                     <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-primary/10">
@@ -89,7 +107,9 @@ export default function UserProfile() {
                                 <h2 className="text-xl font-bold text-foreground">
                                     {profile.name}
                                 </h2>
-                                <span className={`inline-flex items-center self-center gap-1 text-[11px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-background border border-border ${rank.colorClass}`}>
+                                <span
+                                    className={`inline-flex items-center self-center gap-1 text-[11px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-background border border-border ${rank.colorClass}`}
+                                >
                                     {rank.title}
                                 </span>
                             </div>
@@ -106,10 +126,12 @@ export default function UserProfile() {
                             <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground/80 mb-2 border-b border-border/40 pb-1">
                                 Account Information
                             </h3>
-                            
+
                             {/* Email */}
                             <div className="flex flex-col gap-1">
-                                <span className="text-xs text-muted-foreground font-semibold">Email Address</span>
+                                <span className="text-xs text-muted-foreground font-semibold">
+                                    Email Address
+                                </span>
                                 <span className="text-sm text-foreground flex items-center gap-2 font-medium">
                                     <Mail className="w-4 h-4 text-muted-foreground/50" />
                                     {profile.email}
@@ -118,20 +140,30 @@ export default function UserProfile() {
 
                             {/* Institute */}
                             <div className="flex flex-col gap-1">
-                                <span className="text-xs text-muted-foreground font-semibold">Academic Institute</span>
+                                <span className="text-xs text-muted-foreground font-semibold">
+                                    Academic Institute
+                                </span>
                                 <span className="text-sm text-foreground flex items-center gap-2 font-medium">
                                     <Building2 className="w-4 h-4 text-muted-foreground/50" />
-                                    {profile.institute || <span className="text-muted-foreground italic font-normal">Not specified</span>}
+                                    {profile.institute || (
+                                        <span className="text-muted-foreground italic font-normal">
+                                            Not specified
+                                        </span>
+                                    )}
                                 </span>
                             </div>
 
                             {/* Role */}
                             {profile.role === 'admin' && (
                                 <div className="flex flex-col gap-1">
-                                    <span className="text-xs text-muted-foreground font-semibold">Role</span>
+                                    <span className="text-xs text-muted-foreground font-semibold">
+                                        Role
+                                    </span>
                                     <span className="text-sm text-foreground flex items-center gap-2 font-medium">
                                         <Shield className="w-4 h-4 text-muted-foreground/50" />
-                                        <span className="capitalize">{profile.role}</span>
+                                        <span className="capitalize">
+                                            {profile.role}
+                                        </span>
                                     </span>
                                 </div>
                             )}
@@ -149,7 +181,9 @@ export default function UserProfile() {
                                     <TrendingUp className="w-4 h-4 text-primary" />
                                     Current Rating
                                 </span>
-                                <span className={`font-extrabold text-2xl ${rank.colorClass}`}>
+                                <span
+                                    className={`font-extrabold text-2xl ${rank.colorClass}`}
+                                >
                                     {profile.rating || 0}
                                 </span>
                             </div>
@@ -179,7 +213,6 @@ export default function UserProfile() {
                         </CardFooter>
                     )}
                 </Card>
-
             </div>
         </div>
     );

@@ -120,19 +120,40 @@
 }
 
 /* ── Design Contest: Division badge colors ───────────────────────────── */
-.div-badge-1 { background: oklch(0.65 0.22 25); color: white; }
-.div-badge-2 { background: oklch(0.60 0.20 250); color: white; }
-.div-badge-3 { background: oklch(0.68 0.17 155); color: white; }
-.div-badge-4 { background: oklch(0.62 0.20 300); color: white; }
-.div-badge-5 { background: oklch(0.55 0.03 260); color: white; }
+.div-badge-1 {
+    background: oklch(0.65 0.22 25);
+    color: white;
+}
+.div-badge-2 {
+    background: oklch(0.6 0.2 250);
+    color: white;
+}
+.div-badge-3 {
+    background: oklch(0.68 0.17 155);
+    color: white;
+}
+.div-badge-4 {
+    background: oklch(0.62 0.2 300);
+    color: white;
+}
+.div-badge-5 {
+    background: oklch(0.55 0.03 260);
+    color: white;
+}
 
 /* ── Status pulse animations ─────────────────────────────────────────── */
 @keyframes status-pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.4; }
+    0%,
+    100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.4;
+    }
 }
 .status-dot {
-    width: 8px; height: 8px;
+    width: 8px;
+    height: 8px;
     border-radius: 9999px;
     display: inline-block;
     flex-shrink: 0;
@@ -146,12 +167,15 @@
     animation: status-pulse 1.2s ease-in-out infinite;
 }
 .status-past {
-    background: oklch(0.60 0.02 260);
+    background: oklch(0.6 0.02 260);
 }
 
 /* ── Contest card hover ──────────────────────────────────────────────── */
 .contest-card {
-    transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+    transition:
+        transform 0.15s ease,
+        box-shadow 0.15s ease,
+        border-color 0.15s ease;
 }
 .contest-card:hover {
     transform: translateY(-2px);
@@ -167,7 +191,9 @@
 .filter-tab::after {
     content: '';
     position: absolute;
-    bottom: 0; left: 0; right: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
     height: 2px;
     background: transparent;
     border-radius: 1px;
@@ -182,11 +208,16 @@
 
 /* ── Skeleton shimmer ────────────────────────────────────────────────── */
 @keyframes shimmer {
-    0% { background-position: -200% 0; }
-    100% { background-position: 200% 0; }
+    0% {
+        background-position: -200% 0;
+    }
+    100% {
+        background-position: 200% 0;
+    }
 }
 .skeleton {
-    background: linear-gradient(90deg,
+    background: linear-gradient(
+        90deg,
         var(--muted) 25%,
         var(--accent) 50%,
         var(--muted) 75%
@@ -249,7 +280,8 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 32px; height: 32px;
+    width: 32px;
+    height: 32px;
     border-radius: 8px;
     font-weight: 700;
     font-size: 0.875rem;

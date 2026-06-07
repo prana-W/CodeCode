@@ -40,7 +40,11 @@ app.use('/api/', apiLimiter);
 app.get('/', checkHealth);
 app.get('/api/v1', checkHealth);
 
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDefinition, {customSiteTitle: 'CodeCode API Docs'}));
+app.use(
+    '/api-docs',
+    swaggerUi.serve,
+    swaggerUi.setup(swaggerDefinition, {customSiteTitle: 'CodeCode API Docs'})
+);
 
 app.use('/api/v1/auth', authRouter);
 app.use('/api/v1/contests', contestRouter);

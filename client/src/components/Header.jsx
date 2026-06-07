@@ -1,13 +1,13 @@
-import { useState } from 'react';
-import { Link, NavLink, useNavigate } from 'react-router-dom';
-import { Code2, Menu, X, LogOut } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { useAuth } from '@/context/AuthContext';
-import { toast } from 'sonner';
+import {useState} from 'react';
+import {Link, NavLink, useNavigate} from 'react-router-dom';
+import {Code2, Menu, X, LogOut} from 'lucide-react';
+import {Button} from '@/components/ui/button';
+import {useAuth} from '@/context/AuthContext';
+import {toast} from 'sonner';
 import ProfileHoverCard from './ProfileHoverCard';
 
 export default function Header() {
-    const { user, logout } = useAuth();
+    const {user, logout} = useAuth();
     const navigate = useNavigate();
     const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -24,21 +24,21 @@ export default function Header() {
     // Dynamic Navigation Links based on role
     const getNavLinks = () => {
         if (!user) return [];
-        
+
         if (user.role === 'admin') {
             return [
-                  { to: '', label: 'HOME' },
-                { to: '/contests', label: 'CONTESTS' },
-                { to: '/admin/verify-contests', label: 'VERIFY CONTESTS' },
-                { to: '/about', label: 'ABOUT' },
+                {to: '', label: 'HOME'},
+                {to: '/contests', label: 'CONTESTS'},
+                {to: '/admin/verify-contests', label: 'VERIFY CONTESTS'},
+                {to: '/about', label: 'ABOUT'},
             ];
         }
-        
+
         return [
-            { to: '/', label: 'HOME', end: true },
-            { to: '/contests', label: 'CONTESTS' },
-            { to: '/design-contest', label: 'DESIGN' },
-            { to: '/about', label: 'ABOUT' },
+            {to: '/', label: 'HOME', end: true},
+            {to: '/contests', label: 'CONTESTS'},
+            {to: '/design-contest', label: 'DESIGN'},
+            {to: '/about', label: 'ABOUT'},
         ];
     };
 
@@ -63,7 +63,9 @@ export default function Header() {
                     {user ? (
                         <>
                             <ProfileHoverCard user={user} />
-                            <span className="mx-2 text-muted-foreground/60 font-normal">|</span>
+                            <span className="mx-2 text-muted-foreground/60 font-normal">
+                                |
+                            </span>
                             <button
                                 onClick={handleLogout}
                                 className="text-primary hover:underline underline-offset-4 transition-colors"
@@ -73,11 +75,19 @@ export default function Header() {
                         </>
                     ) : (
                         <>
-                            <Link to="/register" className="text-primary hover:underline underline-offset-4 transition-colors">
+                            <Link
+                                to="/register"
+                                className="text-primary hover:underline underline-offset-4 transition-colors"
+                            >
                                 Register
                             </Link>
-                            <span className="mx-2 text-muted-foreground/60 font-normal">|</span>
-                            <Link to="/login" className="text-primary hover:underline underline-offset-4 transition-colors">
+                            <span className="mx-2 text-muted-foreground/60 font-normal">
+                                |
+                            </span>
+                            <Link
+                                to="/login"
+                                className="text-primary hover:underline underline-offset-4 transition-colors"
+                            >
                                 Sign In
                             </Link>
                         </>
@@ -91,7 +101,11 @@ export default function Header() {
                     onClick={() => setMobileOpen((v) => !v)}
                     aria-label="Toggle menu"
                 >
-                    {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+                    {mobileOpen ? (
+                        <X className="w-5 h-5" />
+                    ) : (
+                        <Menu className="w-5 h-5" />
+                    )}
                 </button>
             </div>
 
@@ -99,15 +113,15 @@ export default function Header() {
             {user && (
                 <div className="hidden md:block max-w-7xl mx-auto w-full px-4 sm:px-6 pb-2">
                     <nav className="flex flex-wrap items-center gap-x-6 gap-y-2 rounded-md border border-border bg-card px-6 shadow-sm overflow-hidden">
-                        {navLinks.map(({ to, label, end }) => (
-                            <NavLink 
-                                key={to} 
-                                to={to} 
+                        {navLinks.map(({to, label, end}) => (
+                            <NavLink
+                                key={to}
+                                to={to}
                                 end={end}
-                                className={({ isActive }) => 
+                                className={({isActive}) =>
                                     `text-xs font-bold tracking-wider py-3 border-b-[3px] transition-all whitespace-nowrap ${
-                                        isActive 
-                                            ? 'border-primary text-foreground' 
+                                        isActive
+                                            ? 'border-primary text-foreground'
                                             : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border'
                                     }`
                                 }
@@ -122,21 +136,24 @@ export default function Header() {
             {/* Mobile drawer */}
             {mobileOpen && (
                 <div className="md:hidden border-t border-border bg-background px-4 py-4 space-y-3">
-                    {user && navLinks.map(({ to, label, end }) => (
-                        <NavLink
-                            key={to}
-                            to={to}
-                            end={end}
-                            className={({ isActive }) => 
-                                `block py-2 text-sm font-bold tracking-wide transition-colors ${
-                                    isActive ? 'text-primary' : 'text-muted-foreground hover:text-foreground'
-                                }`
-                            }
-                            onClick={() => setMobileOpen(false)}
-                        >
-                            {label}
-                        </NavLink>
-                    ))}
+                    {user &&
+                        navLinks.map(({to, label, end}) => (
+                            <NavLink
+                                key={to}
+                                to={to}
+                                end={end}
+                                className={({isActive}) =>
+                                    `block py-2 text-sm font-bold tracking-wide transition-colors ${
+                                        isActive
+                                            ? 'text-primary'
+                                            : 'text-muted-foreground hover:text-foreground'
+                                    }`
+                                }
+                                onClick={() => setMobileOpen(false)}
+                            >
+                                {label}
+                            </NavLink>
+                        ))}
 
                     <div className="pt-3 border-t border-border space-y-2">
                         {user ? (
@@ -149,7 +166,10 @@ export default function Header() {
                                     variant="outline"
                                     size="sm"
                                     className="w-full gap-1.5"
-                                    onClick={() => { handleLogout(); setMobileOpen(false); }}
+                                    onClick={() => {
+                                        handleLogout();
+                                        setMobileOpen(false);
+                                    }}
                                 >
                                     <LogOut className="w-3.5 h-3.5" />
                                     Logout
@@ -157,11 +177,26 @@ export default function Header() {
                             </>
                         ) : (
                             <div className="flex gap-2">
-                                <Button variant="outline" size="sm" className="flex-1" asChild>
-                                    <Link to="/login" onClick={() => setMobileOpen(false)}>Sign In</Link>
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="flex-1"
+                                    asChild
+                                >
+                                    <Link
+                                        to="/login"
+                                        onClick={() => setMobileOpen(false)}
+                                    >
+                                        Sign In
+                                    </Link>
                                 </Button>
                                 <Button size="sm" className="flex-1" asChild>
-                                    <Link to="/register" onClick={() => setMobileOpen(false)}>Register</Link>
+                                    <Link
+                                        to="/register"
+                                        onClick={() => setMobileOpen(false)}
+                                    >
+                                        Register
+                                    </Link>
                                 </Button>
                             </div>
                         )}

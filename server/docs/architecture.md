@@ -129,7 +129,7 @@ Body: { problem_id, language, source_code }
 
 | Step | File                                            | What happens                                                                                              |
 | ---- | ----------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
-| 1    | `app.js`                                        | Request hits Express; `morgan` logs it; `apiLimiter` checks IP rate limit                                |
+| 1    | `app.js`                                        | Request hits Express; `morgan` logs it; `apiLimiter` checks IP rate limit                                 |
 | 2    | `middlewares/verifyToken.js`                    | JWT from the `token` cookie is verified; `req.userId` and `req.role` attached                             |
 | 3    | `routes/submission.routes.js`                   | Matched to `router.post('/', submissionLimiter, createSubmission)`                                        |
 | 4    | `controllers/submission.controller.js`          | `createSubmission` handler runs                                                                           |
@@ -221,12 +221,12 @@ docker run --rm \
 
 **Docker images used:**
 
-| Language           | Image              |
-| ------------------ | ------------------ |
-| `cpp`, `c`         | `gcc:latest`       |
-| `java`             | `openjdk:21-slim`  |
-| `python`           | `python:3.12-slim` |
-| `javascript`       | `node:22-slim`     |
+| Language     | Image              |
+| ------------ | ------------------ |
+| `cpp`, `c`   | `gcc:latest`       |
+| `java`       | `openjdk:21-slim`  |
+| `python`     | `python:3.12-slim` |
+| `javascript` | `node:22-slim`     |
 
 Node.js enforces an outer timeout of `time_limit_ms + 10_000ms` (10s buffer for Docker startup overhead). `maxBuffer` is capped at 10 MB to prevent stdout flooding.
 
@@ -312,8 +312,8 @@ Guarded by `verifyAdmin`. Same `deltaCalculation()` call with the same status st
 5. Applies a **zero-sum correction**: subtracts `round(sumDelta / n)` from every delta so the total change across the field sums to zero.
 6. Floors each new rating at `RATING_FLOOR = 400`.
 7. Runs a single **MySQL transaction**:
-   - `ContestRegistration.updateDelta()` — writes `delta` and `final_rating` to the registration row.
-   - `User.updateRating()` — updates `users.rating` and `users.max_rating`.
+    - `ContestRegistration.updateDelta()` — writes `delta` and `final_rating` to the registration row.
+    - `User.updateRating()` — updates `users.rating` and `users.max_rating`.
 8. Rolls back the transaction if any update fails.
 
 ---
@@ -338,15 +338,15 @@ Body: { prompt: "What is a segment tree?" }
 
 All rate limiters use `express-rate-limit` with `standardHeaders: true`.
 
-| Limiter                    | Applied to                        | Window       | Limit |
-| -------------------------- | --------------------------------- | ------------ | ----- |
-| `apiLimiter`               | All `/api/*` routes               | 15 min       | 100   |
-| `authLimiter`              | `POST /auth/register`, `/login`   | 15 min       | 10    |
-| `submissionLimiter`        | `POST /submissions`               | 1 min        | 5     |
-| `contestCreationLimiter`   | `POST /contests`                  | 1 hour       | 5     |
-| `contestRegistrationLimiter`| `POST /contests/register`        | 10 min       | 10    |
-| `profileUpdateLimiter`     | `PATCH /users/:id`                | 15 min       | 15    |
-| `aiLimiter`                | `POST /ai/ask`                    | 5 min        | 100   |
+| Limiter                      | Applied to                      | Window | Limit |
+| ---------------------------- | ------------------------------- | ------ | ----- |
+| `apiLimiter`                 | All `/api/*` routes             | 15 min | 100   |
+| `authLimiter`                | `POST /auth/register`, `/login` | 15 min | 10    |
+| `submissionLimiter`          | `POST /submissions`             | 1 min  | 5     |
+| `contestCreationLimiter`     | `POST /contests`                | 1 hour | 5     |
+| `contestRegistrationLimiter` | `POST /contests/register`       | 10 min | 10    |
+| `profileUpdateLimiter`       | `PATCH /users/:id`              | 15 min | 15    |
+| `aiLimiter`                  | `POST /ai/ask`                  | 5 min  | 100   |
 
 ---
 
@@ -363,26 +363,26 @@ All rate limiters use `express-rate-limit` with `standardHeaders: true`.
 
 Scaffolded but not yet fully activated in production startup.
 
-| File                                             | Purpose                                                   |
-| ------------------------------------------------ | --------------------------------------------------------- |
-| `sockets/index.js`                               | `initializeSocket(httpServer)` — creates `Server` with CORS `*` |
-| `sockets/socket.js`                              | `registerSockets(io)` — wires auth middleware + connection/disconnect logging |
+| File                                                  | Purpose                                                                                                     |
+| ----------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| `sockets/index.js`                                    | `initializeSocket(httpServer)` — creates `Server` with CORS `*`                                             |
+| `sockets/socket.js`                                   | `registerSockets(io)` — wires auth middleware + connection/disconnect logging                               |
 | `sockets/middlewares/verifyAccessToken.middleware.js` | Reads `socket.handshake.auth.accessToken`, verifies JWT via `ACCESS_TOKEN_SECRET`, attaches `socket.userId` |
-| `sockets/controllers/`                           | Empty — placeholder for future real-time event handlers   |
+| `sockets/controllers/`                                | Empty — placeholder for future real-time event handlers                                                     |
 
 ---
 
 ## Database Schema (6 tables)
 
-| Table                   | Key columns                                                                                          |
-| ----------------------- | ---------------------------------------------------------------------------------------------------- |
-| `users`                 | `id`, `username`, `name`, `institute`, `email`, `password`, `rating`, `max_rating`, `role`, `created_at` |
+| Table                   | Key columns                                                                                                                                                                        |
+| ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `users`                 | `id`, `username`, `name`, `institute`, `email`, `password`, `rating`, `max_rating`, `role`, `created_at`                                                                           |
 | `contests`              | `id`, `title`, `description`, `isVerified`, `authored_by`, `contest_start_time`, `contest_end_time`, `contest_evaluation ENUM(pending,running,completed)`, `division TINYINT(1–5)` |
-| `problems`              | `problem_id`, `contest_id`, `title`, `score`, `rating`, `time_limit_ms`, `memory_limit_mb`, `statement`, `explanation` |
-| `test_cases`            | `test_case_id`, `problem_id` (UNIQUE), `input_data`, `expected_output`, `is_sample`                  |
-| `submissions`           | `submission_id`, `problem_id`, `submitted_by`, `submitted_at`, `verdict ENUM(...)`, `language ENUM(...)`, `source_code`, `execution_time_ms`, `memory_used_kb` |
-| `contest_standings`     | `(contest_id, user_id, problem_id)` PK, `accepted_submission_id` — one row per solved problem per user |
-| `contest_registrations` | `registration_id`, `contest_id`, `user_id`, `registered_at`, `delta`, `final_rating` — one row per participant |
+| `problems`              | `problem_id`, `contest_id`, `title`, `score`, `rating`, `time_limit_ms`, `memory_limit_mb`, `statement`, `explanation`                                                             |
+| `test_cases`            | `test_case_id`, `problem_id` (UNIQUE), `input_data`, `expected_output`, `is_sample`                                                                                                |
+| `submissions`           | `submission_id`, `problem_id`, `submitted_by`, `submitted_at`, `verdict ENUM(...)`, `language ENUM(...)`, `source_code`, `execution_time_ms`, `memory_used_kb`                     |
+| `contest_standings`     | `(contest_id, user_id, problem_id)` PK, `accepted_submission_id` — one row per solved problem per user                                                                             |
+| `contest_registrations` | `registration_id`, `contest_id`, `user_id`, `registered_at`, `delta`, `final_rating` — one row per participant                                                                     |
 
 ---
 
@@ -473,7 +473,7 @@ Cron (every 5 min, runs inside API server process)
 | `concurrently`                | Runs API server and judge worker as two parallel `nodemon` processes in dev  |
 | `morgan`                      | HTTP request logger                                                          |
 | `dotenv`                      | Loads `.env` into `process.env`                                              |
-| `cors`                        | Configures allowed origins from `CORS_ORIGIN` env variable                  |
+| `cors`                        | Configures allowed origins from `CORS_ORIGIN` env variable                   |
 | `ngrok`                       | (Commented out) Tunnel for exposing local server publicly                    |
 | `child_process` (Node stdlib) | `execFile` to spawn the `docker run` command                                 |
 | `fs/promises` (Node stdlib)   | Async file I/O for writing source files and cleanup                          |
@@ -482,17 +482,17 @@ Cron (every 5 min, runs inside API server process)
 
 ## Environment Variables (`.env`)
 
-| Key                   | Purpose                                             |
-| --------------------- | --------------------------------------------------- |
-| `PORT`                | HTTP server port (default `8000`)                   |
-| `MYSQL_HOST`          | MySQL host                                          |
-| `MYSQL_USER`          | MySQL user                                          |
-| `MYSQL_PASSWORD`      | MySQL password                                      |
-| `MYSQL_DB`            | Database name (`codecode_v0`)                       |
-| `JWT_SECRET`          | Secret key for signing/verifying HTTP JWT cookies   |
-| `JWT_EXPIRES_IN`      | JWT expiry (default `7d`)                           |
-| `ACCESS_TOKEN_SECRET` | Secret key for Socket.IO access tokens              |
-| `REDIS_PORT`          | Redis port (default `6379`)                         |
-| `CORS_ORIGIN`         | Comma-separated allowed origins                     |
-| `OLLAMA_URL`          | Base URL of the local Ollama instance               |
+| Key                   | Purpose                                                   |
+| --------------------- | --------------------------------------------------------- |
+| `PORT`                | HTTP server port (default `8000`)                         |
+| `MYSQL_HOST`          | MySQL host                                                |
+| `MYSQL_USER`          | MySQL user                                                |
+| `MYSQL_PASSWORD`      | MySQL password                                            |
+| `MYSQL_DB`            | Database name (`codecode_v0`)                             |
+| `JWT_SECRET`          | Secret key for signing/verifying HTTP JWT cookies         |
+| `JWT_EXPIRES_IN`      | JWT expiry (default `7d`)                                 |
+| `ACCESS_TOKEN_SECRET` | Secret key for Socket.IO access tokens                    |
+| `REDIS_PORT`          | Redis port (default `6379`)                               |
+| `CORS_ORIGIN`         | Comma-separated allowed origins                           |
+| `OLLAMA_URL`          | Base URL of the local Ollama instance                     |
 | `OLLAMA_MODEL`        | Model name to use for the AI assistant (e.g. `gemma3:4b`) |

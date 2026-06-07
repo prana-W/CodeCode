@@ -1,22 +1,22 @@
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { toast } from 'sonner';
-import { Eye, EyeOff, Mail, Lock, Code2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import {useState} from 'react';
+import {Link, useNavigate} from 'react-router-dom';
+import {toast} from 'sonner';
+import {Eye, EyeOff, Mail, Lock, Code2} from 'lucide-react';
+import {Button} from '@/components/ui/button';
+import {Input} from '@/components/ui/input';
+import {Label} from '@/components/ui/label';
 import AuthBrand from '@/components/auth/AuthBrand';
-import { useAuth } from '@/context/AuthContext';
+import {useAuth} from '@/context/AuthContext';
 
 export default function Login() {
     const navigate = useNavigate();
-    const { login } = useAuth();
-    const [form, setForm] = useState({ email: '', password: '' });
+    const {login} = useAuth();
+    const [form, setForm] = useState({email: '', password: ''});
     const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
 
     const handleChange = (e) => {
-        setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+        setForm((prev) => ({...prev, [e.target.name]: e.target.value}));
     };
 
     const handleSubmit = async (e) => {
@@ -34,7 +34,8 @@ export default function Login() {
             navigate('/');
         } catch (err) {
             const message =
-                err?.response?.data?.message || 'Login failed. Please try again.';
+                err?.response?.data?.message ||
+                'Login failed. Please try again.';
             toast.error(message);
         } finally {
             setLoading(false);
@@ -70,7 +71,11 @@ export default function Login() {
                     </div>
 
                     {/* Form */}
-                    <form onSubmit={handleSubmit} className="space-y-5" noValidate>
+                    <form
+                        onSubmit={handleSubmit}
+                        className="space-y-5"
+                        noValidate
+                    >
                         {/* Email */}
                         <div className="space-y-2">
                             <Label htmlFor="login-email">Email address</Label>
@@ -114,7 +119,11 @@ export default function Login() {
                                 />
                                 <button
                                     type="button"
-                                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                                    aria-label={
+                                        showPassword
+                                            ? 'Hide password'
+                                            : 'Show password'
+                                    }
                                     onClick={() => setShowPassword((v) => !v)}
                                     className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
                                 >

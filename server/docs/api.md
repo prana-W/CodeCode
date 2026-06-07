@@ -887,6 +887,7 @@ _Note: All endpoints require authentication._
     }
     ```
 - **Success Response (200 OK)**:
+
     ```json
     {
         "statusCode": 200,

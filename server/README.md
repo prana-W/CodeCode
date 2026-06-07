@@ -6,73 +6,79 @@ A high-performance, production-grade backend for a competitive programming platf
 
 ## 📖 Documentation
 
-| Document | Description |
-|---|---|
-| [`docs/architecture.md`](./docs/architecture.md) | Full system architecture — directory tree, server startup phases, submission flow, Docker judge execution, cron jobs, Socket.IO scaffolding, and data flow diagrams |
-| [`docs/api.md`](./docs/api.md) | Complete API reference — every endpoint, request body, response shape, and auth requirements |
-| [`docs/notes.md`](./docs/notes.md) | Step-by-step build history — every commit explained with the technical rationale behind each decision |
-| **Swagger UI** | Interactive API explorer — open [`http://localhost:8000`](http://localhost:8000) or [`http://localhost:8000/api-docs`](http://localhost:8000/api-docs) after starting the server |
+| Document                                         | Description                                                                                                                                                                      |
+| ------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`docs/architecture.md`](./docs/architecture.md) | Full system architecture — directory tree, server startup phases, submission flow, Docker judge execution, cron jobs, Socket.IO scaffolding, and data flow diagrams              |
+| [`docs/api.md`](./docs/api.md)                   | Complete API reference — every endpoint, request body, response shape, and auth requirements                                                                                     |
+| [`docs/notes.md`](./docs/notes.md)               | Step-by-step build history — every commit explained with the technical rationale behind each decision                                                                            |
+| **Swagger UI**                                   | Interactive API explorer — open [`http://localhost:8000`](http://localhost:8000) or [`http://localhost:8000/api-docs`](http://localhost:8000/api-docs) after starting the server |
 
 ---
 
 ## 🛠️ Tech Stack
 
-| Layer | Technology | Why |
-|---|---|---|
-| **Runtime** | Node.js (ESM) | Non-blocking I/O — ideal for a server that juggles many concurrent HTTP requests and background judge workers simultaneously |
-| **Framework** | Express v5 | Minimal, composable middleware pipeline; the async error propagation improvements in v5 fit our `asyncHandler` pattern cleanly |
-| **Database** | MySQL 8 via `mysql2` | Relational integrity, JOIN-powered queries, and ACID transactions — see the [MySQL vs MongoDB](#-mysql-over-mongodb) section |
-| **Job Queue** | BullMQ + Redis | Durable, Redis-backed queue that decouples HTTP request handling from the judge workload entirely |
-| **In-memory store** | Redis (ioredis) | Sub-millisecond job enqueue/dequeue; BullMQ requires it for job state tracking |
-| **Auth** | JWT (`jsonwebtoken`) | Stateless — no session table needed; role (`admin`/`user`) is embedded directly in the token |
-| **Password hashing** | bcrypt (12 rounds) | Adaptive hashing with a work factor high enough to be brute-force resistant at current hardware speeds |
-| **Code execution** | Docker | Each submission runs in a fully isolated, network-disabled, resource-capped container; no risk of container escape affecting the host |
-| **Cron scheduling** | node-cron | Lightweight in-process scheduler for the contest evaluation pipeline |
-| **Rate limiting** | express-rate-limit | Per-IP sliding-window limiters on every sensitive route |
-| **API docs** | swagger-jsdoc + swagger-ui-express | Full OpenAPI 3.0 spec served interactively at runtime — no separate doc deployment needed |
-| **AI assistant** | Ollama (local LLM) | Runs entirely on-device — zero API cost, zero data sent to a third party; model and URL are configurable via env |
-| **Real-time** | Socket.IO | Scaffolded for future live contest features (standings push, notifications); JWT-authenticated at the socket handshake level |
-| **Dev tooling** | concurrently + nodemon | Runs the API server and judge worker as two parallel hot-reloading processes with a single `npm run dev` |
-| **Code style** | Prettier | Enforced formatting across the entire codebase |
+| Layer                | Technology                         | Why                                                                                                                                   |
+| -------------------- | ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| **Runtime**          | Node.js (ESM)                      | Non-blocking I/O — ideal for a server that juggles many concurrent HTTP requests and background judge workers simultaneously          |
+| **Framework**        | Express v5                         | Minimal, composable middleware pipeline; the async error propagation improvements in v5 fit our `asyncHandler` pattern cleanly        |
+| **Database**         | MySQL 8 via `mysql2`               | Relational integrity, JOIN-powered queries, and ACID transactions — see the [MySQL vs MongoDB](#-mysql-over-mongodb) section          |
+| **Job Queue**        | BullMQ + Redis                     | Durable, Redis-backed queue that decouples HTTP request handling from the judge workload entirely                                     |
+| **In-memory store**  | Redis (ioredis)                    | Sub-millisecond job enqueue/dequeue; BullMQ requires it for job state tracking                                                        |
+| **Auth**             | JWT (`jsonwebtoken`)               | Stateless — no session table needed; role (`admin`/`user`) is embedded directly in the token                                          |
+| **Password hashing** | bcrypt (12 rounds)                 | Adaptive hashing with a work factor high enough to be brute-force resistant at current hardware speeds                                |
+| **Code execution**   | Docker                             | Each submission runs in a fully isolated, network-disabled, resource-capped container; no risk of container escape affecting the host |
+| **Cron scheduling**  | node-cron                          | Lightweight in-process scheduler for the contest evaluation pipeline                                                                  |
+| **Rate limiting**    | express-rate-limit                 | Per-IP sliding-window limiters on every sensitive route                                                                               |
+| **API docs**         | swagger-jsdoc + swagger-ui-express | Full OpenAPI 3.0 spec served interactively at runtime — no separate doc deployment needed                                             |
+| **AI assistant**     | Ollama (local LLM)                 | Runs entirely on-device — zero API cost, zero data sent to a third party; model and URL are configurable via env                      |
+| **Real-time**        | Socket.IO                          | Scaffolded for future live contest features (standings push, notifications); JWT-authenticated at the socket handshake level          |
+| **Dev tooling**      | concurrently + nodemon             | Runs the API server and judge worker as two parallel hot-reloading processes with a single `npm run dev`                              |
+| **Code style**       | Prettier                           | Enforced formatting across the entire codebase                                                                                        |
 
 ---
 
 ## ⚡ Features
 
 ### Authentication & Authorisation
+
 - JWT stored as an **httpOnly cookie** — inaccessible to JavaScript, eliminating XSS token theft.
 - Role (`admin` / `user`) is embedded in the token payload — no extra DB lookup per request.
 - A deliberate security fix blocks clients from self-assigning `role: 'admin'` during registration; the role is hardcoded to `'user'` server-side regardless of what the body contains.
 
 ### Contest Management
+
 - Full CRUD for contests, problems, and test cases — all ownership-verified (creator-only writes).
 - Contests require **admin verification** (`isVerified` flag) before they become publicly visible.
 - Contest **divisions** (1–5) and time windows are validated at the DB constraint level (`CHECK` constraint), not just application level.
 - Registration is open for **30 minutes after the contest starts** and then automatically locked.
 
 ### Online Judge
+
 - Supports **5 languages**: C, C++, Java, Python, JavaScript.
 - Each submission runs inside a Docker container with:
-  - `--network=none` — zero internet access.
-  - `--memory` / `--memory-swap` hard caps — OOM kills map to `memory_limit_exceeded`.
-  - `--cpus=1` — predictable single-core execution.
-  - Per-problem configurable `time_limit_ms` and `memory_limit_mb`.
+    - `--network=none` — zero internet access.
+    - `--memory` / `--memory-swap` hard caps — OOM kills map to `memory_limit_exceeded`.
+    - `--cpus=1` — predictable single-core execution.
+    - Per-problem configurable `time_limit_ms` and `memory_limit_mb`.
 - An inner `timeout` command inside the container and an outer Node.js `execFile` timeout (`time_limit + 10s`) provide two independent TLE safeguards.
 - Verdict is determined purely from the process exit code — no parsing of stderr needed.
 - Sandbox directories are always cleaned up in a `finally` block, even if the judge crashes.
 - **`concurrency: 2`** in the BullMQ worker — two submissions can be evaluated in parallel without blocking the HTTP server at all.
 
 ### Asynchronous Queue (BullMQ + Redis)
+
 - Submission creation returns `201 Created` **instantly** — the client never waits for judge execution.
 - Redis persists the job queue across server restarts; no submission is ever silently dropped.
 - The judge worker runs as a completely **separate process** (`nodemon -r dotenv/config src/workers/judgeWorker.js`) — a crashing worker cannot take down the API server.
 
 ### Contest Standings & Leaderboard
+
 - The `contest_standings` table records only the **first accepted submission** per problem per user — re-submissions don't pollute the leaderboard.
 - Standings are only recorded while the contest is live; post-contest accepted solutions count as practice only.
 - The leaderboard query computes `final_score = SUM(problem scores) - SUM(penalty minutes)` entirely inside a single SQL `GROUP BY` aggregation — no application-layer sorting needed.
 
 ### Elo-like Rating System
+
 After a contest ends, ratings are updated using a multi-step algorithm:
 
 1. **Expected rank** is computed for each participant using pairwise Elo probability against every other participant: `P(i beats j) = 1 / (1 + 10^((Rj - Ri) / 400))`.
@@ -83,12 +89,14 @@ After a contest ends, ratings are updated using a multi-step algorithm:
 6. All writes (delta per registration + rating per user) run inside a **single MySQL transaction** — either every participant is updated or nobody is. There is no partial-update state.
 
 ### Automatic Contest Finalization (Cron)
+
 - A `node-cron` job fires **every 5 minutes** inside the API server process.
 - It fetches all contests where `contest_end_time < NOW()` and `contest_evaluation = 'pending'`.
 - The evaluation status lifecycle is `pending → running → completed` (or `running → pending` on failure), preventing double-evaluation if the cron fires during a long-running calculation.
 - An **admin-only `POST /contests/:id/finalize`** endpoint provides a manual fallback trigger for the same pipeline.
 
 ### AI Coding Assistant
+
 - Backed by a **local Ollama instance** — the model and endpoint are fully configurable via `OLLAMA_URL` and `OLLAMA_MODEL` env variables.
 - A detailed system prompt in `config/aiConfig.js` enforces hard boundaries: **no code, no pseudocode, no implementation steps** — only conceptual explanations, hints, and learning guidance.
 - Rate-limited to 100 requests per 5 minutes per IP.
@@ -97,19 +105,20 @@ After a contest ends, ratings are updated using a multi-step algorithm:
 
 Every sensitive route has a dedicated `express-rate-limit` limiter. Limits are enforced per IP:
 
-| Scope | Window | Max requests |
-|---|---|---|
-| Global (all `/api/*`) | 15 min | 100 |
-| Auth (login / register) | 15 min | 10 |
-| Submissions | 1 min | 5 |
-| Contest creation | 1 hour | 5 |
-| Contest registration | 10 min | 10 |
-| Profile update | 15 min | 15 |
-| AI assistant | 5 min | 100 |
+| Scope                   | Window | Max requests |
+| ----------------------- | ------ | ------------ |
+| Global (all `/api/*`)   | 15 min | 100          |
+| Auth (login / register) | 15 min | 10           |
+| Submissions             | 1 min  | 5            |
+| Contest creation        | 1 hour | 5            |
+| Contest registration    | 10 min | 10           |
+| Profile update          | 15 min | 15           |
+| AI assistant            | 5 min  | 100          |
 
 Standard `RateLimit-*` headers are returned to the client on every response.
 
 ### Swagger UI
+
 - Full **OpenAPI 3.0** specification covering every route, request body, response schema, and cookie-based auth.
 - Served at **`http://localhost:8000`** (root) and **`http://localhost:8000/api-docs`**.
 - Schemas defined for: `User`, `Contest`, `Problem`, `Submission`, `Testcase`, `ContestRegistration`, `ContestStanding`, and the standard `ApiResponse` wrapper.
@@ -124,6 +133,7 @@ Standard `RateLimit-*` headers are returned to the client on every response.
 One of the most impactful optimisations in this codebase is the systematic elimination of **N+1 query patterns**. Early versions made sequential DB round-trips to traverse ownership chains; every single one was replaced with a single JOIN query.
 
 **Before (2 round-trips):**
+
 ```
 // Check if user owns the problem's contest
 const problem = await pool.query('SELECT * FROM problems WHERE problem_id = ?', [id]);
@@ -132,6 +142,7 @@ const contest = await pool.query('SELECT * FROM contests WHERE id = ?', [problem
 ```
 
 **After (1 round-trip):**
+
 ```sql
 SELECT p.*, c.authored_by AS contest_authored_by
 FROM problems p
@@ -141,13 +152,13 @@ WHERE p.problem_id = ?
 
 This pattern is applied throughout the codebase:
 
-| Operation | Queries before | Queries after | Savings |
-|---|---|---|---|
-| Problem ownership check | 2 | 1 | 50% |
-| Testcase ownership check | 3 | 1 | 67% |
-| Submission judge fetch | 3 (submissions + problems + test_cases) | 1 | 67% |
-| Leaderboard aggregation | N queries (one per user) | 1 GROUP BY | ~100× for large contests |
-| Rating calculation input | 4 separate queries | 1 multi-JOIN | 75% |
+| Operation                | Queries before                          | Queries after | Savings                  |
+| ------------------------ | --------------------------------------- | ------------- | ------------------------ |
+| Problem ownership check  | 2                                       | 1             | 50%                      |
+| Testcase ownership check | 3                                       | 1             | 67%                      |
+| Submission judge fetch   | 3 (submissions + problems + test_cases) | 1             | 67%                      |
+| Leaderboard aggregation  | N queries (one per user)                | 1 GROUP BY    | ~100× for large contests |
+| Rating calculation input | 4 separate queries                      | 1 multi-JOIN  | 75%                      |
 
 MySQL's query planner handles these JOINs with indexed foreign keys, making multi-table lookups **essentially the same cost** as single-table lookups at typical contest scales.
 
@@ -207,6 +218,7 @@ The rating update writes deltas for every participant and updates every user's r
 ### 4. Schema enforcement prevents bad data
 
 MySQL's `ENUM` types and `CHECK` constraints enforce valid values at the storage layer:
+
 - `verdict` can only be one of 7 legal values — not a free-form string.
 - `division` must be between 1 and 5 — enforced by a `CHECK` constraint, not just a controller validation.
 - `role` can only be `'admin'` or `'user'`.
@@ -221,29 +233,29 @@ Contest leaderboards and submission history are read far more often than they ar
 
 ## 📦 Packages
 
-| Package | Version | Role |
-|---|---|---|
-| `express` | ^5.2.1 | HTTP server framework |
-| `mysql2` | ^3.22.4 | MySQL driver with connection pool and Promise support |
-| `jsonwebtoken` | ^9.0.3 | JWT signing and verification |
-| `bcrypt` | ^6.0.0 | Password hashing (12 salt rounds) |
-| `cookie-parser` | ^1.4.7 | Parses the `httpOnly` JWT cookie from incoming requests |
-| `cors` | ^2.8.6 | CORS with configurable allowed origins from `CORS_ORIGIN` env |
-| `bullmq` | ^5.78.0 | Redis-backed job queue — `Queue` (producer) + `Worker` (consumer) |
-| `ioredis` | ^5.11.0 | Redis client; `maxRetriesPerRequest: null` required by BullMQ |
-| `node-cron` | ^4.2.1 | In-process cron scheduler for contest evaluation |
-| `express-rate-limit` | ^8.5.2 | Per-IP rate limiting with standard `RateLimit-*` headers |
-| `swagger-jsdoc` | ^6.3.0 | Generates OpenAPI spec from the inline definition |
-| `swagger-ui-express` | ^5.0.1 | Serves the interactive Swagger UI at `/` and `/api-docs` |
-| `socket.io` | — | WebSocket server (scaffolded for future real-time features) |
-| `morgan` | ^1.10.1 | HTTP request logger (dev format) |
-| `dotenv` | ^17.4.2 | Loads `.env` into `process.env` |
-| `ngrok` | ^5.0.0-beta.2 | Dev tunnel for exposing the local server publicly (commented out by default) |
-| `concurrently` | ^10.0.3 | Runs API server + judge worker as two parallel processes |
-| `nodemon` | ^3.1.14 | Hot-reloads both processes on file changes during development |
-| `prettier` | ^3.8.3 | Enforces consistent code style across the entire codebase |
-| `child_process` (stdlib) | — | `execFile` to spawn `docker run` for each submission |
-| `fs/promises` (stdlib) | — | Async file I/O for sandbox creation, source file writing, and cleanup |
+| Package                  | Version       | Role                                                                         |
+| ------------------------ | ------------- | ---------------------------------------------------------------------------- |
+| `express`                | ^5.2.1        | HTTP server framework                                                        |
+| `mysql2`                 | ^3.22.4       | MySQL driver with connection pool and Promise support                        |
+| `jsonwebtoken`           | ^9.0.3        | JWT signing and verification                                                 |
+| `bcrypt`                 | ^6.0.0        | Password hashing (12 salt rounds)                                            |
+| `cookie-parser`          | ^1.4.7        | Parses the `httpOnly` JWT cookie from incoming requests                      |
+| `cors`                   | ^2.8.6        | CORS with configurable allowed origins from `CORS_ORIGIN` env                |
+| `bullmq`                 | ^5.78.0       | Redis-backed job queue — `Queue` (producer) + `Worker` (consumer)            |
+| `ioredis`                | ^5.11.0       | Redis client; `maxRetriesPerRequest: null` required by BullMQ                |
+| `node-cron`              | ^4.2.1        | In-process cron scheduler for contest evaluation                             |
+| `express-rate-limit`     | ^8.5.2        | Per-IP rate limiting with standard `RateLimit-*` headers                     |
+| `swagger-jsdoc`          | ^6.3.0        | Generates OpenAPI spec from the inline definition                            |
+| `swagger-ui-express`     | ^5.0.1        | Serves the interactive Swagger UI at `/` and `/api-docs`                     |
+| `socket.io`              | —             | WebSocket server (scaffolded for future real-time features)                  |
+| `morgan`                 | ^1.10.1       | HTTP request logger (dev format)                                             |
+| `dotenv`                 | ^17.4.2       | Loads `.env` into `process.env`                                              |
+| `ngrok`                  | ^5.0.0-beta.2 | Dev tunnel for exposing the local server publicly (commented out by default) |
+| `concurrently`           | ^10.0.3       | Runs API server + judge worker as two parallel processes                     |
+| `nodemon`                | ^3.1.14       | Hot-reloads both processes on file changes during development                |
+| `prettier`               | ^3.8.3        | Enforces consistent code style across the entire codebase                    |
+| `child_process` (stdlib) | —             | `execFile` to spawn `docker run` for each submission                         |
+| `fs/promises` (stdlib)   | —             | Async file I/O for sandbox creation, source file writing, and cleanup        |
 
 ---
 

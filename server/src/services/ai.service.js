@@ -5,7 +5,7 @@ import statusCode from '../constants/statusCode.js';
 export const generateHint = async (userPrompt) => {
     const ollamaUrl = process.env.OLLAMA_URL;
     const ollamaModel = process.env.OLLAMA_MODEL;
-    
+
     try {
         const response = await fetch(`${ollamaUrl}/api/chat`, {
             method: 'POST',

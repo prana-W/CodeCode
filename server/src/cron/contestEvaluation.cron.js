@@ -12,7 +12,6 @@ cron.schedule('*/5 * * * *', async () => {
         }
 
         for (const contest of pendingContests) {
-
             await Contest.updateEvaluationStatus(contest.id, 'running');
 
             try {

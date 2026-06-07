@@ -141,11 +141,15 @@ const getSubmissionCounts = asyncHandler(async (req, res) => {
         );
     }
 
-    const counts = await Submission.getSubmissionCountsByContest(Number(contest_id));
-    
+    const counts = await Submission.getSubmissionCountsByContest(
+        Number(contest_id)
+    );
+
     return res
         .status(statusCode.OK)
-        .json(new ApiResponse(statusCode.OK, 'Submission counts fetched.', counts));
+        .json(
+            new ApiResponse(statusCode.OK, 'Submission counts fetched.', counts)
+        );
 });
 
 const getSolvedProblems = asyncHandler(async (req, res) => {
@@ -157,11 +161,26 @@ const getSolvedProblems = asyncHandler(async (req, res) => {
         );
     }
 
-    const solvedIds = await Submission.getSolvedProblemsByContest(Number(contest_id), req.userId);
-    
+    const solvedIds = await Submission.getSolvedProblemsByContest(
+        Number(contest_id),
+        req.userId
+    );
+
     return res
         .status(statusCode.OK)
-        .json(new ApiResponse(statusCode.OK, 'Solved problems fetched.', solvedIds));
+        .json(
+            new ApiResponse(
+                statusCode.OK,
+                'Solved problems fetched.',
+                solvedIds
+            )
+        );
 });
 
-export {createSubmission, getContestSubmissions, getSubmissionById, getSubmissionCounts, getSolvedProblems};
+export {
+    createSubmission,
+    getContestSubmissions,
+    getSubmissionById,
+    getSubmissionCounts,
+    getSolvedProblems,
+};

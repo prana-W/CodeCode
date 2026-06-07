@@ -1,22 +1,32 @@
-import { useState, useEffect, useCallback } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
-import { toast } from 'sonner';
+import {useState, useEffect, useCallback} from 'react';
+import {useParams, useNavigate, Link} from 'react-router-dom';
+import {toast} from 'sonner';
 import {
-    FlaskConical, Plus, Pencil, Trash2, Save, LogOut,
-    AlertTriangle, CheckCircle, ChevronDown, ChevronUp,
-    CheckSquare, Square, TerminalSquare,
+    FlaskConical,
+    Plus,
+    Pencil,
+    Trash2,
+    Save,
+    LogOut,
+    AlertTriangle,
+    CheckCircle,
+    ChevronDown,
+    ChevronUp,
+    CheckSquare,
+    Square,
+    TerminalSquare,
 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
+import {Button} from '@/components/ui/button';
+import {Label} from '@/components/ui/label';
+import {Textarea} from '@/components/ui/textarea';
 import api from '@/lib/axios';
 
 const PROBLEM_LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
-const EMPTY_TC = { input_data: '', expected_output: '', is_sample: false };
+const EMPTY_TC = {input_data: '', expected_output: '', is_sample: false};
 
 // ─── Problem Testcase Panel ──────────────────────────────────────────────
-function TestcasePanel({ problem, index, testcase, onRefresh }) {
+function TestcasePanel({problem, index, testcase, onRefresh}) {
     const [open, setOpen] = useState(!testcase); // auto-open if no testcase
     const [form, setForm] = useState(EMPTY_TC);
     const [editingId, setEditingId] = useState(null);
@@ -55,7 +65,9 @@ function TestcasePanel({ problem, index, testcase, onRefresh }) {
             toast.success('Test case deleted.');
             onRefresh();
         } catch (err) {
-            toast.error(err?.response?.data?.message || 'Failed to delete test case.');
+            toast.error(
+                err?.response?.data?.message || 'Failed to delete test case.'
+            );
         } finally {
             setDeleting(false);
         }
@@ -63,8 +75,10 @@ function TestcasePanel({ problem, index, testcase, onRefresh }) {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!form.input_data.trim()) return toast.error('Input data is required.');
-        if (!form.expected_output.trim()) return toast.error('Expected output is required.');
+        if (!form.input_data.trim())
+            return toast.error('Input data is required.');
+        if (!form.expected_output.trim())
+            return toast.error('Expected output is required.');
 
         setSubmitting(true);
         try {
@@ -90,10 +104,14 @@ function TestcasePanel({ problem, index, testcase, onRefresh }) {
         } catch (err) {
             const status = err?.response?.status;
             if (status === 409) {
-                toast.error('A test case already exists for this problem. Use Edit instead.');
+                toast.error(
+                    'A test case already exists for this problem. Use Edit instead.'
+                );
                 if (testcase) handleEdit();
             } else {
-                toast.error(err?.response?.data?.message || 'Failed to save test case.');
+                toast.error(
+                    err?.response?.data?.message || 'Failed to save test case.'
+                );
             }
         } finally {
             setSubmitting(false);
@@ -101,9 +119,13 @@ function TestcasePanel({ problem, index, testcase, onRefresh }) {
     };
 
     return (
-        <div className={`rounded-xl border overflow-hidden transition-colors ${
-            hasTestcase ? 'border-border' : 'border-amber-500/30 bg-amber-500/5'
-        }`}>
+        <div
+            className={`rounded-xl border overflow-hidden transition-colors ${
+                hasTestcase
+                    ? 'border-border'
+                    : 'border-amber-500/30 bg-amber-500/5'
+            }`}
+        >
             {/* Header */}
             <button
                 type="button"
@@ -114,7 +136,9 @@ function TestcasePanel({ problem, index, testcase, onRefresh }) {
                     <div className="problem-letter w-7 h-7 text-xs">
                         {letter}
                     </div>
-                    <span className="font-medium text-sm text-foreground">{problem.title}</span>
+                    <span className="font-medium text-sm text-foreground">
+                        {problem.title}
+                    </span>
                     {hasTestcase ? (
                         <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-green-100 text-green-700">
                             <CheckCircle className="w-3 h-3" />
@@ -132,7 +156,11 @@ function TestcasePanel({ problem, index, testcase, onRefresh }) {
                         </span>
                     )}
                 </div>
-                {open ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
+                {open ? (
+                    <ChevronUp className="w-4 h-4 text-muted-foreground" />
+                ) : (
+                    <ChevronDown className="w-4 h-4 text-muted-foreground" />
+                )}
             </button>
 
             {open && (
@@ -143,7 +171,9 @@ function TestcasePanel({ problem, index, testcase, onRefresh }) {
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-2">
                                     <TerminalSquare className="w-4 h-4 text-muted-foreground" />
-                                    <span className="font-medium text-sm">Test Case #{testcase.test_case_id}</span>
+                                    <span className="font-medium text-sm">
+                                        Test Case #{testcase.test_case_id}
+                                    </span>
                                 </div>
                                 <div className="flex items-center gap-1.5">
                                     <Button
@@ -171,13 +201,17 @@ function TestcasePanel({ problem, index, testcase, onRefresh }) {
                             </div>
                             <div className="grid sm:grid-cols-2 gap-3">
                                 <div>
-                                    <p className="text-xs font-semibold text-muted-foreground mb-1 uppercase">Input</p>
+                                    <p className="text-xs font-semibold text-muted-foreground mb-1 uppercase">
+                                        Input
+                                    </p>
                                     <pre className="text-xs font-mono bg-muted rounded-lg p-3 overflow-auto max-h-32 whitespace-pre-wrap break-all">
                                         {testcase.input_data}
                                     </pre>
                                 </div>
                                 <div>
-                                    <p className="text-xs font-semibold text-muted-foreground mb-1 uppercase">Expected Output</p>
+                                    <p className="text-xs font-semibold text-muted-foreground mb-1 uppercase">
+                                        Expected Output
+                                    </p>
                                     <pre className="text-xs font-mono bg-muted rounded-lg p-3 overflow-auto max-h-32 whitespace-pre-wrap break-all">
                                         {testcase.expected_output}
                                     </pre>
@@ -191,28 +225,48 @@ function TestcasePanel({ problem, index, testcase, onRefresh }) {
                         <form onSubmit={handleSubmit} className="space-y-4">
                             <div className="grid sm:grid-cols-2 gap-3">
                                 <div className="space-y-1.5">
-                                    <Label htmlFor={`tc-input-${problem.problem_id}`}>
-                                        Input Data <span className="text-destructive">*</span>
+                                    <Label
+                                        htmlFor={`tc-input-${problem.problem_id}`}
+                                    >
+                                        Input Data{' '}
+                                        <span className="text-destructive">
+                                            *
+                                        </span>
                                     </Label>
                                     <Textarea
                                         id={`tc-input-${problem.problem_id}`}
                                         rows={5}
-                                        placeholder={"3\n1 2 3"}
+                                        placeholder={'3\n1 2 3'}
                                         value={form.input_data}
-                                        onChange={(e) => setForm((p) => ({ ...p, input_data: e.target.value }))}
+                                        onChange={(e) =>
+                                            setForm((p) => ({
+                                                ...p,
+                                                input_data: e.target.value,
+                                            }))
+                                        }
                                         className="resize-y font-mono text-sm"
                                     />
                                 </div>
                                 <div className="space-y-1.5">
-                                    <Label htmlFor={`tc-output-${problem.problem_id}`}>
-                                        Expected Output <span className="text-destructive">*</span>
+                                    <Label
+                                        htmlFor={`tc-output-${problem.problem_id}`}
+                                    >
+                                        Expected Output{' '}
+                                        <span className="text-destructive">
+                                            *
+                                        </span>
                                     </Label>
                                     <Textarea
                                         id={`tc-output-${problem.problem_id}`}
                                         rows={5}
-                                        placeholder={"6"}
+                                        placeholder={'6'}
                                         value={form.expected_output}
-                                        onChange={(e) => setForm((p) => ({ ...p, expected_output: e.target.value }))}
+                                        onChange={(e) =>
+                                            setForm((p) => ({
+                                                ...p,
+                                                expected_output: e.target.value,
+                                            }))
+                                        }
                                         className="resize-y font-mono text-sm"
                                     />
                                 </div>
@@ -221,13 +275,19 @@ function TestcasePanel({ problem, index, testcase, onRefresh }) {
                             {/* Is sample toggle */}
                             <button
                                 type="button"
-                                onClick={() => setForm((p) => ({ ...p, is_sample: !p.is_sample }))}
+                                onClick={() =>
+                                    setForm((p) => ({
+                                        ...p,
+                                        is_sample: !p.is_sample,
+                                    }))
+                                }
                                 className="flex items-center gap-2 text-sm text-foreground hover:text-primary transition-colors"
                             >
-                                {form.is_sample
-                                    ? <CheckSquare className="w-5 h-5 text-primary" />
-                                    : <Square className="w-5 h-5 text-muted-foreground" />
-                                }
+                                {form.is_sample ? (
+                                    <CheckSquare className="w-5 h-5 text-primary" />
+                                ) : (
+                                    <Square className="w-5 h-5 text-muted-foreground" />
+                                )}
                                 Mark as sample (visible to contestants)
                             </button>
 
@@ -251,9 +311,12 @@ function TestcasePanel({ problem, index, testcase, onRefresh }) {
                                 >
                                     <Save className="w-3.5 h-3.5" />
                                     {submitting
-                                        ? (editingId ? 'Updating…' : 'Creating…')
-                                        : (editingId ? 'Update' : 'Create')
-                                    }
+                                        ? editingId
+                                            ? 'Updating…'
+                                            : 'Creating…'
+                                        : editingId
+                                          ? 'Update'
+                                          : 'Create'}
                                 </Button>
                             </div>
                         </form>
@@ -266,7 +329,7 @@ function TestcasePanel({ problem, index, testcase, onRefresh }) {
 
 // ─── Main Page ───────────────────────────────────────────────────────────
 export default function TestcasesPage() {
-    const { contestId } = useParams();
+    const {contestId} = useParams();
     const navigate = useNavigate();
 
     const [contestTitle, setContestTitle] = useState('');
@@ -289,7 +352,9 @@ export default function TestcasesPage() {
             await Promise.all(
                 probs.map(async (p) => {
                     try {
-                        const tcRes = await api.get(`/testcases?problem_id=${p.problem_id}`);
+                        const tcRes = await api.get(
+                            `/testcases?problem_id=${p.problem_id}`
+                        );
                         const data = tcRes.data.data || [];
                         tcMap[p.problem_id] = data.length > 0 ? data[0] : null;
                     } catch {
@@ -311,7 +376,9 @@ export default function TestcasesPage() {
 
     const handleRefresh = () => fetchData();
 
-    const missingCount = problems.filter((p) => !testcaseMap[p.problem_id]).length;
+    const missingCount = problems.filter(
+        (p) => !testcaseMap[p.problem_id]
+    ).length;
 
     if (loading) {
         return (
@@ -338,11 +405,20 @@ export default function TestcasesPage() {
             <div className="border-b border-border bg-card/50">
                 <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8">
                     <nav className="flex items-center mb-4">
-                        <Link to="/design-contest" className="breadcrumb-link">My Contests</Link>
+                        <Link to="/design-contest" className="breadcrumb-link">
+                            My Contests
+                        </Link>
                         <span className="breadcrumb-sep">›</span>
-                        <Link to={`/design-contest/contest/${contestId}`} className="breadcrumb-link">{contestTitle}</Link>
+                        <Link
+                            to={`/design-contest/contest/${contestId}`}
+                            className="breadcrumb-link"
+                        >
+                            {contestTitle}
+                        </Link>
                         <span className="breadcrumb-sep">›</span>
-                        <span className="text-sm text-foreground font-medium">Test Cases</span>
+                        <span className="text-sm text-foreground font-medium">
+                            Test Cases
+                        </span>
                     </nav>
 
                     <div className="flex items-center gap-3">
@@ -354,7 +430,8 @@ export default function TestcasesPage() {
                                 Test Cases
                             </h1>
                             <p className="text-sm text-muted-foreground mt-0.5">
-                                Manage test cases for all problems in "{contestTitle}"
+                                Manage test cases for all problems in "
+                                {contestTitle}"
                             </p>
                         </div>
                     </div>
@@ -368,14 +445,17 @@ export default function TestcasesPage() {
                         <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
                         <div>
                             <p className="text-sm font-semibold text-foreground">
-                                {missingCount} problem{missingCount > 1 ? 's' : ''} missing test cases
+                                {missingCount} problem
+                                {missingCount > 1 ? 's' : ''} missing test cases
                             </p>
                             <p className="text-xs text-muted-foreground mt-0.5">
                                 {problems
                                     .filter((p) => !testcaseMap[p.problem_id])
-                                    .map((p, i) => `${PROBLEM_LETTERS[problems.indexOf(p)] || i + 1}. ${p.title}`)
-                                    .join(', ')
-                                }
+                                    .map(
+                                        (p, i) =>
+                                            `${PROBLEM_LETTERS[problems.indexOf(p)] || i + 1}. ${p.title}`
+                                    )
+                                    .join(', ')}
                             </p>
                         </div>
                     </div>
@@ -390,7 +470,11 @@ export default function TestcasesPage() {
                         </p>
                         <Button
                             className="mt-4 gap-2"
-                            onClick={() => navigate(`/design-contest/problems/${contestId}`)}
+                            onClick={() =>
+                                navigate(
+                                    `/design-contest/problems/${contestId}`
+                                )
+                            }
                         >
                             <Plus className="w-4 h-4" />
                             Add Problems
@@ -424,9 +508,13 @@ export default function TestcasesPage() {
                         id="finish-btn"
                         onClick={() => {
                             if (missingCount > 0) {
-                                toast.warning(`${missingCount} problem(s) still missing test cases.`, {
-                                    description: 'You can continue, but the contest won\'t be fully ready.',
-                                });
+                                toast.warning(
+                                    `${missingCount} problem(s) still missing test cases.`,
+                                    {
+                                        description:
+                                            "You can continue, but the contest won't be fully ready.",
+                                    }
+                                );
                             }
                             toast.success('🎉 All changes saved!', {
                                 description: `"${contestTitle}" is ready for admin review.`,

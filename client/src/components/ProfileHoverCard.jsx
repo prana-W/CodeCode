@@ -1,11 +1,15 @@
-import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card';
-import { Loader2, TrendingUp, Trophy, User as UserIcon } from 'lucide-react';
+import {useState, useEffect} from 'react';
+import {Link} from 'react-router-dom';
+import {
+    HoverCard,
+    HoverCardContent,
+    HoverCardTrigger,
+} from '@/components/ui/hover-card';
+import {Loader2, TrendingUp, Trophy, User as UserIcon} from 'lucide-react';
 import api from '@/lib/axios';
-import { getRankDetails } from '@/constants/ratings';
+import {getRankDetails} from '@/constants/ratings';
 
-export default function ProfileHoverCard({ user }) {
+export default function ProfileHoverCard({user}) {
     const [profile, setProfile] = useState(null);
     const [loading, setLoading] = useState(false);
     const [open, setOpen] = useState(false);
@@ -29,21 +33,26 @@ export default function ProfileHoverCard({ user }) {
 
     // Format display name
     const displayName = user.name ?? user.username;
-    
+
     // We get the color based on the actual fetched profile rating if available, else standard color
     const rank = getRankDetails(profile?.rating);
 
     return (
-        <HoverCard open={open} onOpenChange={setOpen} openDelay={200} closeDelay={100}>
+        <HoverCard
+            open={open}
+            onOpenChange={setOpen}
+            openDelay={200}
+            closeDelay={100}
+        >
             <HoverCardTrigger asChild>
-                <Link 
-                    to={`/user-profile/${user.username}`} 
+                <Link
+                    to={`/user-profile/${user.username}`}
                     className={`font-medium transition-colors hover:underline underline-offset-4 ${profile ? rank.colorClass : 'text-foreground'}`}
                 >
                     {displayName}
                 </Link>
             </HoverCardTrigger>
-            
+
             <HoverCardContent className="w-80 p-0 overflow-hidden" align="end">
                 {loading || !profile ? (
                     <div className="flex justify-center items-center h-32 bg-card">
@@ -57,27 +66,37 @@ export default function ProfileHoverCard({ user }) {
                                     <UserIcon className="w-6 h-6 text-primary" />
                                 </div>
                                 <div className="flex flex-col">
-                                    <h4 className={`text-lg font-bold leading-none mb-1 ${rank.colorClass}`}>
+                                    <h4
+                                        className={`text-lg font-bold leading-none mb-1 ${rank.colorClass}`}
+                                    >
                                         {profile.name}
                                     </h4>
-                                    <span className="text-sm text-muted-foreground font-medium">@{profile.username}</span>
-                                    <span className={`text-xs font-semibold uppercase tracking-wider mt-1.5 ${rank.colorClass}`}>
+                                    <span className="text-sm text-muted-foreground font-medium">
+                                        @{profile.username}
+                                    </span>
+                                    <span
+                                        className={`text-xs font-semibold uppercase tracking-wider mt-1.5 ${rank.colorClass}`}
+                                    >
                                         {rank.title}
                                     </span>
                                 </div>
                             </div>
                         </div>
-                        
+
                         <div className="grid grid-cols-2 divide-x divide-border bg-card p-4">
                             <div className="flex flex-col items-center justify-center space-y-1">
-                                <span className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">Rating</span>
+                                <span className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">
+                                    Rating
+                                </span>
                                 <div className="flex items-center gap-1.5 text-lg font-bold">
                                     <TrendingUp className="w-4 h-4 text-primary" />
                                     {profile.rating || 0}
                                 </div>
                             </div>
                             <div className="flex flex-col items-center justify-center space-y-1">
-                                <span className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">Max Rating</span>
+                                <span className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">
+                                    Max Rating
+                                </span>
                                 <div className="flex items-center gap-1.5 text-lg font-bold">
                                     <Trophy className="w-4 h-4 text-amber-500" />
                                     {profile.max_rating || 0}

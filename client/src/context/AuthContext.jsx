@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import {createContext, useContext, useState, useEffect} from 'react';
 import api from '@/lib/axios';
 
 const AuthContext = createContext(null);
@@ -7,7 +7,7 @@ const AuthContext = createContext(null);
  * Provides global authentication state and helpers.
  * Wrap the entire app with this so any component can call useAuth().
  */
-export function AuthProvider({ children }) {
+export function AuthProvider({children}) {
     // Initialize user from localStorage if it exists
     const [user, setUser] = useState(() => {
         try {
@@ -26,7 +26,7 @@ export function AuthProvider({ children }) {
      * @returns {Promise} resolves with response data
      */
     const login = async (email, password) => {
-        const res = await api.post('/auth/login', { email, password });
+        const res = await api.post('/auth/login', {email, password});
         const userData = res.data.data;
         setUser(userData);
         localStorage.setItem('user', JSON.stringify(userData));
@@ -58,7 +58,7 @@ export function AuthProvider({ children }) {
     };
 
     return (
-        <AuthContext.Provider value={{ user, setUser, login, register, logout }}>
+        <AuthContext.Provider value={{user, setUser, login, register, logout}}>
             {children}
         </AuthContext.Provider>
     );
@@ -71,4 +71,4 @@ export function useAuth() {
     return ctx;
 }
 
-export { AuthContext };
+export {AuthContext};

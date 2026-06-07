@@ -9,18 +9,21 @@ const RATING_FLOOR = 400;
 export const deltaCalculation = async (contestId) => {
     console.log(`[DeltaCalculation] Starting for contest ${contestId}`);
 
-    const participants = await ContestRegistration.getParticipantsWithRating(contestId);
+    const participants =
+        await ContestRegistration.getParticipantsWithRating(contestId);
     const n = participants.length;
 
     if (n === 0) {
-        console.log(`[DeltaCalculation] No participants for contest ${contestId}. Skipping.`);
+        console.log(
+            `[DeltaCalculation] No participants for contest ${contestId}. Skipping.`
+        );
         return;
     }
 
     const ranked = participants.map((p, idx) => ({
         userId: p.user_id,
         currentRating: p.currentRating,
-        actualRank: idx + 1,   
+        actualRank: idx + 1,
         finalScore: p.final_score,
     }));
 
@@ -30,7 +33,8 @@ export const deltaCalculation = async (contestId) => {
         for (let j = 0; j < n; j++) {
             if (i === j) continue;
 
-            const ratingDiff = ranked[j].currentRating - ranked[i].currentRating;
+            const ratingDiff =
+                ranked[j].currentRating - ranked[i].currentRating;
             const probability = 1 / (1 + Math.pow(10, ratingDiff / 400));
             expectedWins += probability;
         }
@@ -56,14 +60,18 @@ export const deltaCalculation = async (contestId) => {
         p.delta = p.newRating - p.currentRating;
     }
 
-
     const conn = await pool.getConnection();
     try {
         await conn.beginTransaction();
 
         for (const p of ranked) {
- 
-            await ContestRegistration.updateDelta(conn, contestId, p.userId, p.delta, p.newRating);
+            await ContestRegistration.updateDelta(
+                conn,
+                contestId,
+                p.userId,
+                p.delta,
+                p.newRating
+            );
 
             const [userRows] = await conn.query(
                 'SELECT max_rating FROM users WHERE id = ?',
@@ -80,12 +88,15 @@ export const deltaCalculation = async (contestId) => {
         ranked.forEach((p) =>
             console.log(
                 `  userId=${p.userId} | rank=${p.actualRank}/${n} | ` +
-                `rating ${p.currentRating} → ${p.newRating} (Δ${p.delta >= 0 ? '+' : ''}${p.delta})`
+                    `rating ${p.currentRating} → ${p.newRating} (Δ${p.delta >= 0 ? '+' : ''}${p.delta})`
             )
         );
     } catch (err) {
         await conn.rollback();
-        console.error(`[DeltaCalculation] Transaction rolled back for contest ${contestId}:`, err);
+        console.error(
+            `[DeltaCalculation] Transaction rolled back for contest ${contestId}:`,
+            err
+        );
 
         throw err;
     } finally {

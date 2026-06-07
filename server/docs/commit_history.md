@@ -13,9 +13,9 @@ Set up the initial backend server and connected it to MySQL.
 - Created a MySQL connection pool (`db.js`) and a `connectDB` helper that tests the connection on startup by acquiring and immediately releasing a connection.
 - The entry point (`index.js`) loads `.env`, creates an HTTP server wrapping the Express app, connects to the database, and then starts listening on the configured port (default `8000`).
 - Built out the utility layer:
-  - `ApiError` — a custom error class that extends `Error`, carries an HTTP `statusCode`, and captures a clean stack trace.
-  - `ApiResponse` — a standard response wrapper that enforces a consistent `{ statusCode, success, message, data }` shape across all endpoints.
-  - `asyncHandler` — wraps async route handlers so any thrown error is automatically forwarded to Express's error handler without try/catch boilerplate in every controller.
+    - `ApiError` — a custom error class that extends `Error`, carries an HTTP `statusCode`, and captures a clean stack trace.
+    - `ApiResponse` — a standard response wrapper that enforces a consistent `{ statusCode, success, message, data }` shape across all endpoints.
+    - `asyncHandler` — wraps async route handlers so any thrown error is automatically forwarded to Express's error handler without try/catch boilerplate in every controller.
 - Created a centralised `errorHandler` middleware that catches all errors, logs the stack, and sends a properly shaped `ApiResponse` with the appropriate status code.
 - Added a `/` and `/api/v1/check-health` health-check endpoint.
 - Set up a `socket.js` and socket middleware scaffolding (for future WebSocket support via Socket.io).
@@ -93,15 +93,15 @@ Significant performance optimisation — replaced multiple sequential DB queries
 Added all GET endpoints for contests, problems, and testcases with proper visibility rules.
 
 - **Contests:**
-  - Admins can view all contests regardless of verification status.
-  - General users can only see verified contests.
-  - Contest creators can additionally see all of their own contests (verified or not).
+    - Admins can view all contests regardless of verification status.
+    - General users can only see verified contests.
+    - Contest creators can additionally see all of their own contests (verified or not).
 - **Problems:**
-  - Problems are publicly visible only once the contest is live (i.e., `contest_start_time` has passed).
-  - Admins and the contest creator can view problems at any time.
+    - Problems are publicly visible only once the contest is live (i.e., `contest_start_time` has passed).
+    - Admins and the contest creator can view problems at any time.
 - **Testcases:**
-  - Sample testcases are visible to anyone who can view the problem.
-  - Hidden testcases (those with `is_sample = false`) are **never** shown to the general public — only admins and the contest creator can access them.
+    - Sample testcases are visible to anyone who can view the problem.
+    - Hidden testcases (those with `is_sample = false`) are **never** shown to the general public — only admins and the contest creator can access them.
 - Added single-resource GET endpoints alongside the list endpoints for all three entities.
 - Updated models (`Contest.model.js`, `Problem.model.js`, `TestCase.model.js`) with the corresponding query functions.
 
@@ -145,9 +145,9 @@ Integrated Redis and BullMQ to create an asynchronous queue-based submission pro
 - Installed `ioredis` and `bullmq`.
 - Created a Redis connection config (`config/redis.js`) that BullMQ uses internally as its in-memory storage backend.
 - BullMQ has three components:
-  - **Producer:** On each submission, the `submission_id` is enqueued as a job into the `submission-queue` using `submissionQueue.add()`.
-  - **Storage:** Redis holds the queue state — pending jobs, active jobs, completed jobs, and failed jobs — all in memory.
-  - **Worker:** `judgeWorker.js` runs concurrently alongside `index.js` as a separate process. It continuously polls Redis for new jobs and, when one arrives, picks it up and sends it to the Online Judge for evaluation.
+    - **Producer:** On each submission, the `submission_id` is enqueued as a job into the `submission-queue` using `submissionQueue.add()`.
+    - **Storage:** Redis holds the queue state — pending jobs, active jobs, completed jobs, and failed jobs — all in memory.
+    - **Worker:** `judgeWorker.js` runs concurrently alongside `index.js` as a separate process. It continuously polls Redis for new jobs and, when one arrives, picks it up and sends it to the Online Judge for evaluation.
 - The worker processes one job at a time by default (`concurrency: 1`), ensuring the judge is not flooded. This can be adjusted via the `concurrency` option. Later I made the concurreny to 2, to reduce the waiting time of the incoming submission in the queue, as two workers can work simultaneously on two different tasks, reducing the wait time.
 - Once a job is evaluated, the verdict is written back to the `submissions` table and the worker picks up the next job.
 
@@ -159,15 +159,15 @@ Added the Online Judge logic — code is executed inside isolated Docker contain
 
 - Added `time_limit` and `memory_limit` columns to the `problems` table so each problem can have independent resource constraints.
 - Implemented `judge.service.js`:
-  1. A unique temp directory is created, and the source code is written to a file with the appropriate extension (`.cpp`, `.py`, `.js`, etc.).
-  2. A shell script is generated to compile and run the file. The run command is pre-mapped per language.
-  3. Node.js `child_process` spawns a Docker container, mounting the temp directory and shell script inside it. The `time_limit` and `memory_limit` are passed to Docker (`--memory`, custom timeout arguments).
-  4. The container runs the code with the testcase's `input_data` piped to stdin.
-  5. The Docker container is automatically removed after execution (`--rm` flag).
-  6. An outer Node.js timeout (10 seconds beyond the problem's time limit) acts as a failsafe in case the Docker container hangs during startup or teardown.
-  7. The verdict is determined by the process exit code (e.g., exit 1 → runtime error, timeout → TLE).
-  8. Execution start time is recorded before the container runs and subtracted from the end time to compute `execution_time_ms`.
-  9. The temp directory is cleaned up after each run.
+    1. A unique temp directory is created, and the source code is written to a file with the appropriate extension (`.cpp`, `.py`, `.js`, etc.).
+    2. A shell script is generated to compile and run the file. The run command is pre-mapped per language.
+    3. Node.js `child_process` spawns a Docker container, mounting the temp directory and shell script inside it. The `time_limit` and `memory_limit` are passed to Docker (`--memory`, custom timeout arguments).
+    4. The container runs the code with the testcase's `input_data` piped to stdin.
+    5. The Docker container is automatically removed after execution (`--rm` flag).
+    6. An outer Node.js timeout (10 seconds beyond the problem's time limit) acts as a failsafe in case the Docker container hangs during startup or teardown.
+    7. The verdict is determined by the process exit code (e.g., exit 1 → runtime error, timeout → TLE).
+    8. Execution start time is recorded before the container runs and subtracted from the end time to compute `execution_time_ms`.
+    9. The temp directory is cleaned up after each run.
 - The `judgeWorker.js` now calls `runJudge()` with all the submission data, gets the verdict back, and updates the submission record.
 
 ---
@@ -180,10 +180,10 @@ Added contest standings and the leaderboard endpoint.
 - When the judge returns `accepted` for a submission, the judge worker now records an entry in `contest_standings` — but **only the first accepted submission per problem per user** is recorded. If the same problem is accepted multiple times, only the earliest submission counts in the standings.
 - Built `ContestStanding.model.js` with a `getLeaderboard` query that aggregates standings to produce ranked results.
 - `getLeaderboard` works as follows:
-  - Fetches all `contest_standings` entries for the contest.
-  - Sums the scores of all accepted problems for each user.
-  - Subtracts the **penalty**, which is the total elapsed time from `contest_start_time` to each accepted submission.
-  - Ranks participants in descending order of total score (with penalty as tiebreaker).
+    - Fetches all `contest_standings` entries for the contest.
+    - Sums the scores of all accepted problems for each user.
+    - Subtracts the **penalty**, which is the total elapsed time from `contest_start_time` to each accepted submission.
+    - Ranks participants in descending order of total score (with penalty as tiebreaker).
 - Added the `GET /contests/:id/leaderboard` endpoint. Admins and the contest creator can view the leaderboard at any time; general users can only view it for verified contests.
 
 ---
@@ -206,9 +206,9 @@ Added contest registration, enforced participation time windows, and fixed leade
 Added all user profile endpoints.
 
 - Built `user.controller.js` with three handlers:
-  - `GET /users/:id` — fetches public profile info for any user. Strips the `password` field before sending the response.
-  - `PUT /users/:id` — allows a user to update their own `name`, `institute`, and `email`. Enforces that only the owner can modify their own profile (`req.userId !== id` → 403). Checks for email uniqueness before applying the update.
-  - `DELETE /users/:id` — allows a user to delete their own account. Clears the `token` cookie after deletion so the session is immediately invalidated.
+    - `GET /users/:id` — fetches public profile info for any user. Strips the `password` field before sending the response.
+    - `PUT /users/:id` — allows a user to update their own `name`, `institute`, and `email`. Enforces that only the owner can modify their own profile (`req.userId !== id` → 403). Checks for email uniqueness before applying the update.
+    - `DELETE /users/:id` — allows a user to delete their own account. Clears the `token` cookie after deletion so the session is immediately invalidated.
 - Added the corresponding model methods (`User.update`, `User.delete`, `User.findByEmail`) to `User.model.js`.
 - Added `user.routes.js` and registered it in `app.js`.
 - Continued expanding `api.md` with documentation for all user endpoints.
@@ -220,12 +220,12 @@ Added all user profile endpoints.
 Added granular rate limiting to all major API endpoints using `express-rate-limit`.
 
 - Created `rateLimit.middleware.js` with the following limiters:
-  - **Global API limiter** (`apiLimiter`): 100 requests per 15 minutes, applied to all `/api/*` routes.
-  - **Auth limiter** (`authLimiter`): 10 requests per 15 minutes on `/auth/login` and `/auth/register` to prevent brute-force attacks.
-  - **Submission limiter** (`submissionLimiter`): 5 submissions per minute to prevent judge spam.
-  - **Contest creation limiter** (`contestCreationLimiter`): 5 contest creations per hour.
-  - **Profile update limiter** (`profileUpdateLimiter`): 15 updates per 15 minutes.
-  - **Contest registration limiter** (`contestRegistrationLimiter`): 10 registrations per 10 minutes.
+    - **Global API limiter** (`apiLimiter`): 100 requests per 15 minutes, applied to all `/api/*` routes.
+    - **Auth limiter** (`authLimiter`): 10 requests per 15 minutes on `/auth/login` and `/auth/register` to prevent brute-force attacks.
+    - **Submission limiter** (`submissionLimiter`): 5 submissions per minute to prevent judge spam.
+    - **Contest creation limiter** (`contestCreationLimiter`): 5 contest creations per hour.
+    - **Profile update limiter** (`profileUpdateLimiter`): 15 updates per 15 minutes.
+    - **Contest registration limiter** (`contestRegistrationLimiter`): 10 registrations per 10 minutes.
 - All limiters use `standardHeaders: true` so the client receives `RateLimit-*` headers in responses.
 - The global `apiLimiter` is applied at the app level; specific limiters are applied as per-route middleware on the relevant route files.
 
@@ -238,11 +238,11 @@ Added the contest evaluation cron job and wired up the evaluation status lifecyc
 - Installed `node-cron`.
 - Added a `contest_evaluation_status` column (ENUM: `pending`, `running`, `completed`, default `pending`) to the `contests` table.
 - Created `contestEvaluation.cron.js` which runs on a `*/5 * * * *` schedule (every 5 minutes):
-  1. Queries for all contests where the end time has passed and `contest_evaluation_status = 'pending'`.
-  2. For each such contest, immediately sets the status to `running` (to prevent duplicate execution if the cron fires again before the first run finishes).
-  3. Calls `deltaCalculation(contestId)` from the contest service (a stub at this point).
-  4. On success, sets the status to `completed`.
-  5. On failure, reverts the status back to `pending` so the cron will retry on the next cycle.
+    1. Queries for all contests where the end time has passed and `contest_evaluation_status = 'pending'`.
+    2. For each such contest, immediately sets the status to `running` (to prevent duplicate execution if the cron fires again before the first run finishes).
+    3. Calls `deltaCalculation(contestId)` from the contest service (a stub at this point).
+    4. On success, sets the status to `completed`.
+    5. On failure, reverts the status back to `pending` so the cron will retry on the next cycle.
 - Added `Contest.getPendingEvaluations()` and `Contest.updateEvaluationStatus()` model methods.
 - The cron is imported and started in `index.js` so it runs continuously alongside the server.
 - Also created `server/sandbox/` with a `.gitkeep` — this is the temp directory where the judge writes code files during execution.
@@ -255,11 +255,11 @@ Integrated Ollama for local AI model support — an in-platform coding assistant
 
 - Installed and configured an Ollama-backed AI assistant that can answer competitive programming questions.
 - Created `config/aiConfig.js` containing a detailed system prompt that enforces strict boundaries:
-  - The AI **cannot** provide code, pseudocode, code snippets, templates, or step-by-step implementation instructions in any form.
-  - It **can** explain problem statements in simpler terms, define algorithms and data structures conceptually, explain complexity, give high-level hints, and guide learning.
-  - The system prompt includes explicit example responses to shape the model's output style.
+    - The AI **cannot** provide code, pseudocode, code snippets, templates, or step-by-step implementation instructions in any form.
+    - It **can** explain problem statements in simpler terms, define algorithms and data structures conceptually, explain complexity, give high-level hints, and guide learning.
+    - The system prompt includes explicit example responses to shape the model's output style.
 - Created `services/ai.service.js` (`generateHint`) which calls the Ollama REST API (`/api/chat`) with the system prompt + user prompt, using `stream: false` to get a complete response.
-  - The Ollama URL and model name are configurable via `OLLAMA_URL` and `OLLAMA_MODEL` env variables.
+    - The Ollama URL and model name are configurable via `OLLAMA_URL` and `OLLAMA_MODEL` env variables.
 - Created `controllers/ai.controller.js` (`askAssistant`) which validates the incoming prompt and returns the AI's response.
 - Added a dedicated **AI rate limiter** (`aiLimiter`) — 10 requests per minute — to prevent abuse of the AI endpoint.
 - Added `ai.routes.js` (protected route: requires login) and registered it in `app.js`.
@@ -274,15 +274,15 @@ Implemented the full Elo-like delta and rating change system inside a database t
 
 - Replaced the stub `deltaCalculation` in `contest.service.js` with the complete algorithm (see the detailed breakdown below).
 - The entire sequence of DB writes (updating deltas for all participants, then updating their ratings and max ratings) is wrapped in a **single MySQL transaction**:
-  - If any step fails mid-way, the transaction is rolled back to its original state, preventing partial updates (e.g., some users get new ratings while others don't).
-  - On success, the transaction is committed atomically.
+    - If any step fails mid-way, the transaction is rolled back to its original state, preventing partial updates (e.g., some users get new ratings while others don't).
+    - On success, the transaction is committed atomically.
 - Added `ContestRegistration.updateDelta(conn, contestId, userId, delta)` — updates the `delta` column in `contest_registrations` for a specific user in a specific contest.
 - Added `User.updateRating(conn, userId, newRating, newMaxRating)` — updates `rating` and `max_rating` for a user. Both functions accept an active connection object to participate in the same transaction.
 - Added the **admin-only `POST /contests/:id/finalize`** endpoint (`finalizeContest` controller):
-  - Guards: contest must exist, must have ended, must not already be `completed` or `running`.
-  - Sets status to `running`, calls `deltaCalculation`, then sets to `completed`.
-  - If `deltaCalculation` throws, reverts to `pending` and returns a 500 so the admin can retry.
-  - This provides a manual fallback in case the cron job fails for any reason.
+    - Guards: contest must exist, must have ended, must not already be `completed` or `running`.
+    - Sets status to `running`, calls `deltaCalculation`, then sets to `completed`.
+    - If `deltaCalculation` throws, reverts to `pending` and returns a 500 so the admin can retry.
+    - This provides a manual fallback in case the cron job fails for any reason.
 - Updated `api.md` with documentation for the finalize endpoint.
 
 ---
@@ -294,8 +294,8 @@ Added the Swagger UI for interactive API documentation.
 - Installed `swagger-ui-express`.
 - Created `config/swagger.js` — a large, hand-written OpenAPI 3.0.0 specification covering all API endpoints, including schemas for `User`, `Contest`, `Problem`, `Submission`, `Testcase`, `ContestRegistration`, `ContestStanding`, and the standard `ApiResponse` wrapper.
 - The Swagger UI is served at **two routes**:
-  - `/` — replaces the old health-check landing page, making the API docs the default view when opening the server URL.
-  - `/api-docs` — an alternative path.
+    - `/` — replaces the old health-check landing page, making the API docs the default view when opening the server URL.
+    - `/api-docs` — an alternative path.
 - Authentication in Swagger is declared as `cookieAuth` (an API key passed via the `token` cookie), consistent with how the JWT auth middleware works.
 - The health-check endpoint was moved to `GET /api/v1`.
 - Also fixed a minor bug in `ContestRegistration.model.js` and `contest.service.js` discovered during documentation review.
@@ -313,11 +313,8 @@ Added the updated commit_history notes, architecture and readme notes.
 The goal is to determine how much each user's rating should increase or decrease after a contest based on:
 
 1. Their **current rating** before the contest.
-    
 2. Their **actual performance** in the contest.
-    
 3. Their **expected performance** according to their rating.
-    
 
 ---
 
@@ -327,12 +324,12 @@ After the contest ends, generate the final ranking of all participants.
 
 Example:
 
-|Rank|User|Rating|
-|---|---|---|
-|1|A|1500|
-|2|B|1700|
-|3|C|1400|
-|4|D|1600|
+| Rank | User | Rating |
+| ---- | ---- | ------ |
+| 1    | A    | 1500   |
+| 2    | B    | 1700   |
+| 3    | C    | 1400   |
+| 4    | D    | 1600   |
 
 These are the **actual ranks** achieved in the contest.
 
@@ -345,11 +342,8 @@ The rating system assumes that higher-rated users should generally perform bette
 For every participant:
 
 - Compare them against every other participant.
-    
 - Calculate the probability that they would beat that participant based on rating difference.
-    
 - Sum all these probabilities.
-    
 
 This gives the number of opponents they were expected to beat.
 
@@ -452,9 +446,7 @@ They should lose rating.
 The larger the gap between expected and actual rank:
 
 - The larger the gain if the user exceeded expectations.
-    
 - The larger the loss if the user performed worse.
-    
 
 The delta is computed as:
 
@@ -510,9 +502,7 @@ This creates rating inflation because more points were gained than lost.
 To keep the rating pool stable:
 
 - Compute the average excess: `correction = sum(deltas) / n`
-    
 - Subtract `correction` from every participant's delta.
-    
 
 This keeps the total net rating change near zero across the entire contest.
 
@@ -552,11 +542,11 @@ New Rating = max(Current Rating + Final Delta, 400)
 
 Example:
 
-|User|Old Rating|Delta|New Rating|
-|---|---|---|---|
-|A|1500|+70|1570|
-|B|1700|-40|1660|
-|C|1400|+20|1420|
+| User | Old Rating | Delta | New Rating |
+| ---- | ---------- | ----- | ---------- |
+| A    | 1500       | +70   | 1570       |
+| B    | 1700       | -40   | 1660       |
+| C    | 1400       | +20   | 1420       |
 
 ---
 
@@ -567,11 +557,8 @@ The `delta` field in the `contest_registrations` table is updated for each parti
 This is what allows:
 
 - Contest pages to show `+52`
-    
 - User profiles to show rating history
-    
 - Future analytics
-    
 
 ---
 
@@ -644,8 +631,7 @@ The entire algorithm can be summarised as:
 8. Update ratings safely inside a transaction.
 ```
 
-
---- 
+---
 
 ## Lamen Terms:
 
@@ -676,7 +662,7 @@ Setup initial Backend server and connect to MySQL
 
 ## Commit - 5
 
-- Add Testcase table, model, and endpoints for creating a single testcase for each and every problem. 
+- Add Testcase table, model, and endpoints for creating a single testcase for each and every problem.
 - Only original creator of a contest, to which the problem belonged, of which the testcase belongs, is allowed to create, udpate or delete the testcases
 
 ## Commit - 6
@@ -702,6 +688,7 @@ Setup initial Backend server and connect to MySQL
 ## Commit - 9
 
 - There was a serious bug where during registration frontend could send a role field to the server. We don't want that as if anyone somehow attached a admin to the role field from frontend, they would become one. We want the already existing admins to assign admin roles to others, which I might add later
+
 ## Commit - 10
 
 - Now we made a submission table, model and controller
@@ -712,6 +699,7 @@ Setup initial Backend server and connect to MySQL
 ## Commit - 11
 
 - Used prettier to format the code into a pre-set manner for consistency
+
 ## Commit - 12
 
 - Installed ioredis and BullMQ for queue based system for our online judge for submission
@@ -719,20 +707,22 @@ Setup initial Backend server and connect to MySQL
 - Any submission_id for any submission made in the queue using BullMQ
 - Later a worker which runs continuously in the background concurrently with index.js, takes one item from the queue and sends it to the Online Judge (later added) and then when one is finally evaluated, then takes another one from queue and sends it to OJ and so on
 - Also there is a concurrent field in the BullMQ worker, which is the ablity of the worker to process multiple jobs simultaneously. By default it is obviously set to 1, so only one job at a time, only when the job is finished, we take out another one from the queue and execute it. Later I made the concurreny to 2, to reduce the waiting time of the incoming submission in the queue, as two workers can work simultaneously on two different tasks, reducing the wait time.
+
 ## Commit - 13, 14
 
 - Added time_limit and memory_limit fields in the field of Problem Table
-- ONLINE Judge: 
-	- First a temp directory is formed ans a source code file is made with the required extension depending on the language
-	- A shell script is generated to execute the file based on the file type, also a run command is pre-mapped for all types of file time, here we pass the time limit to the docker
-	- Use node.js child process to run the docker container and providing the temp directory along with the shell script command to run inside the docker, before running we also set the verdict to running. We also provide the memory limit to the docker
-	- Also docker container is ran temporatily and automatically removed after the execution
-	- The input_data is piped to docker for taking the stdin for the code ran
-	- Node.js also enforces a outer timeout in addition to docker timeout which is 10seconds more than required to compensate for docker container starting and stopping. This is to prevent the container from hanging. 
-	- The verdict is decided based on the exit code of the code in docker
-	- Later the temp directory is also cleaned up
-	- After this the veridict of the submission is updated based on the response from the online judge
-	- before executing the code, we store the current time and after the entire execution is completed and a veridict is retured, we check the final time and subtract to get the elapsed time.
+- ONLINE Judge:
+    - First a temp directory is formed ans a source code file is made with the required extension depending on the language
+    - A shell script is generated to execute the file based on the file type, also a run command is pre-mapped for all types of file time, here we pass the time limit to the docker
+    - Use node.js child process to run the docker container and providing the temp directory along with the shell script command to run inside the docker, before running we also set the verdict to running. We also provide the memory limit to the docker
+    - Also docker container is ran temporatily and automatically removed after the execution
+    - The input_data is piped to docker for taking the stdin for the code ran
+    - Node.js also enforces a outer timeout in addition to docker timeout which is 10seconds more than required to compensate for docker container starting and stopping. This is to prevent the container from hanging.
+    - The verdict is decided based on the exit code of the code in docker
+    - Later the temp directory is also cleaned up
+    - After this the veridict of the submission is updated based on the response from the online judge
+    - before executing the code, we store the current time and after the entire execution is completed and a veridict is retured, we check the final time and subtract to get the elapsed time.
+
 ## Commit - 15
 
 - Add a contest standings table which takes the contest_id, user_id, problem_id and submission id
@@ -742,7 +732,7 @@ Setup initial Backend server and connect to MySQL
 
 ## Commit - 16
 
-- Add the table for contest registration and the endpoints for contest registration 
+- Add the table for contest registration and the endpoints for contest registration
 - This table contains all the people that actually registered for the contest. Later this table will be used to store the delta of each participants after the contest is over. So this table will also act as a contest history for everyone later on
 - Also we have allowed people to only participate till 30 minutes have passed since the start time of the contest, after that no one can participate
 - Also we updated the judge worker to place an entry in the contest standings only if the problem that was accepted was solved during the contest, becuase then only it should impact the contest leaderboards. If any participant solves a problem after the contest ends, it should just be treated as practice and not in the actual leaderboard, as leaderboard is only for the people who actually solved the problem during the contest
@@ -750,6 +740,7 @@ Setup initial Backend server and connect to MySQL
 ## Commit - 17
 
 - Added all the endpoints for users to view profile, update and delete
+
 ## Commit - 18
 
 - We have also added rate limiting to all the major API endpoints and also globally to our backend. This is to limit IP address to send burst of request in a small amount of time
@@ -773,8 +764,8 @@ Setup initial Backend server and connect to MySQL
 
 - Add the Delta change system
 - Also added an api endpoint for the admin only to manually trigger the contest evaluation for any contest, in case the cron fails to do so
-- Also we have made the entire process of saving the delta to the contest registration for all the users, updating the rating and max rating of all the people of the contest, that is all sequence of DB queries will  be ran using transaction. This prevents the situation of partial update of data in the DB. Example, updating only the delta of some people and not the others, recalculation will give the wrong result next time for everyone. That's why transaction in DB is used to either do the entire job or to rollback to the original state if in case any thing stops in between due to some reason
-- The entire code for delta update is in the contest.service.js 
+- Also we have made the entire process of saving the delta to the contest registration for all the users, updating the rating and max rating of all the people of the contest, that is all sequence of DB queries will be ran using transaction. This prevents the situation of partial update of data in the DB. Example, updating only the delta of some people and not the others, recalculation will give the wrong result next time for everyone. That's why transaction in DB is used to either do the entire job or to rollback to the original state if in case any thing stops in between due to some reason
+- The entire code for delta update is in the contest.service.js
 
 ## Commit - 22
 
@@ -787,6 +778,7 @@ Added the updated commit_history notes, architecture and readme notes.
 ## Commit - later 1
 
 We have decoupled the compilation and execution part of the judge, as the compilation for with a cpp file having #include <bits/stdc++.h> was taking a lot of time and memory, as this statement requires a lot of time to bring together all the header files, so we have added the separate service for compilation of code. Now the workflow is like this:
+
 1. User submits the code
 2. Submission is saved in the DB with pending state
 3. Judge service is called

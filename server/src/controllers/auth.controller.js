@@ -87,7 +87,7 @@ const login = asyncHandler(async (req, res) => {
             'Invalid email or password.'
         );
     }
-    
+
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
         throw new ApiError(

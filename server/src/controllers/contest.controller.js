@@ -201,11 +201,7 @@ const getMyContests = asyncHandler(async (req, res) => {
     return res
         .status(statusCode.OK)
         .json(
-            new ApiResponse(
-                statusCode.OK,
-                'Your contests fetched.',
-                contests
-            )
+            new ApiResponse(statusCode.OK, 'Your contests fetched.', contests)
         );
 });
 
@@ -423,10 +419,7 @@ const unregisterFromContest = asyncHandler(async (req, res) => {
     const {contest_id} = req.body;
 
     if (!contest_id) {
-        throw new ApiError(
-            statusCode.BAD_REQUEST,
-            'contest_id is required.'
-        );
+        throw new ApiError(statusCode.BAD_REQUEST, 'contest_id is required.');
     }
 
     const contest = await ContestRegistration.findContestTimes(
