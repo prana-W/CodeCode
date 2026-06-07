@@ -11,9 +11,16 @@ import TestcasesPage from './design-contest/TestcasesPage.jsx';
 import VerifyContestsPage from './admin/VerifyContestsPage.jsx';
 import AdminContestDetailsPage from './admin/AdminContestDetailsPage.jsx';
 
+import ContestParticipationLayout from './participation/ContestParticipationLayout.jsx';
+import ContestProblemsTab from './participation/ContestProblemsTab.jsx';
+import ContestProblemView from './participation/ContestProblemView.jsx';
+import ContestSubmitTab from './participation/ContestSubmitTab.jsx';
+import ContestSubmissionsTab from './participation/ContestSubmissionsTab.jsx';
+
 export {
     Home, NotFound, Login, Register, Home2,
     ContestsPage,
     ContestListPage, ContestEditPage, ProblemsPage, TestcasesPage,
-    VerifyContestsPage, AdminContestDetailsPage
+    VerifyContestsPage, AdminContestDetailsPage,
+    ContestParticipationLayout, ContestProblemsTab, ContestProblemView, ContestSubmitTab, ContestSubmissionsTab
 };

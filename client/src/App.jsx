@@ -1,4 +1,4 @@
-import { Home2, NotFound, Login, Register, ContestsPage, ContestListPage, ContestEditPage, ProblemsPage, TestcasesPage, VerifyContestsPage, AdminContestDetailsPage } from './pages/index.js';
+import { Home2, NotFound, Login, Register, ContestsPage, ContestListPage, ContestEditPage, ProblemsPage, TestcasesPage, VerifyContestsPage, AdminContestDetailsPage, ContestParticipationLayout, ContestProblemsTab, ContestProblemView, ContestSubmitTab, ContestSubmissionsTab } from './pages/index.js';
 import ErrorBoundary from './components/ErrorBoundary.jsx';
 import { ThemeProvider } from "@/components/theme-provider";
 import Layout from './Layout.jsx';
@@ -38,12 +38,44 @@ const router = createBrowserRouter([
             },
             {
                 path: 'contests',
-                element:( 
+                element: (
                     <ProtectedRoute>
-                     <ContestsPage />
-                </ProtectedRoute>
-            ),
+                        <ContestsPage />
+                    </ProtectedRoute>
+                ),
             },
+            // ── Contest Participation Flow ───────────────────────────
+            {
+                path: 'contest/:id',
+                element: (
+                    <ProtectedRoute>
+                        <ContestParticipationLayout />
+                    </ProtectedRoute>
+                ),
+                children: [
+                    {
+                        path: '',
+                        element: <Navigate to="problems" replace />
+                    },
+                    {
+                        path: 'problems',
+                        element: <ContestProblemsTab />
+                    },
+                    {
+                        path: 'problem/:problemId',
+                        element: <ContestProblemView />
+                    },
+                    {
+                        path: 'submit',
+                        element: <ContestSubmitTab />
+                    },
+                    {
+                        path: 'submissions',
+                        element: <ContestSubmissionsTab />
+                    }
+                ]
+            },
+            // ── Design Contest Flow ──────────────────────────────────
             {
                 path: 'design-contest',
                 element: (

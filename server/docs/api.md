@@ -537,6 +537,32 @@ _Note: All endpoints require authentication._
 
 _Note: All endpoints require authentication._
 
+### 0. Get Submission Counts by Contest
+
+- **Method**: `GET`
+- **Route**: `/counts?contest_id=1`
+- **Access**: Authenticated users.
+- **Success Response (200 OK)**:
+    ```json
+    {
+        "statusCode": 200,
+        "success": true,
+        "message": "Submission counts fetched.",
+        "data": [
+            {
+                "problem_id": 1,
+                "total_submissions": 45
+            },
+            {
+                "problem_id": 2,
+                "total_submissions": 12
+            }
+        ]
+    }
+    ```
+- **Error Cases**:
+    - `400` — `contest_id` missing
+
 ### 1. Create Submission
 
 - **Method**: `POST`

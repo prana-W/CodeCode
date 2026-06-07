@@ -2,8 +2,8 @@ import rateLimit from 'express-rate-limit';
 
 // Global API Limiter
 export const apiLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000,
-    limit: 100, // Limit each IP to 100 requests per `window` (here, per 15 minutes)
+    windowMs: 1 * 60 * 1000,
+    limit: 100,
     standardHeaders: true,
     legacyHeaders: false,
     message: {
@@ -16,8 +16,8 @@ export const apiLimiter = rateLimit({
 
 // Authentication Limiter (Login/Register)
 export const authLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000,
-    limit: 10, // Limit each IP to 10 requests per 15 minutes
+    windowMs: 1 * 60 * 1000,
+    limit: 10,
     standardHeaders: true,
     legacyHeaders: false,
     message: {
@@ -31,7 +31,7 @@ export const authLimiter = rateLimit({
 // Submission Limiter (Prevent Judge Spam)
 export const submissionLimiter = rateLimit({
     windowMs: 1 * 60 * 1000,
-    limit: 5, // Limit each IP to 5 submissions per minute
+    limit: 5, 
     standardHeaders: true,
     legacyHeaders: false,
     message: {
@@ -44,8 +44,8 @@ export const submissionLimiter = rateLimit({
 
 // Contest Creation Limiter
 export const contestCreationLimiter = rateLimit({
-    windowMs: 60 * 60 * 1000,
-    limit: 5, // Limit each IP to 5 contest creations per hour
+    windowMs: 1 * 60 * 1000,
+    limit: 5,
     standardHeaders: true,
     legacyHeaders: false,
     message: {
@@ -58,7 +58,7 @@ export const contestCreationLimiter = rateLimit({
 // Profile Update Limiter
 export const profileUpdateLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
-    limit: 15, // Limit each IP to 15 profile updates per 15 minutes
+    limit: 15, 
     standardHeaders: true,
     legacyHeaders: false,
     message: {
@@ -72,7 +72,7 @@ export const profileUpdateLimiter = rateLimit({
 // Contest Registration Limiter
 export const contestRegistrationLimiter = rateLimit({
     windowMs: 10 * 60 * 1000,
-    limit: 10, // Limit each IP to 10 contest registrations per 10 minutes
+    limit: 10,
     standardHeaders: true,
     legacyHeaders: false,
     message: {
@@ -85,7 +85,7 @@ export const contestRegistrationLimiter = rateLimit({
 // AI Assistant Limiter
 export const aiLimiter = rateLimit({
     windowMs: 5 * 60 * 1000, // 5 minutes
-    limit: 100, // Limit each IP to 100 AI requests per 5 minutes
+    limit: 100, 
     standardHeaders: true,
     legacyHeaders: false,
     message: {

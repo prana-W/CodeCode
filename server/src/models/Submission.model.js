@@ -110,6 +110,18 @@ class Submission {
             [verdict, execution_time_ms, memory_used_kb, submission_id]
         );
     }
+
+    static async getSubmissionCountsByContest(contest_id) {
+        const [rows] = await pool.query(
+            `SELECT p.problem_id, COUNT(s.submission_id) AS total_submissions
+             FROM problems p
+             LEFT JOIN submissions s ON p.problem_id = s.problem_id
+             WHERE p.contest_id = ?
+             GROUP BY p.problem_id`,
+            [contest_id]
+        );
+        return rows;
+    }
 }
 
 export default Submission;
