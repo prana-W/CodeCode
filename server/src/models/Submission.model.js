@@ -122,6 +122,17 @@ class Submission {
         );
         return rows;
     }
+
+    static async getSolvedProblemsByContest(contest_id, user_id) {
+        const [rows] = await pool.query(
+            `SELECT DISTINCT s.problem_id
+             FROM submissions s
+             JOIN problems p ON s.problem_id = p.problem_id
+             WHERE p.contest_id = ? AND s.submitted_by = ? AND s.verdict = 'accepted'`,
+            [contest_id, user_id]
+        );
+        return rows.map((r) => r.problem_id);
+    }
 }
 
 export default Submission;

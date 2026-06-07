@@ -606,6 +606,24 @@ const swaggerDefinition = {
         },
 
         // ── SUBMISSIONS ───────────────────────────────────────────────────────
+        '/submissions/solved': {
+            get: {
+                tags: ['Submissions'],
+                summary: 'Get problems solved by user in a contest',
+                parameters: [
+                    {
+                        in: 'query',
+                        name: 'contest_id',
+                        required: true,
+                        schema: {type: 'integer'},
+                    },
+                ],
+                responses: {
+                    200: {description: 'Solved problems fetched'},
+                    400: {description: 'contest_id missing'},
+                },
+            },
+        },
         '/submissions/counts': {
             get: {
                 tags: ['Submissions'],

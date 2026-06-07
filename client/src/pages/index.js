@@ -16,11 +16,12 @@ import ContestProblemsTab from './participation/ContestProblemsTab.jsx';
 import ContestProblemView from './participation/ContestProblemView.jsx';
 import ContestSubmitTab from './participation/ContestSubmitTab.jsx';
 import ContestSubmissionsTab from './participation/ContestSubmissionsTab.jsx';
+import ContestLeaderboardTab from './participation/ContestLeaderboardTab.jsx';
 
 export {
     Home, NotFound, Login, Register, Home2,
     ContestsPage,
     ContestListPage, ContestEditPage, ProblemsPage, TestcasesPage,
     VerifyContestsPage, AdminContestDetailsPage,
-    ContestParticipationLayout, ContestProblemsTab, ContestProblemView, ContestSubmitTab, ContestSubmissionsTab
+    ContestParticipationLayout, ContestProblemsTab, ContestProblemView, ContestSubmitTab, ContestSubmissionsTab, ContestLeaderboardTab
 };

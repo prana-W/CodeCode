@@ -21,7 +21,7 @@ const SOURCE_FILE_NAMES = {
     javascript: 'main.js',
 };
 
-function buildRunScript(language, timeoutSecs) {
+function buildCompileScript(language) {
     const compileSteps = {
         cpp: `
 g++ /code/main.cpp -o /code/main 2>/code/compile.err
@@ -45,6 +45,10 @@ fi
         javascript: '',
     };
 
+    return `#!/bin/sh\n${compileSteps[language]}\nexit $?\n`;
+}
+
+function buildRunScript(language, timeoutSecs) {
     const runCommands = {
         cpp: `timeout ${timeoutSecs} /code/main < /code/input.txt`,
         c: `timeout ${timeoutSecs} /code/main < /code/input.txt`,
@@ -53,11 +57,7 @@ fi
         javascript: `timeout ${timeoutSecs} node /code/main.js < /code/input.txt`,
     };
 
-    return `#!/bin/sh
-${compileSteps[language]}
-${runCommands[language]}
-exit $?
-`;
+    return `#!/bin/sh\n${runCommands[language]}\nexit $?\n`;
 }
 
 function normalizeOutput(text) {
@@ -75,6 +75,7 @@ export async function runJudge({
 }) {
     const timeoutSecs = Math.ceil(time_limit_ms / 1000);
     const memStr = `${memory_limit_mb}m`;
+    const compileMemStr = '512m'; // Generous memory for compilation
 
     const sandboxRoot = path.join(process.cwd(), 'sandbox');
 
@@ -98,6 +99,15 @@ export async function runJudge({
         );
 
         await fs.writeFile(
+            path.join(sandboxPath, 'compile.sh'),
+            buildCompileScript(language),
+            {
+                encoding: 'utf8',
+                mode: 0o755,
+            }
+        );
+
+        await fs.writeFile(
             path.join(sandboxPath, 'run.sh'),
             buildRunScript(language, timeoutSecs),
             {
@@ -109,9 +119,40 @@ export async function runJudge({
         let stdout = '';
         let exitCode = 0;
         let killed = false;
+        
+        // Compile Step
+        let compilationError = '';
+        if (['cpp', 'c', 'java'].includes(language)) {
+            try {
+                await execFileAsync(
+                    'docker',
+                    [
+                        'run', '--rm', '--network=none',
+                        `--name`, `compile-${submission_id}`,
+                        `--memory=${compileMemStr}`, '--memory-swap', compileMemStr,
+                        '--cpus=1',
+                        '-v', `${path.resolve(sandboxPath)}:/code`,
+                        DOCKER_IMAGES[language],
+                        'sh', '/code/compile.sh',
+                    ],
+                    { timeout: 15000 } // 15s max compilation time
+                );
+            } catch (err) {
+                exitCode = typeof err.code === 'number' ? err.code : 1;
+                if (exitCode === 100) {
+                    try {
+                        compilationError = await fs.readFile(path.join(sandboxPath, 'compile.err'), 'utf8');
+                    } catch {}
+                    return { verdict: 'compilation_error', execution_time_ms: 0, compilation_error: compilationError, actual_output: '' };
+                } else {
+                    return { verdict: 'runtime_error', execution_time_ms: 0, compilation_error: 'Compiler crashed or took too long.', actual_output: '' };
+                }
+            }
+        }
 
         const start = Date.now();
 
+        // Execution Step
         try {
             const result = await execFileAsync(
                 'docker',
@@ -172,8 +213,6 @@ export async function runJudge({
                     ? 'accepted'
                     : 'wrong_answer';
         }
-
-        let compilationError = '';
 
         try {
             compilationError = await fs.readFile(

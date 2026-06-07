@@ -50,7 +50,8 @@ class Problem {
 
     static async findAllByContest(contest_id) {
         const [rows] = await pool.query(
-            `SELECT p.problem_id, p.title, c.authored_by AS contest_authored_by,
+            `SELECT p.problem_id, p.title, p.time_limit_ms, p.memory_limit_mb, p.score,
+                    c.authored_by AS contest_authored_by,
                     c.contest_start_time, c.contest_end_time
              FROM problems p
              JOIN contests c ON p.contest_id = c.id

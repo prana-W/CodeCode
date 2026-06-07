@@ -4,6 +4,7 @@ import {
     getContestSubmissions,
     getSubmissionById,
     getSubmissionCounts,
+    getSolvedProblems,
 } from '../controllers/submission.controller.js';
 import {verifyToken} from '../middlewares/index.js';
 import {submissionLimiter} from '../middlewares/rateLimit.middleware.js';
@@ -14,6 +15,7 @@ const router = Router();
 router.use(verifyToken);
 
 router.get('/counts', getSubmissionCounts);
+router.get('/solved', getSolvedProblems);
 router.post('/', submissionLimiter, createSubmission);
 router.get('/', getContestSubmissions);
 router.get('/:id', getSubmissionById);

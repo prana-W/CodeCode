@@ -164,7 +164,8 @@ const deleteContest = asyncHandler(async (req, res) => {
 });
 const getContestById = asyncHandler(async (req, res) => {
     const {id} = req.params;
-    const contest = await Contest.findById(id);
+
+    const contest = await Contest.findByIdWithAuthor(id);
     if (!contest) {
         throw new ApiError(statusCode.NOT_FOUND, 'Contest not found.');
     }

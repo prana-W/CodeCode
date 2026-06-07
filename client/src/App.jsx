@@ -1,4 +1,4 @@
-import { Home2, NotFound, Login, Register, ContestsPage, ContestListPage, ContestEditPage, ProblemsPage, TestcasesPage, VerifyContestsPage, AdminContestDetailsPage, ContestParticipationLayout, ContestProblemsTab, ContestProblemView, ContestSubmitTab, ContestSubmissionsTab } from './pages/index.js';
+import { Home2, NotFound, Login, Register, ContestsPage, ContestListPage, ContestEditPage, ProblemsPage, TestcasesPage, VerifyContestsPage, AdminContestDetailsPage, ContestParticipationLayout, ContestProblemsTab, ContestProblemView, ContestSubmitTab, ContestSubmissionsTab, ContestLeaderboardTab } from './pages/index.js';
 import ErrorBoundary from './components/ErrorBoundary.jsx';
 import { ThemeProvider } from "@/components/theme-provider";
 import Layout from './Layout.jsx';
@@ -72,6 +72,10 @@ const router = createBrowserRouter([
                     {
                         path: 'submissions',
                         element: <ContestSubmissionsTab />
+                    },
+                    {
+                        path: 'leaderboard',
+                        element: <ContestLeaderboardTab />
                     }
                 ]
             },

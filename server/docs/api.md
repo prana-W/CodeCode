@@ -288,7 +288,19 @@ _Note: All endpoints require authentication._
                 "problems_solved": 2,
                 "total_score": 1400,
                 "total_penalty_minutes": 120,
-                "final_score": 1280
+                "final_score": 1280,
+                "solved_problems": [
+                    {
+                        "problem_id": 4,
+                        "score": 600,
+                        "penalty_minutes": 45
+                    },
+                    {
+                        "problem_id": 7,
+                        "score": 800,
+                        "penalty_minutes": 75
+                    }
+                ]
             }
         ]
     }
@@ -536,6 +548,23 @@ _Note: All endpoints require authentication._
 ## Submission Endpoints (`/api/v1/submissions`)
 
 _Note: All endpoints require authentication._
+
+### 0. Get Solved Problems by Contest
+
+- **Method**: `GET`
+- **Route**: `/solved?contest_id=1`
+- **Access**: Authenticated users.
+- **Success Response (200 OK)**:
+    ```json
+    {
+        "statusCode": 200,
+        "success": true,
+        "message": "Solved problems fetched.",
+        "data": [1, 5, 12]
+    }
+    ```
+- **Error Cases**:
+    - `400` — `contest_id` missing
 
 ### 0. Get Submission Counts by Contest
 

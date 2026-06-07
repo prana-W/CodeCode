@@ -148,4 +148,20 @@ const getSubmissionCounts = asyncHandler(async (req, res) => {
         .json(new ApiResponse(statusCode.OK, 'Submission counts fetched.', counts));
 });
 
-export {createSubmission, getContestSubmissions, getSubmissionById, getSubmissionCounts};
+const getSolvedProblems = asyncHandler(async (req, res) => {
+    const {contest_id} = req.query;
+    if (!contest_id) {
+        throw new ApiError(
+            statusCode.BAD_REQUEST,
+            'contest_id query param is required.'
+        );
+    }
+
+    const solvedIds = await Submission.getSolvedProblemsByContest(Number(contest_id), req.userId);
+    
+    return res
+        .status(statusCode.OK)
+        .json(new ApiResponse(statusCode.OK, 'Solved problems fetched.', solvedIds));
+});
+
+export {createSubmission, getContestSubmissions, getSubmissionById, getSubmissionCounts, getSolvedProblems};

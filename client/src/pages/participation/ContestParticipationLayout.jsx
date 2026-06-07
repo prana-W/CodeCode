@@ -1,6 +1,6 @@
 import { Outlet, NavLink, useParams, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import { Trophy, Code, ListChecks, ArrowLeft, Loader2 } from 'lucide-react';
+import { Trophy, Code, ListChecks, ArrowLeft, Loader2, BarChart2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import api from '@/lib/axios';
 
@@ -40,6 +40,7 @@ export default function ContestParticipationLayout() {
         { to: `/contest/${id}/problems`, label: 'Problems', icon: <Trophy className="w-4 h-4" /> },
         { to: `/contest/${id}/submit`, label: 'Submit Code', icon: <Code className="w-4 h-4" /> },
         { to: `/contest/${id}/submissions`, label: 'Submissions', icon: <ListChecks className="w-4 h-4" /> },
+        { to: `/contest/${id}/leaderboard`, label: 'Leaderboard', icon: <BarChart2 className="w-4 h-4" /> },
     ];
 
     return (
