@@ -2,6 +2,8 @@ import {useState, useEffect, useRef} from 'react';
 import {toast} from 'sonner';
 import {Play, Loader2, Terminal, AlertTriangle, Cpu, Clock, CheckCircle2, ChevronDown} from 'lucide-react';
 import api from '@/lib/axios';
+import Editor from '@monaco-editor/react';
+import {useTheme} from '@/components/theme-provider';
 
 const VALID_LANGUAGES = ['cpp', 'c', 'java', 'python', 'javascript'];
 
@@ -103,6 +105,17 @@ export default function CustomInvocationPage() {
     const pollingIntervalRef = useRef(null);
     const pollingTimeoutRef = useRef(null);
     const langRef = useRef(null);
+    const stdinTextareaRef = useRef(null);
+    const stdinGutterRef = useRef(null);
+
+    const {theme} = useTheme();
+    const editorTheme = theme === 'dark' ? 'vs-dark' : 'light';
+
+    const handleStdinScroll = (e) => {
+        if (stdinGutterRef.current) {
+            stdinGutterRef.current.scrollTop = e.target.scrollTop;
+        }
+    };
 
     useEffect(() => {
         return () => {
@@ -183,96 +196,64 @@ export default function CustomInvocationPage() {
     };
 
     return (
-        <div
-            className="min-h-screen w-full"
-            style={{
-                background: 'linear-gradient(135deg, #0a0a0f 0%, #0d0d14 50%, #0a0f0a 100%)',
-                fontFamily: "'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace",
-            }}
-        >
-            {/* Subtle grid texture overlay */}
-            <div
-                className="fixed inset-0 pointer-events-none opacity-[0.03]"
-                style={{
-                    backgroundImage: `
-                        linear-gradient(rgba(0,255,100,1) 1px, transparent 1px),
-                        linear-gradient(90deg, rgba(0,255,100,1) 1px, transparent 1px)
-                    `,
-                    backgroundSize: '40px 40px',
-                }}
-            />
+        <div className="min-h-screen w-full bg-background text-foreground relative">
+
 
             <div className="relative z-10 max-w-[1400px] mx-auto px-6 py-8">
 
-                {/* ── Header ── */}
-                <div className="mb-8">
-                    <div className="flex items-center gap-3 mb-1">
-                        <div className="flex items-center gap-1.5">
-                            <div className="w-3 h-3 rounded-full bg-red-500/80" />
-                            <div className="w-3 h-3 rounded-full bg-yellow-500/80" />
-                            <div className="w-3 h-3 rounded-full bg-emerald-500/80" />
-                        </div>
-                        <span className="text-[10px] text-zinc-600 font-mono tracking-widest uppercase">
-                            custom-invocation.sh
-                        </span>
+                {/* Clean Header */}
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-border pb-5 mb-8">
+                    <div>
+                        <h1 className="text-3xl font-serif font-bold tracking-tight text-foreground flex items-center gap-2.5">
+                            <Terminal className="w-7 h-7 text-primary" />
+                            Custom Invocation
+                        </h1>
+                        <p className="text-sm text-muted-foreground mt-1.5">
+                            Compile and execute code snippets on-the-fly with custom standard input (stdin).
+                        </p>
                     </div>
 
-                    <div className="border border-zinc-800 rounded-xl px-6 py-5 bg-zinc-950/80 backdrop-blur">
-                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                            <div>
-                                <div className="flex items-center gap-2.5 mb-1">
-                                    <Terminal className="w-4 h-4 text-emerald-400" />
-                                    <h1 className="text-lg font-bold text-zinc-100 tracking-wide uppercase">
-                                        Custom Invocation
-                                    </h1>
-                                    <span className="text-[9px] px-1.5 py-0.5 rounded bg-emerald-400/10 text-emerald-400 border border-emerald-400/20 uppercase tracking-widest">
-                                        Beta
-                                    </span>
+                    <div className="flex items-center gap-3">
+                        <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                            Language:
+                        </span>
+                        {/* Language Selector Dropdown */}
+                        <div className="relative" ref={langRef}>
+                            <button
+                                type="button"
+                                onClick={() => !executing && setLangOpen((o) => !o)}
+                                disabled={executing}
+                                className="flex items-center gap-3 px-4 py-2 rounded-lg border border-border bg-secondary text-secondary-foreground text-xs uppercase tracking-widest hover:bg-secondary/80 hover:text-foreground transition-all disabled:opacity-40 disabled:cursor-not-allowed min-w-[140px] justify-between"
+                            >
+                                <span className="flex items-center gap-2">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-primary" />
+                                    {LANG_LABEL[form.language]}
+                                </span>
+                                <ChevronDown className={`w-3 h-3 text-muted-foreground transition-transform ${langOpen ? 'rotate-180' : ''}`} />
+                            </button>
+
+                            {langOpen && (
+                                <div className="absolute right-0 top-full mt-1 z-50 w-40 rounded-lg border border-border bg-popover shadow-2xl overflow-hidden">
+                                    {VALID_LANGUAGES.map((lang) => (
+                                        <button
+                                            key={lang}
+                                            type="button"
+                                            onClick={() => {
+                                                setForm((f) => ({...f, language: lang}));
+                                                setLangOpen(false);
+                                            }}
+                                            className={`w-full text-left px-4 py-2.5 text-xs uppercase tracking-widest flex items-center gap-2 transition-colors
+                                                ${form.language === lang
+                                                    ? 'bg-primary/10 text-primary'
+                                                    : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
+                                                }`}
+                                        >
+                                            {form.language === lang && <span className="w-1 h-1 rounded-full bg-primary" />}
+                                            {LANG_LABEL[lang]}
+                                        </button>
+                                    ))}
                                 </div>
-                                <p className="text-xs text-zinc-500">
-                                    Compile and execute code on-the-fly with custom stdin ·{' '}
-                                    <span className="text-zinc-600">10s limit · 512MB</span>
-                                </p>
-                            </div>
-
-                            {/* Language Selector */}
-                            <div className="relative" ref={langRef}>
-                                <button
-                                    type="button"
-                                    onClick={() => !executing && setLangOpen((o) => !o)}
-                                    disabled={executing}
-                                    className="flex items-center gap-3 px-4 py-2 rounded-lg border border-zinc-700 bg-zinc-900 text-zinc-200 text-xs uppercase tracking-widest hover:border-zinc-500 hover:bg-zinc-800 transition-all disabled:opacity-40 disabled:cursor-not-allowed min-w-[140px] justify-between"
-                                >
-                                    <span className="flex items-center gap-2">
-                                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                                        {LANG_LABEL[form.language]}
-                                    </span>
-                                    <ChevronDown className={`w-3 h-3 text-zinc-500 transition-transform ${langOpen ? 'rotate-180' : ''}`} />
-                                </button>
-
-                                {langOpen && (
-                                    <div className="absolute right-0 top-full mt-1 z-50 w-40 rounded-lg border border-zinc-700 bg-zinc-900 shadow-2xl overflow-hidden">
-                                        {VALID_LANGUAGES.map((lang) => (
-                                            <button
-                                                key={lang}
-                                                type="button"
-                                                onClick={() => {
-                                                    setForm((f) => ({...f, language: lang}));
-                                                    setLangOpen(false);
-                                                }}
-                                                className={`w-full text-left px-4 py-2.5 text-xs uppercase tracking-widest flex items-center gap-2 transition-colors
-                                                    ${form.language === lang
-                                                        ? 'bg-emerald-400/10 text-emerald-400'
-                                                        : 'text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200'
-                                                    }`}
-                                            >
-                                                {form.language === lang && <span className="w-1 h-1 rounded-full bg-emerald-400" />}
-                                                {LANG_LABEL[lang]}
-                                            </button>
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -285,51 +266,74 @@ export default function CustomInvocationPage() {
                         <form onSubmit={handleRun} className="flex flex-col gap-4">
 
                             {/* Source Code */}
-                            <div className="rounded-xl border border-zinc-800 overflow-hidden bg-zinc-950/90">
-                                <div className="flex items-center justify-between px-4 py-2.5 border-b border-zinc-800 bg-zinc-900/60">
+                            <div className="rounded-xl border border-border overflow-hidden bg-card">
+                                <div className="flex items-center justify-between px-4 py-2.5 border-b border-border bg-muted/40">
                                     <div className="flex items-center gap-2">
-                                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                                        <span className="text-[10px] text-zinc-400 uppercase tracking-widest">
+                                        <span className="w-1.5 h-1.5 rounded-full bg-primary" />
+                                        <span className="text-[10px] text-muted-foreground uppercase tracking-widest">
                                             source_code.{form.language === 'cpp' ? 'cpp' : form.language === 'javascript' ? 'js' : form.language}
                                         </span>
                                     </div>
-                                    <span className="text-[10px] text-zinc-600 font-mono">
+                                    <span className="text-[10px] text-muted-foreground/60 font-mono">
                                         {form.source_code.split('\n').length} lines
                                     </span>
                                 </div>
-                                <textarea
-                                    value={form.source_code}
-                                    onChange={(e) => setForm({...form, source_code: e.target.value})}
-                                    className="w-full resize-none p-5 text-sm bg-transparent text-zinc-200 placeholder-zinc-700 focus:outline-none leading-relaxed"
-                                    style={{
-                                        height: '420px',
-                                        fontFamily: 'inherit',
-                                        caretColor: '#34d399',
-                                    }}
-                                    placeholder={"// Write or paste your source code here..."}
-                                    spellCheck="false"
-                                    disabled={executing}
-                                    required
-                                />
+                                <div className="relative border-t border-border" style={{ height: '420px' }}>
+                                    <Editor
+                                        height="100%"
+                                        language={form.language === 'cpp' ? 'cpp' : form.language === 'javascript' ? 'javascript' : form.language === 'python' ? 'python' : form.language === 'java' ? 'java' : 'c'}
+                                        theme={editorTheme}
+                                        value={form.source_code}
+                                        onChange={(val) => setForm({...form, source_code: val || ''})}
+                                        options={{
+                                            minimap: { enabled: false },
+                                            fontSize: 14,
+                                            lineNumbers: 'on',
+                                            scrollBeyondLastLine: false,
+                                            automaticLayout: true,
+                                            readOnly: executing,
+                                            fontFamily: "'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace",
+                                        }}
+                                        loading={
+                                            <div className="h-full w-full flex items-center justify-center bg-card text-muted-foreground text-xs font-mono">
+                                                Loading Editor...
+                                            </div>
+                                        }
+                                    />
+                                </div>
                             </div>
 
                             {/* Stdin */}
-                            <div className="rounded-xl border border-zinc-800 overflow-hidden bg-zinc-950/90">
-                                <div className="flex items-center gap-2 px-4 py-2.5 border-b border-zinc-800 bg-zinc-900/60">
-                                    <span className="w-1.5 h-1.5 rounded-full bg-zinc-500" />
-                                    <span className="text-[10px] text-zinc-400 uppercase tracking-widest">
+                            <div className="rounded-xl border border-border overflow-hidden bg-card">
+                                <div className="flex items-center gap-2 px-4 py-2.5 border-b border-border bg-muted/40">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground/60" />
+                                    <span className="text-[10px] text-muted-foreground uppercase tracking-widest">
                                         stdin
                                     </span>
                                 </div>
-                                <textarea
-                                    value={form.input_data}
-                                    onChange={(e) => setForm({...form, input_data: e.target.value})}
-                                    className="w-full resize-none p-5 text-sm bg-transparent text-zinc-300 placeholder-zinc-700 focus:outline-none leading-relaxed"
-                                    style={{height: '110px', fontFamily: 'inherit', caretColor: '#34d399'}}
-                                    placeholder={"// Provide standard input data for the program..."}
-                                    spellCheck="false"
-                                    disabled={executing}
-                                />
+                                <div className="flex relative bg-transparent" style={{ height: '110px' }}>
+                                    {/* Gutter */}
+                                    <div
+                                        ref={stdinGutterRef}
+                                        className="flex-none w-12 select-none border-r border-border/30 text-right pr-3 text-muted-foreground/35 font-mono text-sm leading-relaxed overflow-hidden py-4 bg-muted/10"
+                                        style={{ height: '100%' }}
+                                    >
+                                        {Array.from({ length: Math.max(form.input_data.split('\n').length, 1) }, (_, i) => (
+                                            <div key={i}>{i + 1}</div>
+                                        ))}
+                                    </div>
+                                    <textarea
+                                        ref={stdinTextareaRef}
+                                        value={form.input_data}
+                                        onChange={(e) => setForm({...form, input_data: e.target.value})}
+                                        onScroll={handleStdinScroll}
+                                        className="flex-1 resize-none py-4 pl-4 pr-5 text-sm font-mono bg-transparent text-foreground placeholder-muted-foreground/40 focus:outline-none leading-relaxed h-full overflow-y-auto"
+                                        style={{ caretColor: 'var(--primary)' }}
+                                        placeholder={"// Provide standard input data for the program..."}
+                                        spellCheck="false"
+                                        disabled={executing}
+                                    />
+                                </div>
                             </div>
 
                             {/* Run Button */}
@@ -337,20 +341,7 @@ export default function CustomInvocationPage() {
                                 <button
                                     type="submit"
                                     disabled={executing}
-                                    className="group relative flex items-center gap-2.5 px-8 py-3 rounded-lg text-xs font-bold uppercase tracking-widest overflow-hidden transition-all disabled:opacity-60 disabled:cursor-not-allowed"
-                                    style={{
-                                        background: executing
-                                            ? 'rgba(52,211,153,0.08)'
-                                            : 'linear-gradient(135deg, rgba(52,211,153,0.15) 0%, rgba(52,211,153,0.08) 100%)',
-                                        border: '1px solid rgba(52,211,153,0.3)',
-                                        color: '#34d399',
-                                    }}
-                                    onMouseEnter={(e) => {
-                                        if (!executing) e.currentTarget.style.background = 'linear-gradient(135deg, rgba(52,211,153,0.25) 0%, rgba(52,211,153,0.15) 100%)';
-                                    }}
-                                    onMouseLeave={(e) => {
-                                        if (!executing) e.currentTarget.style.background = 'linear-gradient(135deg, rgba(52,211,153,0.15) 0%, rgba(52,211,153,0.08) 100%)';
-                                    }}
+                                    className="group relative flex items-center gap-2.5 px-8 py-3 rounded-lg text-xs font-bold uppercase tracking-widest overflow-hidden transition-all disabled:opacity-60 disabled:cursor-not-allowed bg-primary/10 border border-primary/30 text-primary hover:bg-primary/20"
                                 >
                                     {executing ? (
                                         <>
@@ -371,19 +362,19 @@ export default function CustomInvocationPage() {
                     {/* ── Right Panel: Output ── */}
                     <div className="flex-none" style={{width: 'calc(40% - 20px)', minWidth: 0}}>
                         <div
-                            className="rounded-xl border border-zinc-800 bg-zinc-950/90 overflow-hidden"
+                            className="rounded-xl border border-border bg-card overflow-hidden"
                             style={{height: '600px', display: 'flex', flexDirection: 'column'}}
                         >
                             {/* Output Header */}
-                            <div className="flex-none flex items-center justify-between px-4 py-2.5 border-b border-zinc-800 bg-zinc-900/60">
+                            <div className="flex-none flex items-center justify-between px-4 py-2.5 border-b border-border bg-muted/40">
                                 <div className="flex items-center gap-2">
                                     <span className={`w-1.5 h-1.5 rounded-full transition-colors ${executing ? 'bg-yellow-400 animate-pulse' : result ? (VERDICT_CONFIG[result?.verdict]?.dot ?? 'bg-zinc-500') : 'bg-zinc-600'}`} />
-                                    <span className="text-[10px] text-zinc-400 uppercase tracking-widest">
+                                    <span className="text-[10px] text-muted-foreground uppercase tracking-widest">
                                         stdout
                                     </span>
                                 </div>
                                 {result?.executionTimeMs !== undefined && (
-                                    <span className="flex items-center gap-1 text-[10px] text-zinc-500 font-mono">
+                                    <span className="flex items-center gap-1 text-[10px] text-muted-foreground font-mono">
                                         <Clock className="w-3 h-3" />
                                         {result.executionTimeMs}ms
                                     </span>
@@ -402,21 +393,21 @@ export default function CustomInvocationPage() {
                                 {executing && (
                                     <div className="flex-1 flex flex-col items-center justify-center gap-4 p-8">
                                         <div className="relative">
-                                            <div className="w-12 h-12 rounded-full border-2 border-zinc-800 flex items-center justify-center">
-                                                <Loader2 className="w-5 h-5 text-emerald-400 animate-spin" />
+                                            <div className="w-12 h-12 rounded-full border-2 border-border flex items-center justify-center">
+                                                <Loader2 className="w-5 h-5 text-primary animate-spin" />
                                             </div>
-                                            <div className="absolute inset-0 rounded-full border-2 border-emerald-400/20 animate-ping" />
+                                            <div className="absolute inset-0 rounded-full border-2 border-primary/20 animate-ping" />
                                         </div>
                                         <div className="text-center">
-                                            <p className="text-xs text-zinc-300 font-mono mb-1">{progressStatus}</p>
-                                            <p className="text-[10px] text-zinc-600">Processing in execution queue</p>
+                                            <p className="text-xs text-foreground font-mono mb-1">{progressStatus}</p>
+                                            <p className="text-[10px] text-muted-foreground">Processing in execution queue</p>
                                         </div>
                                         {/* Fake progress dots */}
                                         <div className="flex gap-1.5">
                                             {[0, 1, 2].map((i) => (
                                                 <div
                                                     key={i}
-                                                    className="w-1 h-1 rounded-full bg-emerald-400/40 animate-bounce"
+                                                    className="w-1 h-1 rounded-full bg-primary/40 animate-bounce"
                                                     style={{animationDelay: `${i * 0.15}s`}}
                                                 />
                                             ))}
@@ -427,10 +418,10 @@ export default function CustomInvocationPage() {
                                 {/* Empty state */}
                                 {!executing && !result && (
                                     <div className="flex-1 flex flex-col items-center justify-center gap-3 p-8 text-center">
-                                        <Terminal className="w-10 h-10 text-zinc-700" />
+                                        <Terminal className="w-10 h-10 text-muted-foreground/40" />
                                         <div>
-                                            <p className="text-xs text-zinc-500 mb-1">Awaiting execution</p>
-                                            <p className="text-[10px] text-zinc-700 max-w-[200px] leading-relaxed">
+                                            <p className="text-xs text-muted-foreground mb-1">Awaiting execution</p>
+                                            <p className="text-[10px] text-muted-foreground/60 max-w-[200px] leading-relaxed">
                                                 Write your code, supply stdin, and hit Execute
                                             </p>
                                         </div>
@@ -441,7 +432,7 @@ export default function CustomInvocationPage() {
                                 {!executing && result && (
                                     <div className="flex-1 flex flex-col overflow-hidden">
                                         {/* Verdict row */}
-                                        <div className="flex-none px-4 py-3 border-b border-zinc-800/60">
+                                        <div className="flex-none px-4 py-3 border-b border-border/60">
                                             <VerdictBadge verdict={result.verdict} />
                                         </div>
 
@@ -449,27 +440,27 @@ export default function CustomInvocationPage() {
                                         <div className="flex-1 overflow-auto p-4 flex flex-col gap-3">
                                             {result.compilationError ? (
                                                 <div className="flex flex-col gap-2 h-full">
-                                                    <span className="text-[10px] text-amber-400 uppercase tracking-widest">
+                                                    <span className="text-[10px] text-amber-500 uppercase tracking-widest font-mono">
                                                         Compilation Error
                                                     </span>
                                                     <pre
-                                                        className="flex-1 text-xs text-amber-300/80 whitespace-pre-wrap break-words leading-relaxed p-3 rounded-lg bg-amber-400/5 border border-amber-400/10 overflow-auto"
-                                                        style={{fontFamily: 'inherit', minHeight: 0}}
+                                                        className="flex-1 text-sm font-mono text-amber-600 dark:text-amber-400 whitespace-pre-wrap break-words leading-relaxed p-3 rounded-lg bg-amber-400/5 border border-amber-400/10 overflow-auto"
+                                                        style={{minHeight: 0}}
                                                     >
                                                         {result.compilationError}
                                                     </pre>
                                                 </div>
                                             ) : (
                                                 <div className="flex flex-col gap-2 h-full">
-                                                    <span className="text-[10px] text-zinc-500 uppercase tracking-widest">
+                                                    <span className="text-[10px] text-muted-foreground uppercase tracking-widest font-mono">
                                                         Standard Output
                                                     </span>
                                                     <pre
-                                                        className="flex-1 text-xs text-zinc-300 whitespace-pre-wrap break-words leading-relaxed p-3 rounded-lg bg-zinc-900/60 border border-zinc-800 overflow-auto"
-                                                        style={{fontFamily: 'inherit', minHeight: 0}}
+                                                        className="flex-1 text-sm font-mono text-foreground whitespace-pre-wrap break-words leading-relaxed p-3 rounded-lg bg-muted/30 border border-border overflow-auto shadow-inner"
+                                                        style={{minHeight: 0}}
                                                     >
                                                         {result.output || (
-                                                            <span className="italic text-zinc-600">
+                                                            <span className="italic text-muted-foreground">
                                                                 (no output)
                                                             </span>
                                                         )}
@@ -478,7 +469,7 @@ export default function CustomInvocationPage() {
                                             )}
 
                                             {result.error && (
-                                                <div className="flex-none border-t border-zinc-800 pt-3 mt-auto">
+                                                <div className="flex-none border-t border-border pt-3 mt-auto">
                                                     <span className="text-[10px] text-red-400 uppercase tracking-widest block mb-1">
                                                         Error
                                                     </span>

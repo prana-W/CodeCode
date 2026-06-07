@@ -9,6 +9,8 @@ import {toast} from 'sonner';
 import {Send, Loader2, Code2} from 'lucide-react';
 import {Button} from '@/components/ui/button';
 import api from '@/lib/axios';
+import Editor from '@monaco-editor/react';
+import {useTheme} from '@/components/theme-provider';
 
 const VALID_LANGUAGES = ['cpp', 'c', 'java', 'python', 'javascript'];
 const PROBLEM_LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
@@ -29,6 +31,9 @@ export default function ContestSubmitTab() {
         language: 'cpp',
         source_code: '',
     });
+
+    const {theme} = useTheme();
+    const editorTheme = theme === 'dark' ? 'vs-dark' : 'light';
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -141,16 +146,29 @@ export default function ContestSubmitTab() {
                     <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                         Source Code
                     </label>
-                    <textarea
-                        value={form.source_code}
-                        onChange={(e) =>
-                            setForm({...form, source_code: e.target.value})
-                        }
-                        className="w-full min-h-[380px] p-4 text-sm font-mono rounded-md border border-border bg-muted/10 shadow-inner focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary focus:bg-background transition-all"
-                        placeholder="// Write your code here..."
-                        spellCheck="false"
-                        required
-                    />
+                    <div className="rounded-md border border-border overflow-hidden bg-card" style={{ height: '400px' }}>
+                        <Editor
+                            height="100%"
+                            language={form.language === 'cpp' ? 'cpp' : form.language === 'javascript' ? 'javascript' : form.language === 'python' ? 'python' : form.language === 'java' ? 'java' : 'c'}
+                            theme={editorTheme}
+                            value={form.source_code}
+                            onChange={(val) => setForm({...form, source_code: val || ''})}
+                            options={{
+                                minimap: { enabled: false },
+                                fontSize: 14,
+                                lineNumbers: 'on',
+                                scrollBeyondLastLine: false,
+                                automaticLayout: true,
+                                readOnly: submitting,
+                                fontFamily: "'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace",
+                            }}
+                            loading={
+                                <div className="h-full w-full flex items-center justify-center bg-card text-muted-foreground text-xs font-mono">
+                                    Loading Editor...
+                                </div>
+                            }
+                        />
+                    </div>
                 </div>
 
                 <div className="flex justify-end pt-2">
