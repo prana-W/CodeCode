@@ -101,6 +101,13 @@ After a contest ends, ratings are updated using a multi-step algorithm:
 - A detailed system prompt in `config/aiConfig.js` enforces hard boundaries: **no code, no pseudocode, no implementation steps** — only conceptual explanations, hints, and learning guidance.
 - Rate-limited to 100 requests per 5 minutes per IP.
 
+### Live Online Users Tracking
+
+- Tracks active sessions using Redis-backed transient keys with a **45-second TTL**.
+- Periodic heartbeats sent by the client every **30 seconds** refresh the user's active status.
+- Uses a fast, non-blocking Redis `SCAN` to compute the total count of active sessions.
+- Injects a real-time `isOnline` status flag into user profiles and profile hover cards.
+
 ### Rate Limiting
 
 Every sensitive route has a dedicated `express-rate-limit` limiter. Limits are enforced per IP:

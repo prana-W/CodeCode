@@ -1,6 +1,7 @@
 import User from '../models/User.model.js';
 import {ApiError, ApiResponse, asyncHandler} from '../utility/index.js';
 import statusCode from '../constants/statusCode.js';
+import redis from '../config/redis.js';
 
 const getUserById = asyncHandler(async (req, res) => {
     const {id} = req.params;
@@ -11,6 +12,9 @@ const getUserById = asyncHandler(async (req, res) => {
     }
 
     const {password, ...userDetails} = user;
+
+    const isOnline = await redis.exists(`online_user:${user.username}`);
+    userDetails.isOnline = isOnline === 1;
 
     return res
         .status(statusCode.OK)
@@ -31,6 +35,9 @@ const getUserByUsername = asyncHandler(async (req, res) => {
     }
 
     const {password, ...userDetails} = user;
+
+    const isOnline = await redis.exists(`online_user:${username}`);
+    userDetails.isOnline = isOnline === 1;
 
     return res
         .status(statusCode.OK)
@@ -138,4 +145,42 @@ const getRankings = asyncHandler(async (req, res) => {
         );
 });
 
-export {getUserById, getUserByUsername, getRankings, updateUser, deleteUser};
+const heartbeat = asyncHandler(async (req, res) => {
+    const username = req.username;
+    if (!username) {
+        throw new ApiError(statusCode.BAD_REQUEST, 'Username is required.');
+    }
+
+    // Set user key with 45 seconds TTL
+    const userKey = `online_user:${username}`;
+    await redis.set(userKey, '1', 'EX', 45);
+
+    // Scan for all online user keys
+    let cursor = '0';
+    let onlineUsersCount = 0;
+
+    do {
+        const [nextCursor, keys] = await redis.scan(cursor, 'MATCH', 'online_user:*', 'COUNT', 100);
+        cursor = nextCursor;
+        onlineUsersCount += keys.length;
+    } while (cursor !== '0');
+
+    return res
+        .status(statusCode.OK)
+        .json(
+            new ApiResponse(
+                statusCode.OK,
+                'Heartbeat acknowledged.',
+                { onlineUsers: onlineUsersCount }
+            )
+        );
+});
+
+export {
+    getUserById,
+    getUserByUsername,
+    getRankings,
+    updateUser,
+    deleteUser,
+    heartbeat,
+};

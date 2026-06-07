@@ -145,9 +145,9 @@ function ContestRow({contest, regStatus, onRegister, onUnregister}) {
     const handleRegister = async () => {
         setActing(true);
         try {
-            await api.post('/contests/register', {contest_id: contest.id});
+            const res = await api.post('/contests/register', {contest_id: contest.id});
             toast.success(`Registered for "${contest.title}"!`);
-            onRegister(contest.id);
+            onRegister(contest.id, res.data.data);
         } catch (err) {
             toast.error(err?.response?.data?.message || 'Registration failed.');
         } finally {
@@ -217,6 +217,13 @@ function ContestRow({contest, regStatus, onRegister, onUnregister}) {
                             {status === 'running' && remaining && (
                                 <span className="text-xs text-green-600 font-medium font-mono">
                                     {remaining} left
+                                </span>
+                            )}
+                            {regStatus?.total_registered !== undefined && (
+                                <span className="inline-flex items-center gap-1 text-xs text-muted-foreground font-medium">
+                                    <span className="text-muted-foreground/30">•</span>
+                                    <Users className="w-3.5 h-3.5 text-muted-foreground/60" />
+                                    <span>{regStatus.total_registered} registered</span>
                                 </span>
                             )}
                         </div>
@@ -370,12 +377,15 @@ export default function ContestsPage() {
         fetchData();
     }, [user]);
 
-    const handleRegister = (contestId) => {
+    const handleRegister = (contestId, regData) => {
         setRegMap((prev) => ({
             ...prev,
             [contestId]: {
                 is_registered: true,
-                registered_at: new Date().toISOString(),
+                registered_at: regData?.registered_at || new Date().toISOString(),
+                total_registered: regData?.total_registered !== undefined
+                    ? regData.total_registered
+                    : (prev[contestId]?.total_registered !== undefined ? prev[contestId].total_registered + 1 : 1),
             },
         }));
     };
@@ -383,7 +393,12 @@ export default function ContestsPage() {
     const handleUnregister = (contestId) => {
         setRegMap((prev) => ({
             ...prev,
-            [contestId]: {is_registered: false},
+            [contestId]: {
+                is_registered: false,
+                total_registered: prev[contestId]?.total_registered !== undefined
+                    ? Math.max(0, prev[contestId].total_registered - 1)
+                    : 0,
+            },
         }));
     };
 

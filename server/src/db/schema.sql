@@ -134,9 +134,9 @@ CREATE TABLE IF NOT EXISTS submissions (
 );
 
 CREATE TABLE contest_standings (
-    contest_id BIGINT NOT NULL,
-    user_id BIGINT NOT NULL,
-    problem_id BIGINT NOT NULL,
+    contest_id INT NOT NULL,
+    user_id INT NOT NULL,
+    problem_id INT NOT NULL,
 
     accepted_submission_id BIGINT NOT NULL,
 
@@ -144,7 +144,23 @@ CREATE TABLE contest_standings (
         contest_id,
         user_id,
         problem_id
-    )
+    ),
+    
+     FOREIGN KEY (contest_id)
+        REFERENCES contests(id)
+        ON DELETE CASCADE,
+
+    FOREIGN KEY (user_id)
+        REFERENCES users(id)
+        ON DELETE CASCADE,
+
+    FOREIGN KEY (problem_id)
+        REFERENCES problems(problem_id)
+        ON DELETE CASCADE,
+
+    FOREIGN KEY (accepted_submission_id)
+        REFERENCES submissions(submission_id)
+        ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS contest_registrations (

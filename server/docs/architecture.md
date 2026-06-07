@@ -24,7 +24,7 @@ server/
 │   │   ├── problem.controller.js    # CRUD + GET for problems (with time/memory limits)
 │   │   ├── testcase.controller.js   # CRUD + GET for test cases
 │   │   ├── submission.controller.js # createSubmission, getContestSubmissions, getSubmissionById
-│   │   ├── user.controller.js       # getUserById, updateUser, deleteUser
+│   │   ├── user.controller.js       # getUserById, updateUser, deleteUser, heartbeat
 │   │   └── ai.controller.js         # askAssistant — proxies prompt to AI service
 │   │
 │   ├── cron/
@@ -67,7 +67,7 @@ server/
 │   │   ├── problem.routes.js
 │   │   ├── testcase.routes.js
 │   │   ├── submission.routes.js
-│   │   ├── user.routes.js           # getUserById, updateUser, deleteUser
+│   │   ├── user.routes.js           # getUserById, updateUser, deleteUser, heartbeat
 │   │   ├── ai.routes.js             # POST /ask — AI assistant (aiLimiter applied)
 │   │   └── admin.routes.js          # Empty placeholder for future admin-only routes
 │   │
@@ -331,6 +331,20 @@ Body: { prompt: "What is a segment tree?" }
 - Calls a **local Ollama instance** at `OLLAMA_URL/api/chat` using the model specified by `OLLAMA_MODEL`.
 - The system prompt (`src/config/aiConfig.js`) enforces strict rules: **no code, no pseudocode, no implementation details** — only conceptual explanations and hints.
 - Returns `{ hint: "<AI response text>" }`.
+
+---
+
+## Live Users Tracking
+
+```
+POST /api/v1/users/heartbeat
+Cookie: token=<JWT>
+```
+
+- **Authentication**: Requires a valid JWT (`verifyToken`).
+- **Heartbeat Registration**: The client issues a heartbeat POST request every 30 seconds. On receipt, the server registers/renews the key `online_user:{username}` in Redis with a 45-second TTL (`SETEX`).
+- **Online Counting**: The server queries active users by scanning for matching keys `online_user:*` using a series of non-blocking `SCAN` commands.
+- **User Live Status**: The user controllers check if a user is online via `EXISTS online_user:{username}` and include an `isOnline` boolean in the user profile query responses (used by profile hover cards and profile pages).
 
 ---
 

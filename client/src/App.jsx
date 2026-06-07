@@ -1,5 +1,5 @@
 import {
-    Home2,
+    Home,
     NotFound,
     Login,
     Register,
@@ -49,7 +49,7 @@ const router = createBrowserRouter([
         children: [
             {
                 path: '',
-                element: <Home2 />,
+                element: <Home />,
             },
             {
                 path: 'about',

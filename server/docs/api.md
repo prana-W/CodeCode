@@ -807,6 +807,7 @@ _Note: All endpoints require authentication._
             "rating": 0,
             "max_rating": 0,
             "role": "user",
+            "isOnline": true,
             "created_at": "2026-06-02T09:00:00.000Z"
         }
     }
@@ -867,6 +868,24 @@ _Note: All endpoints require authentication._
     ```
 - **Error Cases**:
     - `403` — Not authorized (deleting someone else's profile)
+
+### 4. User Heartbeat & Live Users Count
+
+- **Method**: `POST`
+- **Route**: `/heartbeat`
+- **Access**: Authenticated users.
+- **Description**: Registers or refreshes the user's active session in Redis with a 45-second TTL. Returns the total count of active online users.
+- **Success Response (200 OK)**:
+    ```json
+    {
+        "statusCode": 200,
+        "success": true,
+        "message": "Heartbeat acknowledged.",
+        "data": {
+            "onlineUsers": 12
+        }
+    }
+    ```
 
 ---
 

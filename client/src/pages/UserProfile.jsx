@@ -113,10 +113,22 @@ export default function UserProfile() {
                                     {rank.title}
                                 </span>
                             </div>
-                            <p className="text-sm text-muted-foreground flex items-center justify-center sm:justify-start gap-1 font-medium">
-                                <AtSign className="w-4 h-4 text-muted-foreground/60" />
-                                {profile.username}
-                            </p>
+                            <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2.5">
+                                <p className="text-sm text-muted-foreground flex items-center gap-1 font-medium">
+                                    <AtSign className="w-4 h-4 text-muted-foreground/60" />
+                                    {profile.username}
+                                </p>
+                                <span className={`inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider border ${
+                                    profile.isOnline 
+                                        ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' 
+                                        : 'bg-muted text-muted-foreground border-border'
+                                }`}>
+                                    <span className={`h-1.5 w-1.5 rounded-full ${
+                                        profile.isOnline ? 'bg-emerald-500 animate-pulse' : 'bg-muted-foreground/50'
+                                    }`}></span>
+                                    {profile.isOnline ? 'online' : 'offline'}
+                                </span>
+                            </div>
                         </div>
                     </div>
 

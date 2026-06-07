@@ -1,4 +1,5 @@
-import {useState} from 'react';
+import {useState, useEffect} from 'react';
+import api from '@/lib/axios';
 import {Link, NavLink, useNavigate} from 'react-router-dom';
 import {Code2, Menu, X, LogOut} from 'lucide-react';
 import {Button} from '@/components/ui/button';
@@ -10,6 +11,33 @@ export default function Header() {
     const {user, logout} = useAuth();
     const navigate = useNavigate();
     const [mobileOpen, setMobileOpen] = useState(false);
+    const [onlineCount, setOnlineCount] = useState(null);
+
+    useEffect(() => {
+        if (!user) {
+            setOnlineCount(null);
+            return;
+        }
+
+        const sendHeartbeat = async () => {
+            try {
+                const response = await api.post('/users/heartbeat');
+                if (response.data && response.data.data) {
+                    setOnlineCount(response.data.data.onlineUsers);
+                }
+            } catch (error) {
+                console.error('Error sending heartbeat:', error);
+            }
+        };
+
+        // Send heartbeat immediately on mount/login
+        sendHeartbeat();
+
+        // Send heartbeat every 30 seconds
+        const interval = setInterval(sendHeartbeat, 30000);
+
+        return () => clearInterval(interval);
+    }, [user]);
 
     const handleLogout = async () => {
         try {
@@ -130,6 +158,17 @@ export default function Header() {
                                 {label}
                             </NavLink>
                         ))}
+
+                        {/* Right-aligned Online Users counter */}
+                        {onlineCount !== null && (
+                            <div className="ml-auto flex items-center gap-1.5 text-[10px] font-bold tracking-wider uppercase text-muted-foreground py-3 whitespace-nowrap">
+                                <span className="relative flex h-2 w-2">
+                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                                </span>
+                                <span>online users: {onlineCount}</span>
+                            </div>
+                        )}
                     </nav>
                 </div>
             )}
@@ -159,10 +198,21 @@ export default function Header() {
                     <div className="pt-3 border-t border-border space-y-2">
                         {user ? (
                             <>
-                                <p className="text-sm text-muted-foreground">
-                                    Signed in as{' '}
-                                    <ProfileHoverCard user={user} />
-                                </p>
+                                <div className="flex items-center justify-between">
+                                    <p className="text-sm text-muted-foreground">
+                                        Signed in as{' '}
+                                        <ProfileHoverCard user={user} />
+                                    </p>
+                                    {onlineCount !== null && (
+                                        <div className="flex items-center gap-1 text-[10px] font-bold tracking-wider uppercase text-muted-foreground">
+                                            <span className="relative flex h-1.5 w-1.5">
+                                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                                                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span>
+                                            </span>
+                                            <span>online users: {onlineCount}</span>
+                                        </div>
+                                    )}
+                                </div>
                                 <Button
                                     variant="outline"
                                     size="sm"

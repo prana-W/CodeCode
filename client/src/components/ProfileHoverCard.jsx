@@ -72,9 +72,19 @@ export default function ProfileHoverCard({user}) {
                                     >
                                         {profile.name}
                                     </h4>
-                                    <span className="text-sm text-muted-foreground font-medium">
-                                        @{profile.username}
-                                    </span>
+                                    <div className="flex flex-wrap items-center gap-1.5 text-sm text-muted-foreground font-medium">
+                                        <span>@{profile.username}</span>
+                                        <span className={`inline-flex items-center gap-1 text-[9px] px-1.5 py-0.5 rounded-full font-bold uppercase tracking-wider border shrink-0 ${
+                                            profile.isOnline 
+                                                ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' 
+                                                : 'bg-muted text-muted-foreground/80 border-border'
+                                        }`}>
+                                            <span className={`h-1.5 w-1.5 rounded-full ${
+                                                profile.isOnline ? 'bg-emerald-500 animate-pulse' : 'bg-muted-foreground/40'
+                                            }`}></span>
+                                            {profile.isOnline ? 'online' : 'offline'}
+                                        </span>
+                                    </div>
                                     <span
                                         className={`text-xs font-semibold uppercase tracking-wider mt-1.5 ${rank.colorClass}`}
                                     >

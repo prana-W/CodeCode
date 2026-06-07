@@ -5,6 +5,7 @@ import {
     getRankings,
     updateUser,
     deleteUser,
+    heartbeat,
 } from '../controllers/user.controller.js';
 import {verifyToken} from '../middlewares/index.js';
 import {profileUpdateLimiter} from '../middlewares/rateLimit.middleware.js';
@@ -14,6 +15,7 @@ const router = Router();
 // All user routes require a valid token
 router.use(verifyToken);
 
+router.post('/heartbeat', heartbeat);
 router.get('/rankings', getRankings);
 router.get('/username/:username', getUserByUsername);
 router.get('/:id', getUserById);

@@ -77,6 +77,14 @@ class ContestRegistration {
             [delta, newRating, contest_id, user_id]
         );
     }
+
+    static async getCountByContest(contest_id) {
+        const [rows] = await pool.query(
+            `SELECT COUNT(*) AS count FROM contest_registrations WHERE contest_id = ?`,
+            [contest_id]
+        );
+        return rows[0].count;
+    }
 }
 
 export default ContestRegistration;

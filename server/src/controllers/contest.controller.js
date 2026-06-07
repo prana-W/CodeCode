@@ -296,6 +296,8 @@ const registerForContest = asyncHandler(async (req, res) => {
         req.userId
     );
 
+    const totalRegistered = await ContestRegistration.getCountByContest(Number(contest_id));
+
     return res.status(statusCode.CREATED).json(
         new ApiResponse(
             statusCode.CREATED,
@@ -305,6 +307,7 @@ const registerForContest = asyncHandler(async (req, res) => {
                 contest_id: registration.contest_id,
                 user_id: registration.user_id,
                 registered_at: registration.registered_at,
+                total_registered: totalRegistered,
             }
         )
     );
@@ -332,11 +335,14 @@ const checkRegistration = asyncHandler(async (req, res) => {
         req.userId
     );
 
+    const totalRegistered = await ContestRegistration.getCountByContest(Number(contest_id));
+
     if (registration) {
         return res.status(statusCode.OK).json(
             new ApiResponse(statusCode.OK, 'Registration status fetched.', {
                 is_registered: true,
                 registered_at: registration.registered_at,
+                total_registered: totalRegistered,
             })
         );
     }
@@ -361,6 +367,7 @@ const checkRegistration = asyncHandler(async (req, res) => {
                 msRemaining > 0
                     ? `${minutesRemaining}m ${secondsRemaining}s`
                     : 'Registration closed',
+            total_registered: totalRegistered,
         })
     );
 });

@@ -1,8 +1,7 @@
-import Home from './Home';
 import NotFound from './NotFound';
 import Login from './Login';
 import Register from './Register';
-import Home2 from './Home2.jsx';
+import Home from './Home.jsx';
 import ContestsPage from './ContestsPage.jsx';
 import ContestListPage from './design-contest/ContestListPage.jsx';
 import ContestEditPage from './design-contest/ContestEditPage.jsx';
@@ -28,7 +27,6 @@ export {
     NotFound,
     Login,
     Register,
-    Home2,
     ContestsPage,
     AboutUs,
     UserProfile,
