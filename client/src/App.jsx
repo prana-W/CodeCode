@@ -1,4 +1,4 @@
-import { Home2, NotFound, Login, Register, ContestsPage, ContestListPage, ContestEditPage, ProblemsPage, TestcasesPage } from './pages/index.js';
+import { Home2, NotFound, Login, Register, ContestsPage, ContestListPage, ContestEditPage, ProblemsPage, TestcasesPage, VerifyContestsPage, AdminContestDetailsPage } from './pages/index.js';
 import ErrorBoundary from './components/ErrorBoundary.jsx';
 import { ThemeProvider } from "@/components/theme-provider";
 import Layout from './Layout.jsx';
@@ -6,10 +6,16 @@ import Layout from './Layout.jsx';
 import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom';
 import { useAuth } from './context/AuthContext.jsx';
 
-/** Redirects unauthenticated users to /login. */
 function ProtectedRoute({ children }) {
     const { user } = useAuth();
     if (!user) return <Navigate to="/login" replace />;
+    return children;
+}
+
+/** Redirects non-admin users to home. */
+function AdminRoute({ children }) {
+    const { user } = useAuth();
+    if (!user || user.role !== 'admin') return <Navigate to="/" replace />;
     return children;
 }
 
@@ -30,7 +36,6 @@ const router = createBrowserRouter([
                 path: 'register',
                 element: <Register />,
             },
-            // ── Public Contests Page ─────────────────────────────────
             {
                 path: 'contests',
                 element:( 
@@ -39,7 +44,6 @@ const router = createBrowserRouter([
                 </ProtectedRoute>
             ),
             },
-            // ── Design Contest Flow ──────────────────────────────────
             {
                 path: 'design-contest',
                 element: (
@@ -70,6 +74,22 @@ const router = createBrowserRouter([
                     <ProtectedRoute>
                         <TestcasesPage />
                     </ProtectedRoute>
+                ),
+            },
+            {
+                path: 'admin/verify-contests',
+                element: (
+                    <AdminRoute>
+                        <VerifyContestsPage />
+                    </AdminRoute>
+                ),
+            },
+            {
+                path: 'admin/verify-contests/:id',
+                element: (
+                    <AdminRoute>
+                        <AdminContestDetailsPage />
+                    </AdminRoute>
                 ),
             },
             {

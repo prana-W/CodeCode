@@ -8,9 +8,12 @@ import ContestListPage from './design-contest/ContestListPage.jsx';
 import ContestEditPage from './design-contest/ContestEditPage.jsx';
 import ProblemsPage from './design-contest/ProblemsPage.jsx';
 import TestcasesPage from './design-contest/TestcasesPage.jsx';
+import VerifyContestsPage from './admin/VerifyContestsPage.jsx';
+import AdminContestDetailsPage from './admin/AdminContestDetailsPage.jsx';
 
 export {
     Home, NotFound, Login, Register, Home2,
     ContestsPage,
     ContestListPage, ContestEditPage, ProblemsPage, TestcasesPage,
+    VerifyContestsPage, AdminContestDetailsPage
 };
