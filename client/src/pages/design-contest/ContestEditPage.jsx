@@ -32,6 +32,15 @@ export default function ContestEditPage() {
     const [deleting, setDeleting] = useState(false);
     const [contestData, setContestData] = useState(null);
 
+    // Helper to format date for datetime-local input in local timezone
+    const formatForDatetimeLocal = (dateString) => {
+        if (!dateString) return '';
+        const d = new Date(dateString);
+        // Adjust for local timezone
+        const offset = d.getTimezoneOffset() * 60000;
+        return new Date(d.getTime() - offset).toISOString().slice(0, 16);
+    };
+
     // Fetch existing contest
     useEffect(() => {
         if (isNew) return;
@@ -45,12 +54,8 @@ export default function ContestEditPage() {
                     title: c.title || '',
                     description: c.description || '',
                     division: String(c.division || ''),
-                    contest_start_time: c.contest_start_time
-                        ? new Date(c.contest_start_time).toISOString().slice(0, 16)
-                        : '',
-                    contest_end_time: c.contest_end_time
-                        ? new Date(c.contest_end_time).toISOString().slice(0, 16)
-                        : '',
+                    contest_start_time: formatForDatetimeLocal(c.contest_start_time),
+                    contest_end_time: formatForDatetimeLocal(c.contest_end_time),
                 });
             } catch (err) {
                 toast.error(err?.response?.data?.message || 'Failed to load contest.');
