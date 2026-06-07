@@ -3,20 +3,7 @@ import { Link } from 'react-router-dom';
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card';
 import { Loader2, TrendingUp, Trophy, User as UserIcon } from 'lucide-react';
 import api from '@/lib/axios';
-
-const getRankDetails = (rating) => {
-    if (!rating) return { title: 'Unrated', color: 'text-gray-500' };
-    if (rating < 1200) return { title: 'Newbie', color: 'text-gray-500' };
-    if (rating < 1400) return { title: 'Pupil', color: 'text-green-500' };
-    if (rating < 1600) return { title: 'Specialist', color: 'text-cyan-500' };
-    if (rating < 1900) return { title: 'Expert', color: 'text-blue-500' };
-    if (rating < 2100) return { title: 'Candidate Master', color: 'text-purple-500' };
-    if (rating < 2300) return { title: 'Master', color: 'text-orange-400' };
-    if (rating < 2400) return { title: 'International Master', color: 'text-orange-500' };
-    if (rating < 2600) return { title: 'Grandmaster', color: 'text-red-500' };
-    if (rating < 3000) return { title: 'International Grandmaster', color: 'text-red-600' };
-    return { title: 'Legendary Grandmaster', color: 'text-red-700 font-bold' };
-};
+import { getRankDetails } from '@/constants/ratings';
 
 export default function ProfileHoverCard({ user }) {
     const [profile, setProfile] = useState(null);
@@ -51,7 +38,7 @@ export default function ProfileHoverCard({ user }) {
             <HoverCardTrigger asChild>
                 <Link 
                     to="/user-profile" 
-                    className={`font-medium transition-colors hover:underline underline-offset-4 ${profile ? rank.color : 'text-foreground'}`}
+                    className={`font-medium transition-colors hover:underline underline-offset-4 ${profile ? rank.colorClass : 'text-foreground'}`}
                 >
                     {displayName}
                 </Link>
@@ -70,11 +57,11 @@ export default function ProfileHoverCard({ user }) {
                                     <UserIcon className="w-6 h-6 text-primary" />
                                 </div>
                                 <div className="flex flex-col">
-                                    <h4 className={`text-lg font-bold leading-none mb-1 ${rank.color}`}>
+                                    <h4 className={`text-lg font-bold leading-none mb-1 ${rank.colorClass}`}>
                                         {profile.name}
                                     </h4>
                                     <span className="text-sm text-muted-foreground font-medium">@{profile.username}</span>
-                                    <span className={`text-xs font-semibold uppercase tracking-wider mt-1.5 ${rank.color}`}>
+                                    <span className={`text-xs font-semibold uppercase tracking-wider mt-1.5 ${rank.colorClass}`}>
                                         {rank.title}
                                     </span>
                                 </div>

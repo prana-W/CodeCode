@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
-import { Code2, Menu, X, LogOut, PenSquare, Trophy, Home, Info, ShieldCheck } from 'lucide-react';
+import { Code2, Menu, X, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/context/AuthContext';
 import { toast } from 'sonner';
@@ -21,83 +21,64 @@ export default function Header() {
         }
     };
 
-    const navClass = ({ isActive }) =>
-        [
-            'flex items-center gap-1.5 text-sm font-medium transition-colors px-1',
-            isActive
-                ? 'text-foreground'
-                : 'text-muted-foreground hover:text-foreground',
-        ].join(' ');
-
     // Dynamic Navigation Links based on role
     const getNavLinks = () => {
         if (!user) return [];
         
         if (user.role === 'admin') {
             return [
-                { to: '/verify-contests', label: 'Verify Contests', Icon: ShieldCheck },
-                { to: '/contests', label: 'Contests', Icon: Trophy },
-                { to: '/about', label: 'About Us', Icon: Info },
+                { to: '/verify-contests', label: 'VERIFY CONTESTS' },
+                { to: '/contests', label: 'CONTESTS' },
+                { to: '/about', label: 'ABOUT' },
             ];
         }
         
         return [
-            { to: '/', label: 'Home', Icon: Home, end: true },
-            { to: '/contests', label: 'Contests', Icon: Trophy },
-            { to: '/design-contest', label: 'Design Contest', Icon: PenSquare },
-            { to: '/about', label: 'About Us', Icon: Info },
+            { to: '/', label: 'HOME', end: true },
+            { to: '/contests', label: 'CONTESTS' },
+            { to: '/design-contest', label: 'DESIGN' },
+            { to: '/about', label: 'ABOUT' },
         ];
     };
 
     const navLinks = getNavLinks();
 
     return (
-        <header className="w-full border-b border-border bg-background">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between h-14">
+        <header className="w-full bg-background flex flex-col mb-4">
+            {/* Top Row: Branding & Auth */}
+            <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 flex items-center justify-between h-16">
                 {/* Logo */}
                 <Link to="/" className="flex items-center gap-2 shrink-0">
-                    <div className="flex items-center justify-center w-7 h-7 rounded-md bg-primary">
-                        <Code2 className="w-4 h-4 text-primary-foreground" />
+                    <div className="flex items-center justify-center w-8 h-8 rounded-md bg-primary">
+                        <Code2 className="w-5 h-5 text-primary-foreground" />
                     </div>
-                    <span className="font-bold text-base tracking-tight text-foreground">
+                    <span className="font-bold text-xl tracking-tight text-foreground uppercase">
                         CodeCode
                     </span>
                 </Link>
 
-                {/* Desktop Nav */}
-                <nav className="hidden md:flex items-center gap-6">
-                    {navLinks.map(({ to, label, Icon, end }) => (
-                        <NavLink key={to} to={to} end={end} className={navClass}>
-                            <Icon className="w-3.5 h-3.5" />
-                            {label}
-                        </NavLink>
-                    ))}
-                </nav>
-
                 {/* Desktop Auth */}
-                <div className="hidden md:flex items-center gap-4">
+                <div className="hidden md:flex items-center text-sm font-semibold tracking-wide">
                     {user ? (
                         <>
                             <ProfileHoverCard user={user} />
-                            <Button
-                                id="header-logout"
-                                variant="ghost"
-                                size="sm"
+                            <span className="mx-2 text-muted-foreground/60 font-normal">|</span>
+                            <button
                                 onClick={handleLogout}
-                                className="gap-1.5 text-muted-foreground hover:text-foreground"
+                                className="text-primary hover:underline underline-offset-4 transition-colors"
                             >
-                                <LogOut className="w-3.5 h-3.5" />
                                 Logout
-                            </Button>
+                            </button>
                         </>
                     ) : (
                         <>
-                            <Button id="header-login" variant="ghost" size="sm" asChild>
-                                <Link to="/login">Sign In</Link>
-                            </Button>
-                            <Button id="header-register" size="sm" asChild>
-                                <Link to="/register">Register</Link>
-                            </Button>
+                            <Link to="/register" className="text-primary hover:underline underline-offset-4 transition-colors">
+                                Register
+                            </Link>
+                            <span className="mx-2 text-muted-foreground/60 font-normal">|</span>
+                            <Link to="/login" className="text-primary hover:underline underline-offset-4 transition-colors">
+                                Sign In
+                            </Link>
                         </>
                     )}
                 </div>
@@ -113,18 +94,45 @@ export default function Header() {
                 </button>
             </div>
 
+            {/* Bottom Row: Navigation Bar (Only for logged-in users) */}
+            {user && (
+                <div className="hidden md:block max-w-7xl mx-auto w-full px-4 sm:px-6 pb-2">
+                    <nav className="flex flex-wrap items-center gap-x-6 gap-y-2 rounded-md border border-border bg-card px-6 shadow-sm overflow-hidden">
+                        {navLinks.map(({ to, label, end }) => (
+                            <NavLink 
+                                key={to} 
+                                to={to} 
+                                end={end}
+                                className={({ isActive }) => 
+                                    `text-xs font-bold tracking-wider py-3 border-b-[3px] transition-all whitespace-nowrap ${
+                                        isActive 
+                                            ? 'border-primary text-foreground' 
+                                            : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border'
+                                    }`
+                                }
+                            >
+                                {label}
+                            </NavLink>
+                        ))}
+                    </nav>
+                </div>
+            )}
+
             {/* Mobile drawer */}
             {mobileOpen && (
                 <div className="md:hidden border-t border-border bg-background px-4 py-4 space-y-3">
-                    {navLinks.map(({ to, label, Icon, end }) => (
+                    {user && navLinks.map(({ to, label, end }) => (
                         <NavLink
                             key={to}
                             to={to}
                             end={end}
-                            className={navClass}
+                            className={({ isActive }) => 
+                                `block py-2 text-sm font-bold tracking-wide transition-colors ${
+                                    isActive ? 'text-primary' : 'text-muted-foreground hover:text-foreground'
+                                }`
+                            }
                             onClick={() => setMobileOpen(false)}
                         >
-                            <Icon className="w-4 h-4" />
                             {label}
                         </NavLink>
                     ))}

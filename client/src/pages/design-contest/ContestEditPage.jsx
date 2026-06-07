@@ -14,6 +14,7 @@ import {
     SelectTrigger, SelectValue,
 } from '@/components/ui/select';
 import api from '@/lib/axios';
+import { DIVISION_TIERS } from '@/constants/ratings';
 
 export default function ContestEditPage() {
     const { id } = useParams();
@@ -254,13 +255,7 @@ export default function ContestEditPage() {
                                 <SelectValue placeholder="Select division" />
                             </SelectTrigger>
                             <SelectContent>
-                                {[
-                                    { v: '1', label: 'Division 1 — Expert', desc: '2100+' },
-                                    { v: '2', label: 'Division 2 — Specialist', desc: '1600–2100' },
-                                    { v: '3', label: 'Division 3 — Pupil', desc: '1200–1600' },
-                                    { v: '4', label: 'Division 4 — Newbie', desc: '800–1200' },
-                                    { v: '5', label: 'Division 5 — Unrated', desc: 'Open' },
-                                ].map(({ v, label, desc }) => (
+                                {DIVISION_TIERS.map(({ v, label, desc }) => (
                                     <SelectItem key={v} value={v}>
                                         <span>{label}</span>
                                         <span className="ml-2 text-xs text-muted-foreground">({desc})</span>

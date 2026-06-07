@@ -9,6 +9,7 @@ import {
 import { Button } from '@/components/ui/button';
 import api from '@/lib/axios';
 import { useAuth } from '@/context/AuthContext';
+import { DIV_LABELS } from '@/constants/ratings';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────
 const REGISTRATION_WINDOW_MINUTES = 30;
@@ -82,14 +83,6 @@ function getTimeRemaining(iso) {
     if (hours > 0) return `${hours}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
     return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
 }
-
-const DIV_LABELS = {
-    1: { label: 'Div. 1', desc: 'Expert (2100+)' },
-    2: { label: 'Div. 2', desc: 'Specialist (1600–2100)' },
-    3: { label: 'Div. 3', desc: 'Pupil (1200–1600)' },
-    4: { label: 'Div. 4', desc: 'Newbie (800–1200)' },
-    5: { label: 'Div. 5', desc: 'Unrated' },
-};
 
 // ─── Skeleton Row ────────────────────────────────────────────────────────
 function SkeletonRow() {
