@@ -1,4 +1,5 @@
 import User from '../models/User.model.js';
+import ContestRegistration from '../models/ContestRegistration.model.js';
 import {ApiError, ApiResponse, asyncHandler} from '../utility/index.js';
 import statusCode from '../constants/statusCode.js';
 import redis from '../config/redis.js';
@@ -176,6 +177,27 @@ const heartbeat = asyncHandler(async (req, res) => {
         );
 });
 
+const getContestHistory = asyncHandler(async (req, res) => {
+    const {username} = req.params;
+
+    const user = await User.findByUsername(username);
+    if (!user) {
+        throw new ApiError(statusCode.NOT_FOUND, 'User not found.');
+    }
+
+    const history = await ContestRegistration.getContestHistory(user.id);
+
+    return res
+        .status(statusCode.OK)
+        .json(
+            new ApiResponse(
+                statusCode.OK,
+                'Contest history fetched successfully.',
+                history
+            )
+        );
+});
+
 export {
     getUserById,
     getUserByUsername,
@@ -183,4 +205,5 @@ export {
     updateUser,
     deleteUser,
     heartbeat,
+    getContestHistory,
 };

@@ -78,6 +78,31 @@ class ContestRegistration {
         );
     }
 
+    // Returns full rated contest history for a user, ordered by contest end time
+    static async getContestHistory(user_id) {
+        const [rows] = await pool.query(
+            `SELECT
+                cr.registration_id,
+                cr.contest_id,
+                cr.registered_at,
+                cr.delta,
+                cr.final_rating,
+                cr.final_rank,
+                c.title          AS contest_title,
+                c.division,
+                c.contest_start_time,
+                c.contest_end_time,
+                c.contest_evaluation
+             FROM contest_registrations cr
+             JOIN contests c ON cr.contest_id = c.id
+             WHERE cr.user_id = ?
+               AND c.contest_evaluation = 'completed'
+             ORDER BY c.contest_end_time ASC`,
+            [user_id]
+        );
+        return rows;
+    }
+
     static async getCountByContest(contest_id) {
         const [rows] = await pool.query(
             `SELECT COUNT(*) AS count FROM contest_registrations WHERE contest_id = ?`,
