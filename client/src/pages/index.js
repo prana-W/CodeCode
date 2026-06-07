@@ -18,9 +18,11 @@ import ContestSubmitTab from './participation/ContestSubmitTab.jsx';
 import ContestSubmissionsTab from './participation/ContestSubmissionsTab.jsx';
 import ContestLeaderboardTab from './participation/ContestLeaderboardTab.jsx';
 
+import AboutUs from './AboutUs.jsx';
+
 export {
     Home, NotFound, Login, Register, Home2,
-    ContestsPage,
+    ContestsPage, AboutUs,
     ContestListPage, ContestEditPage, ProblemsPage, TestcasesPage,
     VerifyContestsPage, AdminContestDetailsPage,
     ContestParticipationLayout, ContestProblemsTab, ContestProblemView, ContestSubmitTab, ContestSubmissionsTab, ContestLeaderboardTab

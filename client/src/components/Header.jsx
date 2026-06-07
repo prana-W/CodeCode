@@ -1,15 +1,10 @@
 import { useState } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
-import { Code2, Menu, X, LogOut, PenSquare, Trophy, Home } from 'lucide-react';
+import { Code2, Menu, X, LogOut, PenSquare, Trophy, Home, Info, ShieldCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/context/AuthContext';
 import { toast } from 'sonner';
-
-const NAV_LINKS = [
-    { to: '/', label: 'Home', Icon: Home, end: true },
-    { to: '/contests', label: 'Contests', Icon: Trophy },
-    { to: '/design-contest', label: 'Design Contest', Icon: PenSquare },
-];
+import ProfileHoverCard from './ProfileHoverCard';
 
 export default function Header() {
     const { user, logout } = useAuth();
@@ -34,8 +29,30 @@ export default function Header() {
                 : 'text-muted-foreground hover:text-foreground',
         ].join(' ');
 
+    // Dynamic Navigation Links based on role
+    const getNavLinks = () => {
+        if (!user) return [];
+        
+        if (user.role === 'admin') {
+            return [
+                { to: '/verify-contests', label: 'Verify Contests', Icon: ShieldCheck },
+                { to: '/contests', label: 'Contests', Icon: Trophy },
+                { to: '/about', label: 'About Us', Icon: Info },
+            ];
+        }
+        
+        return [
+            { to: '/', label: 'Home', Icon: Home, end: true },
+            { to: '/contests', label: 'Contests', Icon: Trophy },
+            { to: '/design-contest', label: 'Design Contest', Icon: PenSquare },
+            { to: '/about', label: 'About Us', Icon: Info },
+        ];
+    };
+
+    const navLinks = getNavLinks();
+
     return (
-        <header className="sticky top-0 z-50 w-full border-b border-border bg-background/90 backdrop-blur-sm">
+        <header className="w-full border-b border-border bg-background">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between h-14">
                 {/* Logo */}
                 <Link to="/" className="flex items-center gap-2 shrink-0">
@@ -49,7 +66,7 @@ export default function Header() {
 
                 {/* Desktop Nav */}
                 <nav className="hidden md:flex items-center gap-6">
-                    {NAV_LINKS.map(({ to, label, Icon, end }) => (
+                    {navLinks.map(({ to, label, Icon, end }) => (
                         <NavLink key={to} to={to} end={end} className={navClass}>
                             <Icon className="w-3.5 h-3.5" />
                             {label}
@@ -58,12 +75,10 @@ export default function Header() {
                 </nav>
 
                 {/* Desktop Auth */}
-                <div className="hidden md:flex items-center gap-3">
+                <div className="hidden md:flex items-center gap-4">
                     {user ? (
                         <>
-                            <span className="text-sm text-muted-foreground">
-                                <span className="font-medium text-foreground">{user.name ?? user.username}</span>
-                            </span>
+                            <ProfileHoverCard user={user} />
                             <Button
                                 id="header-logout"
                                 variant="ghost"
@@ -101,7 +116,7 @@ export default function Header() {
             {/* Mobile drawer */}
             {mobileOpen && (
                 <div className="md:hidden border-t border-border bg-background px-4 py-4 space-y-3">
-                    {NAV_LINKS.map(({ to, label, Icon, end }) => (
+                    {navLinks.map(({ to, label, Icon, end }) => (
                         <NavLink
                             key={to}
                             to={to}
@@ -119,9 +134,7 @@ export default function Header() {
                             <>
                                 <p className="text-sm text-muted-foreground">
                                     Signed in as{' '}
-                                    <span className="font-medium text-foreground">
-                                        {user.name ?? user.username}
-                                    </span>
+                                    <ProfileHoverCard user={user} />
                                 </p>
                                 <Button
                                     variant="outline"
