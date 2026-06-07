@@ -654,6 +654,28 @@ _Note: All endpoints require authentication. Admins and contest creators do not 
     - `409` — Already registered
     - `403` — Contest has ended, or registration window (start time + 30 min) has passed
 
+### 8b. Unregister from a Contest
+
+- **Method**: `DELETE`
+- **Route**: `/register`
+- **Access**: Authenticated users. Can only unregister before the contest has started.
+- **Request Body**:
+    ```json
+    {"contest_id": 1}
+    ```
+- **Success Response (200 OK)**:
+    ```json
+    {
+        "statusCode": 200,
+        "success": true,
+        "message": "Successfully unregistered from the contest."
+    }
+    ```
+- **Error cases**:
+    - `400` — `contest_id` missing
+    - `403` — Contest has already started
+    - `404` — Contest not found, or user is not registered
+
 ### 9. Check Registration Status
 
 - **Method**: `GET`

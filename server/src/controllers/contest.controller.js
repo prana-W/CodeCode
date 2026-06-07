@@ -186,7 +186,7 @@ const getAllContests = asyncHandler(async (req, res) => {
     const now = new Date();
     const isAdmin = req.role === 'admin';
     const filtered = all
-        .filter((c) => isAdmin || c.authored_by === req.userId || c.isVerified)
+        .filter((c) => isAdmin || c.isVerified)
         .map(({authored_by, ...rest}) => rest);
     return res
         .status(statusCode.OK)
@@ -418,6 +418,56 @@ const finalizeContest = asyncHandler(async (req, res) => {
         );
 });
 
+const unregisterFromContest = asyncHandler(async (req, res) => {
+    const {contest_id} = req.body;
+
+    if (!contest_id) {
+        throw new ApiError(
+            statusCode.BAD_REQUEST,
+            'contest_id is required.'
+        );
+    }
+
+    const contest = await ContestRegistration.findContestTimes(
+        Number(contest_id)
+    );
+    if (!contest) {
+        throw new ApiError(statusCode.NOT_FOUND, 'Contest not found.');
+    }
+
+    const now = new Date();
+    const startTime = new Date(contest.contest_start_time);
+
+    if (now >= startTime) {
+        throw new ApiError(
+            statusCode.FORBIDDEN,
+            'Cannot unregister after the contest has started.'
+        );
+    }
+
+    const registration = await ContestRegistration.findByUserAndContest(
+        Number(contest_id),
+        req.userId
+    );
+    if (!registration) {
+        throw new ApiError(
+            statusCode.NOT_FOUND,
+            'You are not registered for this contest.'
+        );
+    }
+
+    await ContestRegistration.unregister(Number(contest_id), req.userId);
+
+    return res
+        .status(statusCode.OK)
+        .json(
+            new ApiResponse(
+                statusCode.OK,
+                'Successfully unregistered from the contest.'
+            )
+        );
+});
+
 export {
     createContest,
     updateContest,
@@ -428,6 +478,7 @@ export {
     getMyContests,
     getLeaderboard,
     registerForContest,
+    unregisterFromContest,
     checkRegistration,
     finalizeContest,
 };

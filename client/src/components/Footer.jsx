@@ -16,9 +16,6 @@ export default function Footer() {
                 </div>
 
                 <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                    <Link to="/" className="hover:text-foreground transition-colors">Home</Link>
-                    <Link to="/contests" className="hover:text-foreground transition-colors">Contests</Link>
-                    <Link to="/design-contest" className="hover:text-foreground transition-colors">Design Contest</Link>
                     <a
                         href="https://github.com"
                         target="_blank"

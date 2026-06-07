@@ -21,6 +21,14 @@ class ContestRegistration {
         return rows[0] ?? null;
     }
 
+    static async unregister(contest_id, user_id) {
+        const [result] = await pool.query(
+            `DELETE FROM contest_registrations WHERE contest_id = ? AND user_id = ?`,
+            [contest_id, user_id]
+        );
+        return result;
+    }
+
     static async findContestTimes(contest_id) {
         const [rows] = await pool.query(
             `SELECT id, contest_start_time, contest_end_time, authored_by AS contest_authored_by

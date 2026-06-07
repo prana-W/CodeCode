@@ -1,4 +1,4 @@
-import { Home2, NotFound, Login, Register, ContestListPage, ContestEditPage, ProblemsPage, TestcasesPage } from './pages/index.js';
+import { Home2, NotFound, Login, Register, ContestsPage, ContestListPage, ContestEditPage, ProblemsPage, TestcasesPage } from './pages/index.js';
 import ErrorBoundary from './components/ErrorBoundary.jsx';
 import { ThemeProvider } from "@/components/theme-provider";
 import Layout from './Layout.jsx';
@@ -29,6 +29,15 @@ const router = createBrowserRouter([
             {
                 path: 'register',
                 element: <Register />,
+            },
+            // ── Public Contests Page ─────────────────────────────────
+            {
+                path: 'contests',
+                element:( 
+                    <ProtectedRoute>
+                     <ContestsPage />
+                </ProtectedRoute>
+            ),
             },
             // ── Design Contest Flow ──────────────────────────────────
             {

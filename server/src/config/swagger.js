@@ -373,6 +373,33 @@ const swaggerDefinition = {
                     409: {description: 'Already registered'},
                 },
             },
+            delete: {
+                tags: ['Contests'],
+                summary: 'Unregister from a contest',
+                description:
+                    'Allows a user to unregister from a contest before it starts. ' +
+                    'Cannot unregister once the contest has begun.',
+                requestBody: {
+                    required: true,
+                    content: {
+                        'application/json': {
+                            schema: {
+                                type: 'object',
+                                required: ['contest_id'],
+                                properties: {
+                                    contest_id: {type: 'integer', example: 1},
+                                },
+                            },
+                        },
+                    },
+                },
+                responses: {
+                    200: {description: 'Unregistered successfully'},
+                    400: {description: 'contest_id missing'},
+                    403: {description: 'Contest has already started'},
+                    404: {description: 'Contest not found or not registered'},
+                },
+            },
         },
         '/contests/register/status': {
             get: {

@@ -122,10 +122,11 @@ const getAllTestCases = asyncHandler(async (req, res) => {
             .json(new ApiResponse(statusCode.OK, 'No test cases found.', []));
     }
 
-    if (rows[0].contest_authored_by !== req.userId) {
+    const isAdmin = req.role === 'admin';
+    if (!isAdmin && rows[0].contest_authored_by !== req.userId) {
         throw new ApiError(
             statusCode.FORBIDDEN,
-            'Only the contest creator can view all test cases.'
+            'Only the contest creator or admin can view all test cases.'
         );
     }
 
