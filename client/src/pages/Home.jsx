@@ -40,7 +40,7 @@ function useCountUp(target, duration = 1800, start = false) {
 
 function StatCard({icon: Icon, label, value, color, delay = 0, animate}) {
     const count = useCountUp(value, 1600, animate);
-    const textColor = color.split(' ').find((c) => c.startsWith('text-')) || '';
+    const bgColor = color.split(' ').find((c) => c.startsWith('bg-')) || 'bg-primary';
 
     return (
         <div
@@ -48,15 +48,9 @@ function StatCard({icon: Icon, label, value, color, delay = 0, animate}) {
             style={{animationDelay: `${delay}ms`}}
         >
             <div
-                className={`absolute inset-0 opacity-0 group-hover:opacity-5 transition-opacity duration-300 ${color}`}
-            />
-            <Icon
-                className={`absolute -bottom-4 -right-4 w-28 h-28 opacity-5 group-hover:opacity-10 transition-opacity duration-300 ${textColor}`}
-            />
-            <div
-                className={`w-12 h-12 rounded-xl ${color} bg-opacity-10 flex items-center justify-center mb-4 relative z-10`}
+                className={`w-12 h-12 rounded-xl ${bgColor} flex items-center justify-center mb-4 relative z-10 text-white`}
             >
-                <Icon className={`w-6 h-6`} />
+                <Icon className="w-6 h-6" />
             </div>
             <p className="text-3xl font-black text-foreground tabular-nums relative z-10 font-mono">
                 {count.toLocaleString()}
