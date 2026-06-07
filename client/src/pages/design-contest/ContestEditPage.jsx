@@ -26,6 +26,16 @@ import {
 } from '@/components/ui/select';
 import api from '@/lib/axios';
 import {DIVISION_TIERS} from '@/constants/ratings';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 export default function ContestEditPage() {
     const {id} = useParams();
@@ -156,13 +166,13 @@ export default function ContestEditPage() {
         }
     };
 
-    const handleDelete = async () => {
-        if (
-            !confirm(
-                `Delete "${contestData?.title || form.title}"? This action cannot be undone.`
-            )
-        )
-            return;
+    const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+
+    const handleDeleteClick = () => {
+        setShowDeleteDialog(true);
+    };
+
+    const handleDeleteConfirm = async () => {
         setDeleting(true);
         try {
             await api.delete(`/contests/${id}`);
@@ -174,6 +184,7 @@ export default function ContestEditPage() {
             );
         } finally {
             setDeleting(false);
+            setShowDeleteDialog(false);
         }
     };
 
@@ -422,7 +433,7 @@ export default function ContestEditPage() {
                                     id="delete-contest-btn"
                                     variant="destructive"
                                     size="sm"
-                                    onClick={handleDelete}
+                                    onClick={handleDeleteClick}
                                     disabled={deleting}
                                     className="gap-1.5 shrink-0 text-xs font-semibold uppercase tracking-wider"
                                 >
@@ -466,6 +477,21 @@ export default function ContestEditPage() {
                     </div>
                 </div>
             </div>
+
+            <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Delete Contest</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Are you sure you want to delete "{contestData?.title || form.title}"? This action cannot be undone and will permanently delete this contest, its problems, test cases, and registrations.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel onClick={() => setShowDeleteDialog(false)}>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleDeleteConfirm}>Delete</AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
     );
 }

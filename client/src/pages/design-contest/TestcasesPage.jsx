@@ -19,6 +19,16 @@ import {Button} from '@/components/ui/button';
 import {Label} from '@/components/ui/label';
 import {Textarea} from '@/components/ui/textarea';
 import api from '@/lib/axios';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 const PROBLEM_LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 const EMPTY_TC = {input_data: '', expected_output: '', is_sample: false};
@@ -48,8 +58,13 @@ function TestcasePanel({problem, index, testcase, onRefresh}) {
         setEditingId(null);
     };
 
-    const handleDelete = async () => {
-        if (!confirm('Delete this test case?')) return;
+    const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+
+    const handleDeleteClick = () => {
+        setShowDeleteDialog(true);
+    };
+
+    const handleDeleteConfirm = async () => {
         setDeleting(true);
         try {
             await api.delete(`/testcases/${testcase.test_case_id}`);
@@ -61,6 +76,7 @@ function TestcasePanel({problem, index, testcase, onRefresh}) {
             );
         } finally {
             setDeleting(false);
+            setShowDeleteDialog(false);
         }
     };
 
@@ -179,7 +195,7 @@ function TestcasePanel({problem, index, testcase, onRefresh}) {
                                         id={`delete-tc-${testcase.test_case_id}`}
                                         size="sm"
                                         variant="outline"
-                                        onClick={handleDelete}
+                                        onClick={handleDeleteClick}
                                         disabled={deleting}
                                         className="h-7 gap-1 text-[10px] font-semibold uppercase tracking-wider hover:bg-destructive/10 hover:border-destructive hover:text-destructive"
                                     >
@@ -313,6 +329,21 @@ function TestcasePanel({problem, index, testcase, onRefresh}) {
                     )}
                 </div>
             )}
+
+            <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Delete Testcase</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Are you sure you want to delete this testcase? This action cannot be undone.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel onClick={() => setShowDeleteDialog(false)}>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleDeleteConfirm}>Delete</AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
     );
 }

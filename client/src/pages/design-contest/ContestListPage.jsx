@@ -84,15 +84,29 @@ function SkeletonCard() {
     );
 }
 
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+
 function ContestCard({contest, onDelete}) {
     const navigate = useNavigate();
     const status = getContestStatus(contest);
     const [deleting, setDeleting] = useState(false);
+    const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
-    const handleDelete = async (e) => {
+    const handleDeleteClick = (e) => {
         e.stopPropagation();
-        if (!confirm(`Delete "${contest.title}"? This cannot be undone.`))
-            return;
+        setShowDeleteDialog(true);
+    };
+
+    const handleDeleteConfirm = async () => {
         setDeleting(true);
         try {
             await api.delete(`/contests/${contest.id}`);
@@ -104,6 +118,7 @@ function ContestCard({contest, onDelete}) {
             );
         } finally {
             setDeleting(false);
+            setShowDeleteDialog(false);
         }
     };
 
@@ -149,7 +164,7 @@ function ContestCard({contest, onDelete}) {
                             id={`delete-contest-${contest.id}`}
                             size="sm"
                             variant="ghost"
-                            onClick={handleDelete}
+                            onClick={handleDeleteClick}
                             disabled={deleting}
                             className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-destructive/10 hover:text-destructive"
                             title="Delete contest"
@@ -173,7 +188,7 @@ function ContestCard({contest, onDelete}) {
                                     new Date(contest.contest_start_time)) /
                                 60000;
                             return dur >= 60
-                               ? `${Math.floor(dur / 60)}h ${dur % 60 ? `${dur % 60}m` : ''}`
+                                ? `${Math.floor(dur / 60)}h ${dur % 60 ? `${dur % 60}m` : ''}`
                                 : `${dur}m`;
                         })()}
                     </span>
@@ -196,6 +211,21 @@ function ContestCard({contest, onDelete}) {
                     </p>
                 )}
             </div>
+
+            <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+                <AlertDialogContent onClick={(e) => e.stopPropagation()}>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Delete Contest</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Are you sure you want to delete "{contest.title}"? This action cannot be undone and will delete all associated problems and data.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel onClick={() => setShowDeleteDialog(false)}>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleDeleteConfirm}>Delete</AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
     );
 }

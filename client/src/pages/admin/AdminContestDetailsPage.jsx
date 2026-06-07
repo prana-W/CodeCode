@@ -13,6 +13,16 @@ import {
 } from 'lucide-react';
 import {Button} from '@/components/ui/button';
 import api from '@/lib/axios';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 const PROBLEM_LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
@@ -167,13 +177,13 @@ export default function AdminContestDetailsPage() {
         fetchDetails();
     }, [id, navigate]);
 
-    const toggleVerify = async () => {
-        if (
-            !confirm(
-                `Are you sure you want to ${contest.isVerified ? 'unverify' : 'verify'} this contest?`
-            )
-        )
-            return;
+    const [showVerifyDialog, setShowVerifyDialog] = useState(false);
+
+    const handleVerifyClick = () => {
+        setShowVerifyDialog(true);
+    };
+
+    const handleVerifyConfirm = async () => {
         setVerifying(true);
         try {
             const res = await api.patch(`/contests/${id}/verify`);
@@ -188,6 +198,7 @@ export default function AdminContestDetailsPage() {
             );
         } finally {
             setVerifying(false);
+            setShowVerifyDialog(false);
         }
     };
 
@@ -233,7 +244,7 @@ export default function AdminContestDetailsPage() {
                             </div>
                         </div>
                         <Button
-                            onClick={toggleVerify}
+                            onClick={handleVerifyClick}
                             disabled={verifying}
                             variant={
                                 contest.isVerified ? 'destructive' : 'default'
@@ -336,6 +347,25 @@ export default function AdminContestDetailsPage() {
                     )}
                 </section>
             </div>
+
+            <AlertDialog open={showVerifyDialog} onOpenChange={setShowVerifyDialog}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>
+                            {contest?.isVerified ? 'Unverify Contest' : 'Verify Contest'}
+                        </AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Are you sure you want to {contest?.isVerified ? 'unverify' : 'verify'} "{contest?.title}"? This will make the contest {contest?.isVerified ? 'hidden from' : 'visible to'} contestants.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel onClick={() => setShowVerifyDialog(false)}>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleVerifyConfirm}>
+                            {contest?.isVerified ? 'Unverify' : 'Verify'}
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
     );
 }

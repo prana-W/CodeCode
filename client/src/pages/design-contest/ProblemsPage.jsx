@@ -20,6 +20,16 @@ import {Input} from '@/components/ui/input';
 import {Label} from '@/components/ui/label';
 import MDEditor from '@uiw/react-md-editor';
 import api from '@/lib/axios';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 const EMPTY_FORM = {
     title: '',
@@ -71,7 +81,7 @@ function ProblemCard({problem, index, isEditing, onEdit, onDelete, deleting}) {
                             id={`delete-prob-${problem.problem_id}`}
                             size="sm"
                             variant="outline"
-                            onClick={() => onDelete(problem.problem_id)}
+                            onClick={() => onDelete(problem)}
                             disabled={deleting}
                             className="h-8 w-8 p-0 hover:bg-destructive/10 hover:border-destructive hover:text-destructive transition-colors"
                             title="Delete problem"
@@ -178,8 +188,15 @@ export default function ProblemsPage() {
         }, 100);
     };
 
-    const handleDelete = async (problemId) => {
-        if (!confirm('Delete this problem? This cannot be undone.')) return;
+    const [deleteTarget, setDeleteTarget] = useState(null);
+
+    const handleDelete = (problem) => {
+        setDeleteTarget(problem);
+    };
+
+    const handleDeleteConfirm = async () => {
+        if (!deleteTarget) return;
+        const problemId = deleteTarget.problem_id;
         setDeletingId(problemId);
         try {
             await api.delete(`/problems/${problemId}`);
@@ -194,6 +211,7 @@ export default function ProblemsPage() {
             );
         } finally {
             setDeletingId(null);
+            setDeleteTarget(null);
         }
     };
 
@@ -598,6 +616,21 @@ export default function ProblemsPage() {
                     </Button>
                 </div>
             </div>
+
+            <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Delete Problem</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Are you sure you want to delete "{deleteTarget?.title}"? This action cannot be undone and will delete all associated test cases and submissions.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel onClick={() => setDeleteTarget(null)}>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleDeleteConfirm}>Delete</AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
     );
 }
