@@ -21,6 +21,7 @@ import ContestLeaderboardTab from './participation/ContestLeaderboardTab.jsx';
 import AboutUs from './AboutUs.jsx';
 import UserProfile from './UserProfile.jsx';
 import UserProfileEdit from './UserProfileEdit.jsx';
+import RankingsPage from './RankingsPage.jsx';
 
 export {
     Home,
@@ -32,6 +33,7 @@ export {
     AboutUs,
     UserProfile,
     UserProfileEdit,
+    RankingsPage,
     ContestListPage,
     ContestEditPage,
     ProblemsPage,

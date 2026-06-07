@@ -308,6 +308,22 @@ Added the updated commit_history notes, architecture and readme notes.
 
 ---
 
+## Commit - later 1
+
+We have decoupled the compilation and execution part of the judge, as the compilation for with a cpp file having #include <bits/stdc++.h> was taking a lot of time and memory, as this statement requires a lot of time to bring together all the header files, so we have added the separate service for compilation of code. Now the workflow is like this:
+
+1. User submits the code
+2. Submission is saved in the DB with pending state
+3. Judge service is called
+4. Judge service first compile the code and if successful it then proceeds to the execution
+5. If the compilation fails, it updates the submission with compilation error and returns
+6. If the execution fails, it updates the submission with execution error and returns
+7. If the execution is successful, it updates the submission with the verdict and returns
+
+So, basically fixed 512 GB for compilation code docker container and variable memmory for running code docker container
+
+---
+
 # Rating Delta Calculation Algorithm
 
 The goal is to determine how much each user's rating should increase or decrease after a contest based on:
@@ -786,3 +802,5 @@ We have decoupled the compilation and execution part of the judge, as the compil
 5. If the compilation fails, it updates the submission with compilation error and returns
 6. If the execution fails, it updates the submission with execution error and returns
 7. If the execution is successful, it updates the submission with the verdict and returns
+
+So, basically fixed 512 GB for compilation code docker container and variable memmory for running code docker container

@@ -2,6 +2,7 @@ import {Router} from 'express';
 import {
     getUserById,
     getUserByUsername,
+    getRankings,
     updateUser,
     deleteUser,
 } from '../controllers/user.controller.js';
@@ -13,6 +14,7 @@ const router = Router();
 // All user routes require a valid token
 router.use(verifyToken);
 
+router.get('/rankings', getRankings);
 router.get('/username/:username', getUserByUsername);
 router.get('/:id', getUserById);
 router.patch('/:id', profileUpdateLimiter, updateUser);

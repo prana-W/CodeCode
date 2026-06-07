@@ -71,6 +71,28 @@ class User {
         return rows;
     }
 
+    static async getRankings(institute, sortBy = 'rating') {
+        let query = `
+            SELECT id, name, username, email, institute, rating, max_rating, role 
+            FROM users 
+            WHERE role != 'admin'
+        `;
+        const params = [];
+
+        if (institute && institute !== 'All Institutes') {
+            query += ' AND institute = ? ';
+            params.push(institute);
+        }
+
+        const validSortFields = ['rating', 'max_rating'];
+        const sortField = validSortFields.includes(sortBy) ? sortBy : 'rating';
+
+        query += ` ORDER BY ${sortField} DESC, id ASC`;
+
+        const [rows] = await pool.query(query, params);
+        return rows;
+    }
+
     static async delete(id) {
         const [result] = await pool.query('DELETE FROM users WHERE id = ?', [
             id,
@@ -92,13 +114,6 @@ class User {
         return result;
     }
 
-    /**
-     * Updates a user's rating and max_rating inside an existing DB transaction.
-     * @param {import('mysql2/promise').PoolConnection} conn - Active transaction connection
-     * @param {number} id - User ID
-     * @param {number} newRating - New computed rating (already floored)
-     * @param {number} newMaxRating - New max_rating (Math.max of old and newRating)
-     */
     static async updateRating(conn, id, newRating, newMaxRating) {
         await conn.query(
             `UPDATE users SET rating = ?, max_rating = ? WHERE id = ?`,

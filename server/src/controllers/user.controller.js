@@ -123,4 +123,19 @@ const deleteUser = asyncHandler(async (req, res) => {
         .json(new ApiResponse(statusCode.OK, 'User deleted successfully.'));
 });
 
-export {getUserById, getUserByUsername, updateUser, deleteUser};
+const getRankings = asyncHandler(async (req, res) => {
+    const { institute, sortBy } = req.query;
+    const users = await User.getRankings(institute, sortBy);
+
+    return res
+        .status(statusCode.OK)
+        .json(
+            new ApiResponse(
+                statusCode.OK,
+                'Rankings fetched successfully.',
+                users
+            )
+        );
+});
+
+export {getUserById, getUserByUsername, getRankings, updateUser, deleteUser};

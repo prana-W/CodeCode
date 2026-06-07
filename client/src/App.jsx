@@ -19,6 +19,7 @@ import {
     AboutUs,
     UserProfile,
     UserProfileEdit,
+    RankingsPage,
 } from './pages/index.js';
 
 import ErrorBoundary from './components/ErrorBoundary.jsx';
@@ -61,6 +62,14 @@ const router = createBrowserRouter([
             {
                 path: 'register',
                 element: <Register />,
+            },
+            {
+                path: 'rankings',
+                element: (
+                    <ProtectedRoute>
+                        <RankingsPage />
+                    </ProtectedRoute>
+                ),
             },
             {
                 path: 'contests',

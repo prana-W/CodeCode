@@ -21,7 +21,6 @@ export default function Header() {
         }
     };
 
-    // Dynamic Navigation Links based on role
     const getNavLinks = () => {
         if (!user) return [];
 
@@ -30,6 +29,7 @@ export default function Header() {
                 {to: '', label: 'HOME'},
                 {to: '/contests', label: 'CONTESTS'},
                 {to: '/admin/verify-contests', label: 'VERIFY CONTESTS'},
+                {to: '/rankings', label: 'RANKINGS'},
                 {to: '/about', label: 'ABOUT'},
             ];
         }
@@ -38,6 +38,7 @@ export default function Header() {
             {to: '/', label: 'HOME', end: true},
             {to: '/contests', label: 'CONTESTS'},
             {to: '/design-contest', label: 'DESIGN'},
+            {to: '/rankings', label: 'RANKINGS'},
             {to: '/about', label: 'ABOUT'},
         ];
     };
