@@ -20,7 +20,8 @@ export default function ContestSubmitTab() {
     const {problems} = useOutletContext();
     const preselectedProblem =
         location.state?.preselectedProblem ||
-        (problems.length > 0 ? problems[0].problem_id : '');
+        location.state?.preselectProblem ||
+        '';
 
     const [submitting, setSubmitting] = useState(false);
     const [form, setForm] = useState({
@@ -28,13 +29,6 @@ export default function ContestSubmitTab() {
         language: 'cpp',
         source_code: '',
     });
-
-    // If not preselected, default to the first problem when problems load
-    useEffect(() => {
-        if (!preselectedProblem && problems.length > 0) {
-            setForm((prev) => ({...prev, problem_id: problems[0].problem_id}));
-        }
-    }, [problems, preselectedProblem]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -78,11 +72,11 @@ export default function ContestSubmitTab() {
     return (
         <div className="max-w-4xl mx-auto bg-card border border-border rounded-xl overflow-hidden shadow-sm">
             <div className="px-6 py-5 border-b border-border bg-muted/20">
-                <h2 className="text-lg font-bold flex items-center gap-2">
+                <h2 className="text-lg font-serif font-semibold flex items-center gap-2">
                     <Send className="w-5 h-5 text-primary" />
                     Submit Code
                 </h2>
-                <p className="text-sm text-muted-foreground mt-1">
+                <p className="text-xs text-muted-foreground mt-1">
                     Select a problem, choose your language, and paste your
                     source code.
                 </p>
@@ -90,9 +84,8 @@ export default function ContestSubmitTab() {
 
             <form onSubmit={handleSubmit} className="p-6 space-y-6">
                 <div className="grid sm:grid-cols-2 gap-6">
-                    {/* Problem Selection */}
                     <div className="space-y-2">
-                        <label className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+                        <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                             Problem
                         </label>
                         <select
@@ -100,10 +93,10 @@ export default function ContestSubmitTab() {
                             onChange={(e) =>
                                 setForm({
                                     ...form,
-                                    problem_id: Number(e.target.value),
+                                    problem_id: e.target.value ? Number(e.target.value) : '',
                                 })
                             }
-                            className="w-full h-10 px-3 py-2 text-sm rounded-md border border-input bg-background focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                            className="w-full h-10 px-3 py-2 text-sm rounded-md border border-border bg-background focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
                             required
                         >
                             <option value="" disabled>
@@ -123,9 +116,8 @@ export default function ContestSubmitTab() {
                         </select>
                     </div>
 
-                    {/* Language Selection */}
                     <div className="space-y-2">
-                        <label className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+                        <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                             Language
                         </label>
                         <select
@@ -133,7 +125,7 @@ export default function ContestSubmitTab() {
                             onChange={(e) =>
                                 setForm({...form, language: e.target.value})
                             }
-                            className="w-full h-10 px-3 py-2 text-sm rounded-md border border-input bg-background focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent capitalize"
+                            className="w-full h-10 px-3 py-2 text-sm rounded-md border border-border bg-background focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary capitalize"
                             required
                         >
                             {VALID_LANGUAGES.map((lang) => (
@@ -145,9 +137,8 @@ export default function ContestSubmitTab() {
                     </div>
                 </div>
 
-                {/* Source Code */}
                 <div className="space-y-2">
-                    <label className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+                    <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                         Source Code
                     </label>
                     <textarea
@@ -155,8 +146,8 @@ export default function ContestSubmitTab() {
                         onChange={(e) =>
                             setForm({...form, source_code: e.target.value})
                         }
-                        className="w-full min-h-[350px] p-4 text-sm font-mono rounded-md border border-input bg-muted/30 focus:outline-none focus:ring-2 focus:ring-primary focus:bg-background transition-colors"
-                        placeholder="Paste your source code here..."
+                        className="w-full min-h-[380px] p-4 text-sm font-mono rounded-md border border-border bg-muted/10 shadow-inner focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary focus:bg-background transition-all"
+                        placeholder="// Write your code here..."
                         spellCheck="false"
                         required
                     />
@@ -167,7 +158,7 @@ export default function ContestSubmitTab() {
                         type="submit"
                         size="lg"
                         disabled={submitting}
-                        className="gap-2 px-8"
+                        className="gap-2 px-8 text-xs font-semibold uppercase tracking-wider"
                     >
                         {submitting ? (
                             <>

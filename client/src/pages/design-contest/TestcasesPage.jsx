@@ -3,7 +3,6 @@ import {useParams, useNavigate, Link} from 'react-router-dom';
 import {toast} from 'sonner';
 import {
     FlaskConical,
-    Plus,
     Pencil,
     Trash2,
     Save,
@@ -22,12 +21,10 @@ import {Textarea} from '@/components/ui/textarea';
 import api from '@/lib/axios';
 
 const PROBLEM_LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-
 const EMPTY_TC = {input_data: '', expected_output: '', is_sample: false};
 
-// ─── Problem Testcase Panel ──────────────────────────────────────────────
 function TestcasePanel({problem, index, testcase, onRefresh}) {
-    const [open, setOpen] = useState(!testcase); // auto-open if no testcase
+    const [open, setOpen] = useState(!testcase);
     const [form, setForm] = useState(EMPTY_TC);
     const [editingId, setEditingId] = useState(null);
     const [submitting, setSubmitting] = useState(false);
@@ -43,12 +40,6 @@ function TestcasePanel({problem, index, testcase, onRefresh}) {
             is_sample: Boolean(testcase.is_sample),
         });
         setEditingId(testcase.test_case_id);
-        setOpen(true);
-    };
-
-    const handleCreate = () => {
-        setForm(EMPTY_TC);
-        setEditingId(null);
         setOpen(true);
     };
 
@@ -126,32 +117,31 @@ function TestcasePanel({problem, index, testcase, onRefresh}) {
                     : 'border-amber-500/30 bg-amber-500/5'
             }`}
         >
-            {/* Header */}
             <button
                 type="button"
                 onClick={() => setOpen((v) => !v)}
                 className="w-full flex items-center justify-between px-4 py-3 bg-card hover:bg-muted/30 transition-colors"
             >
                 <div className="flex items-center gap-3">
-                    <div className="problem-letter w-7 h-7 text-xs">
+                    <div className="problem-letter w-7 h-7 text-xs font-mono">
                         {letter}
                     </div>
                     <span className="font-medium text-sm text-foreground">
                         {problem.title}
                     </span>
                     {hasTestcase ? (
-                        <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-green-100 text-green-700">
+                        <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 font-semibold">
                             <CheckCircle className="w-3 h-3" />
                             Has testcase
                         </span>
                     ) : (
-                        <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-amber-100 text-amber-700">
+                        <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-500 font-semibold animate-pulse">
                             <AlertTriangle className="w-3 h-3" />
                             Missing
                         </span>
                     )}
                     {hasTestcase && testcase.is_sample && (
-                        <span className="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary font-medium">
+                        <span className="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary font-semibold">
                             Sample
                         </span>
                     )}
@@ -165,13 +155,12 @@ function TestcasePanel({problem, index, testcase, onRefresh}) {
 
             {open && (
                 <div className="p-4 space-y-4 border-t border-border">
-                    {/* Existing testcase display */}
                     {hasTestcase && !editingId && (
                         <div className="space-y-3">
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-2">
                                     <TerminalSquare className="w-4 h-4 text-muted-foreground" />
-                                    <span className="font-medium text-sm">
+                                    <span className="font-semibold text-sm font-mono">
                                         Test Case #{testcase.test_case_id}
                                     </span>
                                 </div>
@@ -181,7 +170,7 @@ function TestcasePanel({problem, index, testcase, onRefresh}) {
                                         size="sm"
                                         variant="outline"
                                         onClick={handleEdit}
-                                        className="h-7 gap-1 text-xs"
+                                        className="h-7 gap-1 text-[10px] font-semibold uppercase tracking-wider"
                                     >
                                         <Pencil className="w-3 h-3" />
                                         Edit
@@ -192,7 +181,7 @@ function TestcasePanel({problem, index, testcase, onRefresh}) {
                                         variant="outline"
                                         onClick={handleDelete}
                                         disabled={deleting}
-                                        className="h-7 gap-1 text-xs hover:bg-destructive/10 hover:border-destructive hover:text-destructive"
+                                        className="h-7 gap-1 text-[10px] font-semibold uppercase tracking-wider hover:bg-destructive/10 hover:border-destructive hover:text-destructive"
                                     >
                                         <Trash2 className="w-3 h-3" />
                                         {deleting ? 'Deleting…' : 'Delete'}
@@ -201,18 +190,18 @@ function TestcasePanel({problem, index, testcase, onRefresh}) {
                             </div>
                             <div className="grid sm:grid-cols-2 gap-3">
                                 <div>
-                                    <p className="text-xs font-semibold text-muted-foreground mb-1 uppercase">
+                                    <p className="text-[10px] font-semibold text-muted-foreground mb-1 uppercase tracking-wider">
                                         Input
                                     </p>
-                                    <pre className="text-xs font-mono bg-muted rounded-lg p-3 overflow-auto max-h-32 whitespace-pre-wrap break-all">
+                                    <pre className="text-xs font-mono bg-muted/30 border rounded-lg p-3 overflow-auto max-h-32 whitespace-pre-wrap break-all shadow-inner">
                                         {testcase.input_data}
                                     </pre>
                                 </div>
                                 <div>
-                                    <p className="text-xs font-semibold text-muted-foreground mb-1 uppercase">
+                                    <p className="text-[10px] font-semibold text-muted-foreground mb-1 uppercase tracking-wider">
                                         Expected Output
                                     </p>
-                                    <pre className="text-xs font-mono bg-muted rounded-lg p-3 overflow-auto max-h-32 whitespace-pre-wrap break-all">
+                                    <pre className="text-xs font-mono bg-muted/30 border rounded-lg p-3 overflow-auto max-h-32 whitespace-pre-wrap break-all shadow-inner">
                                         {testcase.expected_output}
                                     </pre>
                                 </div>
@@ -220,13 +209,13 @@ function TestcasePanel({problem, index, testcase, onRefresh}) {
                         </div>
                     )}
 
-                    {/* Create / Edit form */}
                     {(editingId || !hasTestcase) && (
                         <form onSubmit={handleSubmit} className="space-y-4">
                             <div className="grid sm:grid-cols-2 gap-3">
                                 <div className="space-y-1.5">
                                     <Label
                                         htmlFor={`tc-input-${problem.problem_id}`}
+                                        className="text-xs font-semibold uppercase tracking-wider text-muted-foreground"
                                     >
                                         Input Data{' '}
                                         <span className="text-destructive">
@@ -244,12 +233,13 @@ function TestcasePanel({problem, index, testcase, onRefresh}) {
                                                 input_data: e.target.value,
                                             }))
                                         }
-                                        className="resize-y font-mono text-sm"
+                                        className="resize-y font-mono text-sm bg-muted/10"
                                     />
                                 </div>
                                 <div className="space-y-1.5">
                                     <Label
                                         htmlFor={`tc-output-${problem.problem_id}`}
+                                        className="text-xs font-semibold uppercase tracking-wider text-muted-foreground"
                                     >
                                         Expected Output{' '}
                                         <span className="text-destructive">
@@ -267,12 +257,11 @@ function TestcasePanel({problem, index, testcase, onRefresh}) {
                                                 expected_output: e.target.value,
                                             }))
                                         }
-                                        className="resize-y font-mono text-sm"
+                                        className="resize-y font-mono text-sm bg-muted/10"
                                     />
                                 </div>
                             </div>
 
-                            {/* Is sample toggle */}
                             <button
                                 type="button"
                                 onClick={() =>
@@ -281,7 +270,7 @@ function TestcasePanel({problem, index, testcase, onRefresh}) {
                                         is_sample: !p.is_sample,
                                     }))
                                 }
-                                className="flex items-center gap-2 text-sm text-foreground hover:text-primary transition-colors"
+                                className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-foreground hover:text-primary transition-colors"
                             >
                                 {form.is_sample ? (
                                     <CheckSquare className="w-5 h-5 text-primary" />
@@ -298,6 +287,7 @@ function TestcasePanel({problem, index, testcase, onRefresh}) {
                                         variant="outline"
                                         size="sm"
                                         onClick={handleCancel}
+                                        className="text-xs font-semibold uppercase tracking-wider"
                                     >
                                         Cancel
                                     </Button>
@@ -307,7 +297,7 @@ function TestcasePanel({problem, index, testcase, onRefresh}) {
                                     type="submit"
                                     size="sm"
                                     disabled={submitting}
-                                    className="gap-1.5"
+                                    className="gap-1.5 text-xs font-semibold uppercase tracking-wider"
                                 >
                                     <Save className="w-3.5 h-3.5" />
                                     {submitting
@@ -327,14 +317,13 @@ function TestcasePanel({problem, index, testcase, onRefresh}) {
     );
 }
 
-// ─── Main Page ───────────────────────────────────────────────────────────
 export default function TestcasesPage() {
     const {contestId} = useParams();
     const navigate = useNavigate();
 
     const [contestTitle, setContestTitle] = useState('');
     const [problems, setProblems] = useState([]);
-    const [testcaseMap, setTestcaseMap] = useState({}); // { problem_id: testcase | null }
+    const [testcaseMap, setTestcaseMap] = useState({});
     const [loading, setLoading] = useState(true);
 
     const fetchData = useCallback(async () => {
@@ -347,7 +336,6 @@ export default function TestcasesPage() {
             const probs = probRes.data.data || [];
             setProblems(probs);
 
-            // Fetch testcases for each problem
             const tcMap = {};
             await Promise.all(
                 probs.map(async (p) => {
@@ -401,22 +389,21 @@ export default function TestcasesPage() {
 
     return (
         <div className="min-h-screen bg-background">
-            {/* Header */}
             <div className="border-b border-border bg-card/50">
                 <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8">
-                    <nav className="flex items-center mb-4">
-                        <Link to="/design-contest" className="breadcrumb-link">
+                    <nav className="flex items-center mb-4 font-mono text-xs">
+                        <Link to="/design-contest" className="breadcrumb-link text-muted-foreground hover:text-foreground">
                             My Contests
                         </Link>
-                        <span className="breadcrumb-sep">›</span>
+                        <span className="breadcrumb-sep mx-2 text-muted-foreground/50">›</span>
                         <Link
                             to={`/design-contest/contest/${contestId}`}
-                            className="breadcrumb-link"
+                            className="breadcrumb-link text-muted-foreground hover:text-foreground"
                         >
                             {contestTitle}
                         </Link>
-                        <span className="breadcrumb-sep">›</span>
-                        <span className="text-sm text-foreground font-medium">
+                        <span className="breadcrumb-sep mx-2 text-muted-foreground/50">›</span>
+                        <span className="text-foreground font-medium">
                             Test Cases
                         </span>
                     </nav>
@@ -426,7 +413,7 @@ export default function TestcasesPage() {
                             <FlaskConical className="w-5 h-5 text-primary-foreground" />
                         </div>
                         <div>
-                            <h1 className="text-2xl font-bold tracking-tight text-foreground">
+                            <h1 className="text-2xl md:text-3xl font-serif font-semibold tracking-tight text-foreground">
                                 Test Cases
                             </h1>
                             <p className="text-sm text-muted-foreground mt-0.5">
@@ -439,16 +426,15 @@ export default function TestcasesPage() {
             </div>
 
             <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8 space-y-6">
-                {/* Missing testcases alert */}
                 {missingCount > 0 && (
                     <div className="flex items-start gap-3 p-4 rounded-xl border border-amber-500/30 bg-amber-500/5">
-                        <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+                        <AlertTriangle className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
                         <div>
-                            <p className="text-sm font-semibold text-foreground">
+                            <p className="text-sm font-semibold text-foreground font-sans">
                                 {missingCount} problem
                                 {missingCount > 1 ? 's' : ''} missing test cases
                             </p>
-                            <p className="text-xs text-muted-foreground mt-0.5">
+                            <p className="text-xs text-muted-foreground mt-0.5 font-mono">
                                 {problems
                                     .filter((p) => !testcaseMap[p.problem_id])
                                     .map(
@@ -461,7 +447,6 @@ export default function TestcasesPage() {
                     </div>
                 )}
 
-                {/* All problems list */}
                 {problems.length === 0 ? (
                     <div className="rounded-xl border border-dashed border-border py-16 text-center">
                         <FlaskConical className="w-10 h-10 text-muted-foreground/40 mx-auto mb-3" />
@@ -469,7 +454,7 @@ export default function TestcasesPage() {
                             No problems in this contest yet. Add problems first.
                         </p>
                         <Button
-                            className="mt-4 gap-2"
+                            className="mt-4 gap-2 text-xs font-semibold uppercase tracking-wider"
                             onClick={() =>
                                 navigate(
                                     `/design-contest/problems/${contestId}`
@@ -494,12 +479,11 @@ export default function TestcasesPage() {
                     </div>
                 )}
 
-                {/* Bottom navigation */}
                 <div className="flex items-center justify-between pt-6 border-t border-border">
                     <Button
                         variant="outline"
                         onClick={() => navigate('/design-contest')}
-                        className="gap-2"
+                        className="gap-2 text-xs font-semibold uppercase tracking-wider"
                     >
                         <LogOut className="w-4 h-4" />
                         Save & Exit
@@ -521,7 +505,7 @@ export default function TestcasesPage() {
                             });
                             navigate('/design-contest');
                         }}
-                        className="gap-2"
+                        className="gap-2 text-xs font-semibold uppercase tracking-wider"
                     >
                         <Save className="w-4 h-4" />
                         Save & Finish

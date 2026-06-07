@@ -15,7 +15,6 @@ import {
 import {Button} from '@/components/ui/button';
 import {Input} from '@/components/ui/input';
 import api from '@/lib/axios';
-import {useAuth} from '@/context/AuthContext';
 
 const FILTERS = [
     {key: 'all', label: 'All'},
@@ -66,7 +65,6 @@ function getTimeUntil(iso) {
     return `${mins}m`;
 }
 
-// ─── Skeleton Card ───────────────────────────────────────────────────────
 function SkeletonCard() {
     return (
         <div className="rounded-xl border border-border p-5 space-y-3">
@@ -86,7 +84,6 @@ function SkeletonCard() {
     );
 }
 
-// ─── Contest Card ────────────────────────────────────────────────────────
 function ContestCard({contest, onDelete}) {
     const navigate = useNavigate();
     const status = getContestStatus(contest);
@@ -120,10 +117,8 @@ function ContestCard({contest, onDelete}) {
             onClick={() => navigate(`/design-contest/contest/${contest.id}`)}
         >
             <div className="p-5">
-                {/* Top row: status + actions */}
                 <div className="flex items-start justify-between gap-3 mb-3">
                     <div className="flex items-center gap-3 min-w-0 flex-1">
-                        {/* Division badge */}
                         <div
                             className={`div-badge-${contest.division} flex items-center justify-center w-10 h-10 rounded-lg text-xs font-bold shrink-0`}
                         >
@@ -141,7 +136,7 @@ function ContestCard({contest, onDelete}) {
                                     {status}
                                 </span>
                                 {timeUntil && (
-                                    <span className="text-xs text-muted-foreground">
+                                    <span className="text-xs text-muted-foreground font-mono">
                                         · starts in {timeUntil}
                                     </span>
                                 )}
@@ -149,7 +144,6 @@ function ContestCard({contest, onDelete}) {
                         </div>
                     </div>
 
-                    {/* Actions */}
                     <div className="flex items-center gap-1.5 shrink-0">
                         <Button
                             id={`delete-contest-${contest.id}`}
@@ -166,38 +160,36 @@ function ContestCard({contest, onDelete}) {
                     </div>
                 </div>
 
-                {/* Info row */}
-                <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-muted-foreground">
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-muted-foreground font-mono">
                     <span className="inline-flex items-center gap-1">
-                        <Calendar className="w-3 h-3" />
+                        <Calendar className="w-3 h-3 text-muted-foreground/60" />
                         {formatDateTime(contest.contest_start_time)}
                     </span>
                     <span className="inline-flex items-center gap-1">
-                        <Clock className="w-3 h-3" />
+                        <Clock className="w-3 h-3 text-muted-foreground/60" />
                         {(() => {
                             const dur =
                                 (new Date(contest.contest_end_time) -
                                     new Date(contest.contest_start_time)) /
                                 60000;
                             return dur >= 60
-                                ? `${Math.floor(dur / 60)}h ${dur % 60 ? `${dur % 60}m` : ''}`
+                               ? `${Math.floor(dur / 60)}h ${dur % 60 ? `${dur % 60}m` : ''}`
                                 : `${dur}m`;
                         })()}
                     </span>
                     {contest.isVerified ? (
-                        <span className="inline-flex items-center gap-1 text-green-600">
+                        <span className="inline-flex items-center gap-1 text-emerald-500 font-semibold font-sans">
                             <Shield className="w-3 h-3" />
                             Verified
                         </span>
                     ) : (
-                        <span className="inline-flex items-center gap-1 text-amber-600">
+                        <span className="inline-flex items-center gap-1 text-amber-500 font-semibold font-sans">
                             <ShieldOff className="w-3 h-3" />
                             Pending Review
                         </span>
                     )}
                 </div>
 
-                {/* Description preview */}
                 {contest.description && (
                     <p className="text-xs text-muted-foreground mt-2 line-clamp-1">
                         {contest.description}
@@ -208,10 +200,8 @@ function ContestCard({contest, onDelete}) {
     );
 }
 
-// ─── Main Page ───────────────────────────────────────────────────────────
 export default function ContestListPage() {
     const navigate = useNavigate();
-    const {user} = useAuth();
     const [contests, setContests] = useState([]);
     const [loading, setLoading] = useState(true);
     const [filter, setFilter] = useState('all');
@@ -239,13 +229,10 @@ export default function ContestListPage() {
         setContests((prev) => prev.filter((c) => c.id !== id));
     };
 
-    // Apply filters
     const filtered = contests.filter((c) => {
-        // Text search
         if (search && !c.title.toLowerCase().includes(search.toLowerCase()))
             return false;
 
-        // Status filter
         const status = getContestStatus(c);
         switch (filter) {
             case 'upcoming':
@@ -263,7 +250,6 @@ export default function ContestListPage() {
         }
     });
 
-    // Count per filter for badges
     const counts = {};
     FILTERS.forEach(({key}) => {
         counts[key] = contests.filter((c) => {
@@ -287,12 +273,11 @@ export default function ContestListPage() {
 
     return (
         <div className="min-h-screen bg-background">
-            {/* Page header */}
             <div className="border-b border-border bg-card/50">
                 <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
                     <div className="flex items-start justify-between gap-4">
                         <div>
-                            <h1 className="text-2xl font-bold tracking-tight text-foreground">
+                            <h1 className="text-2xl md:text-3xl font-serif font-semibold tracking-tight text-foreground">
                                 My Contests
                             </h1>
                             <p className="text-sm text-muted-foreground mt-1">
@@ -305,7 +290,7 @@ export default function ContestListPage() {
                             onClick={() =>
                                 navigate('/design-contest/contest/new')
                             }
-                            className="gap-2 shrink-0"
+                            className="gap-2 shrink-0 text-xs font-semibold uppercase tracking-wider"
                         >
                             <Plus className="w-4 h-4" />
                             New Contest
@@ -315,9 +300,7 @@ export default function ContestListPage() {
             </div>
 
             <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 space-y-6">
-                {/* Search + Filters */}
                 <div className="space-y-4">
-                    {/* Search bar */}
                     <div className="relative max-w-sm">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
                         <Input
@@ -329,7 +312,6 @@ export default function ContestListPage() {
                         />
                     </div>
 
-                    {/* Filter tabs */}
                     <div className="flex items-center gap-1 border-b border-border overflow-x-auto pb-0">
                         {FILTERS.map(({key, label}) => (
                             <button
@@ -345,7 +327,7 @@ export default function ContestListPage() {
                                 {label}
                                 {counts[key] > 0 && (
                                     <span
-                                        className={`ml-1.5 text-xs px-1.5 py-0.5 rounded-full ${
+                                        className={`ml-1.5 text-xs font-mono px-1.5 py-0.5 rounded-full ${
                                             filter === key
                                                 ? 'bg-primary/10 text-primary'
                                                 : 'bg-muted text-muted-foreground'
@@ -359,7 +341,6 @@ export default function ContestListPage() {
                     </div>
                 </div>
 
-                {/* Contest grid */}
                 {loading ? (
                     <div className="grid gap-4 sm:grid-cols-2">
                         {[1, 2, 3, 4].map((i) => (
@@ -376,7 +357,7 @@ export default function ContestListPage() {
                         </p>
                         {contests.length === 0 && (
                             <Button
-                                className="mt-4 gap-2"
+                                className="mt-4 gap-2 text-xs font-semibold uppercase tracking-wider"
                                 onClick={() =>
                                     navigate('/design-contest/contest/new')
                                 }

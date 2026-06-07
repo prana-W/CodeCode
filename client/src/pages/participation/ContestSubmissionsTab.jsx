@@ -1,4 +1,4 @@
-import {useState, useEffect, useCallback} from 'react';
+import {useState, useEffect} from 'react';
 import {useParams, useOutletContext, useLocation} from 'react-router-dom';
 import {toast} from 'sonner';
 import {RefreshCcw, Loader2, Code2, ListChecks} from 'lucide-react';
@@ -49,12 +49,10 @@ export default function ContestSubmissionsTab() {
         let timeoutId;
 
         if (autoRefresh) {
-            // Auto refresh every 5 seconds
             intervalId = setInterval(() => {
                 fetchSubmissions(true);
             }, 5000);
 
-            // Stop auto-refresh after 30 seconds
             timeoutId = setTimeout(() => {
                 clearInterval(intervalId);
             }, 30000);
@@ -69,7 +67,7 @@ export default function ContestSubmissionsTab() {
     return (
         <div className="space-y-4">
             <div className="flex items-center justify-between">
-                <h2 className="text-lg font-bold flex items-center gap-2">
+                <h2 className="text-lg font-serif font-semibold flex items-center gap-2">
                     <ListChecks className="w-5 h-5 text-primary" />
                     My Submissions
                 </h2>
@@ -78,7 +76,7 @@ export default function ContestSubmissionsTab() {
                     size="sm"
                     onClick={() => fetchSubmissions(true)}
                     disabled={refreshing || loading}
-                    className="gap-2"
+                    className="gap-2 text-xs font-semibold uppercase tracking-wider"
                 >
                     <RefreshCcw
                         className={`w-3.5 h-3.5 ${refreshing ? 'animate-spin' : ''}`}
@@ -133,7 +131,7 @@ export default function ContestSubmissionsTab() {
                                     <td className="px-6 py-3 font-mono text-xs text-muted-foreground">
                                         #{sub.submission_id}
                                     </td>
-                                    <td className="px-6 py-3 text-sm">
+                                    <td className="px-6 py-3 text-xs font-mono text-foreground">
                                         {formatDate(sub.submitted_at)}
                                     </td>
                                     <td className="px-6 py-3 text-sm text-center capitalize">
@@ -148,19 +146,19 @@ export default function ContestSubmissionsTab() {
                                             );
                                             return (
                                                 <span
-                                                    className={`inline-flex px-2 py-1 rounded text-xs ${v.colorClass}`}
+                                                    className={`inline-flex px-2 py-0.5 rounded text-xs font-semibold font-mono ${v.colorClass}`}
                                                 >
                                                     {v.label}
                                                 </span>
                                             );
                                         })()}
                                     </td>
-                                    <td className="px-6 py-3 text-sm text-center font-mono">
+                                    <td className="px-6 py-3 text-xs text-center font-mono text-foreground">
                                         {sub.execution_time_ms != null
                                             ? `${sub.execution_time_ms} ms`
                                             : '-'}
                                     </td>
-                                    <td className="px-6 py-3 text-sm text-center font-mono">
+                                    <td className="px-6 py-3 text-xs text-center font-mono text-foreground">
                                         {sub.memory_used_kb != null
                                             ? `${sub.memory_used_kb} KB`
                                             : '-'}

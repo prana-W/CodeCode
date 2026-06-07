@@ -3,22 +3,19 @@ import {useNavigate} from 'react-router-dom';
 import {toast} from 'sonner';
 import {
     Trophy,
-    Calendar,
-    Clock,
-    Shield,
-    Users,
     LogIn,
     LogOut as LogOutIcon,
     ChevronRight,
     Timer,
     ArrowUpDown,
+    Users,
+    Shield,
 } from 'lucide-react';
 import {Button} from '@/components/ui/button';
 import api from '@/lib/axios';
 import {useAuth} from '@/context/AuthContext';
 import {DIV_LABELS} from '@/constants/ratings';
 
-// ─── Helpers ─────────────────────────────────────────────────────────────
 const REGISTRATION_WINDOW_MINUTES = 30;
 
 function getContestStatus(contest) {
@@ -98,7 +95,6 @@ function getTimeRemaining(iso) {
     return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
 }
 
-// ─── Skeleton Row ────────────────────────────────────────────────────────
 function SkeletonRow() {
     return (
         <tr>
@@ -121,7 +117,6 @@ function SkeletonRow() {
     );
 }
 
-// ─── Contest Row ─────────────────────────────────────────────────────────
 function ContestRow({contest, regStatus, onRegister, onUnregister}) {
     const navigate = useNavigate();
     const {user} = useAuth();
@@ -129,7 +124,6 @@ function ContestRow({contest, regStatus, onRegister, onUnregister}) {
     const [acting, setActing] = useState(false);
     const [, setTick] = useState(0);
 
-    // Tick every second for live countdown
     useEffect(() => {
         if (status !== 'upcoming' && status !== 'running') return;
         const interval = setInterval(() => setTick((t) => t + 1), 1000);
@@ -194,7 +188,6 @@ function ContestRow({contest, regStatus, onRegister, onUnregister}) {
                 status === 'running' ? 'bg-green-500/5' : ''
             }`}
         >
-            {/* Title + Author */}
             <td className="px-4 py-3.5">
                 <div className="flex items-center gap-3">
                     <div
@@ -206,18 +199,18 @@ function ContestRow({contest, regStatus, onRegister, onUnregister}) {
                         <div className="font-semibold text-foreground text-sm leading-tight truncate max-w-[300px]">
                             {contest.title}
                         </div>
-                        <div className="flex items-center gap-2 mt-0.5">
+                        <div className="flex items-center gap-2 mt-1">
                             <span className="text-xs text-muted-foreground">
                                 By {contest.authored_by_name}
                             </span>
                             <span className={`status-dot status-${status}`} />
                             {status === 'upcoming' && timeUntilStart && (
-                                <span className="text-xs text-amber-600 font-medium">
+                                <span className="text-xs text-amber-500 font-semibold font-mono">
                                     in {timeUntilStart}
                                 </span>
                             )}
                             {status === 'running' && remaining && (
-                                <span className="text-xs text-green-600 font-medium font-mono">
+                                <span className="text-xs text-emerald-500 font-semibold font-mono">
                                     {remaining} left
                                 </span>
                             )}
@@ -227,8 +220,8 @@ function ContestRow({contest, regStatus, onRegister, onUnregister}) {
                                         •
                                     </span>
                                     <Users className="w-3.5 h-3.5 text-muted-foreground/60" />
-                                    <span>
-                                        {regStatus.total_registered} registered
+                                    <span className="font-mono">
+                                        {regStatus.total_registered}
                                     </span>
                                 </span>
                             )}
@@ -237,7 +230,6 @@ function ContestRow({contest, regStatus, onRegister, onUnregister}) {
                 </div>
             </td>
 
-            {/* Division */}
             <td className="px-4 py-3.5 text-center">
                 <span
                     className={`div-badge-${contest.division} text-[10px] font-bold px-2 py-0.5 rounded-md`}
@@ -246,19 +238,17 @@ function ContestRow({contest, regStatus, onRegister, onUnregister}) {
                 </span>
             </td>
 
-            {/* Start Time */}
             <td className="px-4 py-3.5 text-center">
-                <div className="text-sm text-foreground">
+                <div className="text-sm text-foreground font-mono">
                     {formatDate(contest.contest_start_time)}
                 </div>
-                <div className="text-xs text-muted-foreground">
+                <div className="text-xs text-muted-foreground font-mono">
                     {formatTime(contest.contest_start_time)}
                 </div>
             </td>
 
-            {/* Duration */}
             <td className="px-4 py-3.5 text-center">
-                <span className="inline-flex items-center gap-1 text-sm text-muted-foreground">
+                <span className="inline-flex items-center gap-1 text-sm text-muted-foreground font-mono">
                     <Timer className="w-3.5 h-3.5" />
                     {formatDuration(
                         contest.contest_start_time,
@@ -267,7 +257,6 @@ function ContestRow({contest, regStatus, onRegister, onUnregister}) {
                 </span>
             </td>
 
-            {/* Action */}
             <td className="px-4 py-3.5 text-center">
                 {!user ? (
                     <Button
@@ -312,7 +301,7 @@ function ContestRow({contest, regStatus, onRegister, onUnregister}) {
                         {acting ? 'Cancelling…' : 'Unregister'}
                     </Button>
                 ) : isRegistered && status === 'upcoming' ? (
-                    <span className="inline-flex items-center gap-1 text-xs text-green-600 font-medium px-2 py-1 bg-green-500/10 rounded-md">
+                    <span className="inline-flex items-center gap-1 text-xs text-emerald-500 font-semibold px-2 py-1 bg-emerald-500/10 rounded-md">
                         <Shield className="w-3 h-3" />
                         Registered
                     </span>
@@ -332,11 +321,10 @@ function ContestRow({contest, regStatus, onRegister, onUnregister}) {
     );
 }
 
-// ─── Main Page ───────────────────────────────────────────────────────────
 export default function ContestsPage() {
     const {user} = useAuth();
     const [contests, setContests] = useState([]);
-    const [regMap, setRegMap] = useState({}); // { contest_id: { is_registered, registered_at } }
+    const [regMap, setRegMap] = useState({});
     const [loading, setLoading] = useState(true);
     const [sortField, setSortField] = useState('start');
     const [sortDir, setSortDir] = useState('asc');
@@ -347,7 +335,6 @@ export default function ContestsPage() {
             try {
                 const res = await api.get('/contests');
                 const all = res.data.data || [];
-                // Only show verified contests that haven't ended more than 7 days ago
                 const now = new Date();
                 const cutoff = new Date(now.getTime() - 7 * 86400000);
                 const visible = all.filter(
@@ -355,7 +342,6 @@ export default function ContestsPage() {
                 );
                 setContests(visible);
 
-                // Fetch registration status for each contest if user is logged in
                 if (user) {
                     const statuses = {};
                     await Promise.all(
@@ -422,7 +408,6 @@ export default function ContestsPage() {
         }
     };
 
-    // Categorize and sort
     const {upcoming, running, past} = useMemo(() => {
         const groups = {upcoming: [], running: [], past: []};
         contests.forEach((c) => {
@@ -457,7 +442,7 @@ export default function ContestsPage() {
         groups.past.sort(
             (a, b) =>
                 new Date(b.contest_start_time) - new Date(a.contest_start_time)
-        ); // past = newest first always
+        );
 
         return groups;
     }, [contests, sortField, sortDir]);
@@ -478,7 +463,6 @@ export default function ContestsPage() {
 
     return (
         <div className="min-h-screen bg-background">
-            {/* Page Header */}
             <div className="border-b border-border bg-card/50">
                 <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
                     <div className="flex items-center gap-3">
@@ -486,10 +470,10 @@ export default function ContestsPage() {
                             <Trophy className="w-5 h-5 text-primary-foreground" />
                         </div>
                         <div>
-                            <h1 className="text-2xl font-bold tracking-tight text-foreground">
+                            <h1 className="text-2xl md:text-3xl font-semibold tracking-tight text-foreground">
                                 Contests
                             </h1>
-                            <p className="text-sm text-muted-foreground mt-0.5">
+                            <p className="text-sm text-muted-foreground mt-1">
                                 Competitive programming contests on CodeCode
                             </p>
                         </div>
@@ -536,18 +520,17 @@ export default function ContestsPage() {
                     </div>
                 ) : (
                     <>
-                        {/* Running Contests */}
                         {running.length > 0 && (
                             <section>
                                 <div className="flex items-center gap-2 mb-3">
                                     <span className="status-dot status-running" />
-                                    <h2 className="text-sm font-bold text-green-600 uppercase tracking-wider">
+                                    <h2 className="text-xs font-bold text-emerald-500 uppercase tracking-wider font-mono">
                                         Running Now ({running.length})
                                     </h2>
                                 </div>
-                                <div className="rounded-xl border border-green-500/30 overflow-hidden bg-green-500/5">
+                                <div className="rounded-xl border border-emerald-500/20 overflow-hidden bg-emerald-500/5">
                                     <table className="w-full">
-                                        <thead className="bg-green-500/10">
+                                        <thead className="bg-emerald-500/10">
                                             <tr>
                                                 <SortHeader
                                                     field="title"
@@ -596,12 +579,11 @@ export default function ContestsPage() {
                             </section>
                         )}
 
-                        {/* Upcoming Contests */}
                         {upcoming.length > 0 && (
                             <section>
                                 <div className="flex items-center gap-2 mb-3">
                                     <span className="status-dot status-upcoming" />
-                                    <h2 className="text-sm font-bold text-amber-600 uppercase tracking-wider">
+                                    <h2 className="text-xs font-bold text-amber-500 uppercase tracking-wider font-mono">
                                         Upcoming ({upcoming.length})
                                     </h2>
                                 </div>
@@ -656,12 +638,11 @@ export default function ContestsPage() {
                             </section>
                         )}
 
-                        {/* Past Contests */}
                         {past.length > 0 && (
                             <section>
                                 <div className="flex items-center gap-2 mb-3">
                                     <span className="status-dot status-past" />
-                                    <h2 className="text-sm font-bold text-muted-foreground uppercase tracking-wider">
+                                    <h2 className="text-xs font-bold text-muted-foreground uppercase tracking-wider font-mono">
                                         Recent ({past.length})
                                     </h2>
                                 </div>

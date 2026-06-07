@@ -42,7 +42,7 @@ export default function ContestParticipationLayout() {
         return (
             <div className="min-h-screen bg-background flex flex-col items-center justify-center">
                 <Loader2 className="w-8 h-8 animate-spin text-primary" />
-                <p className="mt-4 text-sm text-muted-foreground">
+                <p className="mt-4 text-sm text-muted-foreground font-mono">
                     Loading contest...
                 </p>
             </div>
@@ -82,7 +82,7 @@ export default function ContestParticipationLayout() {
                         variant="ghost"
                         size="sm"
                         onClick={() => navigate('/contests')}
-                        className="gap-2 -ml-3 mb-4"
+                        className="gap-2 -ml-3 mb-4 text-xs font-semibold uppercase tracking-wider"
                     >
                         <ArrowLeft className="w-4 h-4" /> Back to Contests
                     </Button>
@@ -93,7 +93,7 @@ export default function ContestParticipationLayout() {
                             D{contest.division}
                         </div>
                         <div>
-                            <h1 className="text-2xl font-bold tracking-tight text-foreground">
+                            <h1 className="text-2xl md:text-3xl font-semibold tracking-tight text-foreground">
                                 {contest.title}
                             </h1>
                             <p className="text-sm text-muted-foreground mt-0.5">
@@ -103,7 +103,6 @@ export default function ContestParticipationLayout() {
                     </div>
                 </div>
 
-                {/* Sub-navbar */}
                 <div className="max-w-6xl mx-auto px-4 sm:px-6">
                     <nav className="flex items-center gap-6 overflow-x-auto">
                         {navItems.map((item) => (

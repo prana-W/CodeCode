@@ -45,16 +45,13 @@ export default function ContestEditPage() {
     const [deleting, setDeleting] = useState(false);
     const [contestData, setContestData] = useState(null);
 
-    // Helper to format date for datetime-local input in local timezone
     const formatForDatetimeLocal = (dateString) => {
         if (!dateString) return '';
         const d = new Date(dateString);
-        // Adjust for local timezone
         const offset = d.getTimezoneOffset() * 60000;
         return new Date(d.getTime() - offset).toISOString().slice(0, 16);
     };
 
-    // Fetch existing contest
     useEffect(() => {
         if (isNew) return;
         const fetchContest = async () => {
@@ -203,16 +200,14 @@ export default function ContestEditPage() {
 
     return (
         <div className="min-h-screen bg-background">
-            {/* Header with breadcrumbs */}
             <div className="border-b border-border bg-card/50">
                 <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8">
-                    {/* Breadcrumb */}
-                    <nav className="flex items-center mb-4">
-                        <Link to="/design-contest" className="breadcrumb-link">
+                    <nav className="flex items-center mb-4 font-mono text-xs">
+                        <Link to="/design-contest" className="breadcrumb-link text-muted-foreground hover:text-foreground">
                             My Contests
                         </Link>
-                        <span className="breadcrumb-sep">›</span>
-                        <span className="text-sm text-foreground font-medium">
+                        <span className="breadcrumb-sep mx-2 text-muted-foreground/50">›</span>
+                        <span className="text-foreground font-medium">
                             {isNew
                                 ? 'New Contest'
                                 : contestData?.title || 'Edit Contest'}
@@ -224,7 +219,7 @@ export default function ContestEditPage() {
                             <Trophy className="w-5 h-5 text-primary-foreground" />
                         </div>
                         <div>
-                            <h1 className="text-2xl font-bold tracking-tight text-foreground">
+                            <h1 className="text-2xl md:text-3xl font-serif font-semibold tracking-tight text-foreground">
                                 {isNew ? 'Create Contest' : 'Edit Contest'}
                             </h1>
                             <p className="text-sm text-muted-foreground mt-0.5">
@@ -239,11 +234,10 @@ export default function ContestEditPage() {
 
             <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8">
                 <div className="space-y-8">
-                    {/* Title Section */}
                     <section className="space-y-2">
                         <div className="flex items-center gap-2 mb-1">
                             <FileText className="w-4 h-4 text-muted-foreground" />
-                            <h2 className="text-sm font-semibold text-foreground uppercase tracking-wide">
+                            <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                                 Contest Title
                             </h2>
                         </div>
@@ -272,11 +266,10 @@ export default function ContestEditPage() {
                         )}
                     </section>
 
-                    {/* Description Section */}
                     <section className="space-y-2">
                         <Label
                             htmlFor="contest-desc"
-                            className="text-sm font-semibold uppercase tracking-wide flex items-center gap-2"
+                            className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2"
                         >
                             <FileText className="w-4 h-4 text-muted-foreground" />
                             Description
@@ -291,11 +284,10 @@ export default function ContestEditPage() {
                         />
                     </section>
 
-                    {/* Division Section */}
                     <section className="space-y-2">
                         <Label
                             htmlFor="contest-division"
-                            className="text-sm font-semibold uppercase tracking-wide flex items-center gap-2"
+                            className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2"
                         >
                             <Trophy className="w-4 h-4 text-muted-foreground" />
                             Division
@@ -332,7 +324,6 @@ export default function ContestEditPage() {
                         )}
                     </section>
 
-                    {/* AI Assistance Section */}
                     <section className="space-y-2">
                         <div className="flex items-center gap-2">
                             <input
@@ -344,13 +335,13 @@ export default function ContestEditPage() {
                             />
                             <Label
                                 htmlFor="ai-assistance"
-                                className="text-sm font-semibold uppercase tracking-wide flex items-center gap-2 cursor-pointer"
+                                className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2 cursor-pointer"
                             >
                                 Allow AI Assistance
                                 <div className="group relative flex items-center">
                                     <Info className="w-4 h-4 text-muted-foreground hover:text-foreground transition-colors" />
-                                    <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 hidden group-hover:block w-48 bg-popover text-popover-foreground text-xs rounded-md shadow-md p-2 z-10 border border-border">
-                                        give users access to Deco, coding
+                                    <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 hidden group-hover:block w-48 bg-popover text-popover-foreground text-[10px] rounded-md shadow-md p-2 z-10 border border-border">
+                                        Give users access to Deco, coding
                                         assistant tool during the contest
                                     </div>
                                 </div>
@@ -358,9 +349,8 @@ export default function ContestEditPage() {
                         </div>
                     </section>
 
-                    {/* Schedule Section */}
                     <section className="space-y-4">
-                        <h2 className="text-sm font-semibold uppercase tracking-wide flex items-center gap-2">
+                        <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
                             <Calendar className="w-4 h-4 text-muted-foreground" />
                             Schedule
                         </h2>
@@ -368,7 +358,7 @@ export default function ContestEditPage() {
                             <div className="space-y-1.5">
                                 <Label
                                     htmlFor="contest-start"
-                                    className="text-sm flex items-center gap-1.5"
+                                    className="text-xs flex items-center gap-1.5"
                                 >
                                     <Clock className="w-3.5 h-3.5 text-muted-foreground" />
                                     Start Time
@@ -383,7 +373,7 @@ export default function ContestEditPage() {
                             <div className="space-y-1.5">
                                 <Label
                                     htmlFor="contest-end"
-                                    className="text-sm flex items-center gap-1.5"
+                                    className="text-xs flex items-center gap-1.5"
                                 >
                                     <Clock className="w-3.5 h-3.5 text-muted-foreground" />
                                     End Time
@@ -397,7 +387,7 @@ export default function ContestEditPage() {
                             </div>
                         </div>
                         {form.contest_start_time && form.contest_end_time && (
-                            <p className="text-xs text-muted-foreground">
+                            <p className="text-xs text-muted-foreground font-mono">
                                 Duration:{' '}
                                 {(() => {
                                     const dur =
@@ -413,7 +403,6 @@ export default function ContestEditPage() {
                         )}
                     </section>
 
-                    {/* Delete zone (only for existing contests) */}
                     {!isNew && (
                         <section className="pt-4 border-t border-border">
                             <div className="flex items-center justify-between p-4 rounded-lg border border-destructive/20 bg-destructive/5">
@@ -435,7 +424,7 @@ export default function ContestEditPage() {
                                     size="sm"
                                     onClick={handleDelete}
                                     disabled={deleting}
-                                    className="gap-1.5 shrink-0"
+                                    className="gap-1.5 shrink-0 text-xs font-semibold uppercase tracking-wider"
                                 >
                                     <Trash2 className="w-3.5 h-3.5" />
                                     {deleting ? 'Deleting…' : 'Delete'}
@@ -444,12 +433,11 @@ export default function ContestEditPage() {
                         </section>
                     )}
 
-                    {/* Action buttons */}
                     <div className="flex items-center justify-between pt-6 border-t border-border">
                         <Button
                             variant="outline"
                             onClick={() => navigate('/design-contest')}
-                            className="gap-2"
+                            className="gap-2 text-xs font-semibold uppercase tracking-wider"
                         >
                             <LogOut className="w-4 h-4" />
                             Cancel
@@ -460,7 +448,7 @@ export default function ContestEditPage() {
                                 variant="outline"
                                 onClick={() => handleSave(false)}
                                 disabled={saving}
-                                className="gap-2"
+                                className="gap-2 text-xs font-semibold uppercase tracking-wider"
                             >
                                 <Save className="w-4 h-4" />
                                 {saving ? 'Saving…' : 'Save & Exit'}
@@ -469,7 +457,7 @@ export default function ContestEditPage() {
                                 id="save-continue"
                                 onClick={() => handleSave(true)}
                                 disabled={saving}
-                                className="gap-2"
+                                className="gap-2 text-xs font-semibold uppercase tracking-wider"
                             >
                                 {saving ? 'Saving…' : 'Save & Continue'}
                                 <ChevronRight className="w-4 h-4" />

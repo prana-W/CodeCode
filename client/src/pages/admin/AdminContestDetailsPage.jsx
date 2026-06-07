@@ -1,5 +1,5 @@
 import {useState, useEffect} from 'react';
-import {useParams, useNavigate, Link} from 'react-router-dom';
+import {useParams, useNavigate} from 'react-router-dom';
 import {toast} from 'sonner';
 import {
     ShieldCheck,
@@ -16,7 +16,6 @@ import api from '@/lib/axios';
 
 const PROBLEM_LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
-// ─── Problem Testcases Panel ─────────────────────────────────────────────
 function AdminProblemPanel({problem, index}) {
     const [testcases, setTestcases] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -48,20 +47,16 @@ function AdminProblemPanel({problem, index}) {
                 onClick={() => setOpen(!open)}
             >
                 <div className="flex items-center gap-3">
-                    <div className="problem-letter w-7 h-7 text-xs">
+                    <div className="problem-letter w-7 h-7 text-xs font-mono">
                         {PROBLEM_LETTERS[index] || index + 1}
                     </div>
                     <span className="font-semibold text-sm">
                         {problem.title}
                     </span>
                 </div>
-                <div className="flex gap-2">
-                    <span className="text-xs text-muted-foreground">
-                        {problem.score} pts
-                    </span>
-                    <span className="text-xs text-muted-foreground">
-                        {problem.time_limit_ms}ms
-                    </span>
+                <div className="flex gap-2 font-mono text-xs text-muted-foreground">
+                    <span>{problem.score} pts</span>
+                    <span>{problem.time_limit_ms}ms</span>
                 </div>
             </button>
 
@@ -91,7 +86,7 @@ function AdminProblemPanel({problem, index}) {
                             Test Cases
                         </h4>
                         {loading ? (
-                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                            <div className="flex items-center gap-2 text-xs text-muted-foreground font-mono">
                                 <Loader2 className="w-4 h-4 animate-spin" />{' '}
                                 Loading test cases...
                             </div>
@@ -105,7 +100,7 @@ function AdminProblemPanel({problem, index}) {
                             </div>
                         ) : (
                             <div className="space-y-3">
-                                {testcases.map((tc, tcIdx) => (
+                                {testcases.map((tc) => (
                                     <div
                                         key={tc.test_case_id}
                                         className="grid grid-cols-2 gap-3 border border-border rounded-lg p-3 bg-muted/20"
@@ -138,7 +133,6 @@ function AdminProblemPanel({problem, index}) {
     );
 }
 
-// ─── Main Page ───────────────────────────────────────────────────────────
 export default function AdminContestDetailsPage() {
     const {id} = useParams();
     const navigate = useNavigate();
@@ -158,7 +152,6 @@ export default function AdminContestDetailsPage() {
                     const probRes = await api.get(`/problems?contest_id=${id}`);
                     setProblems(probRes.data.data || []);
                 } catch (probErr) {
-                    // API returns 404 or empty if no problems, handle gracefully
                     setProblems([]);
                 }
             } catch (err) {
@@ -202,7 +195,7 @@ export default function AdminContestDetailsPage() {
         return (
             <div className="min-h-screen bg-background flex flex-col items-center justify-center">
                 <Loader2 className="w-8 h-8 animate-spin text-primary" />
-                <p className="mt-4 text-sm text-muted-foreground">
+                <p className="mt-4 text-sm text-muted-foreground font-mono">
                     Loading contest details...
                 </p>
             </div>
@@ -219,7 +212,7 @@ export default function AdminContestDetailsPage() {
                         variant="ghost"
                         size="sm"
                         onClick={() => navigate('/admin/verify-contests')}
-                        className="gap-2 -ml-3 mb-4"
+                        className="gap-2 -ml-3 mb-4 text-xs font-semibold uppercase tracking-wider"
                     >
                         <ArrowLeft className="w-4 h-4" /> Back to Contests
                     </Button>
@@ -231,7 +224,7 @@ export default function AdminContestDetailsPage() {
                                 D{contest.division}
                             </div>
                             <div>
-                                <h1 className="text-2xl font-bold tracking-tight text-foreground">
+                                <h1 className="text-2xl md:text-3xl font-serif font-semibold tracking-tight text-foreground">
                                     {contest.title}
                                 </h1>
                                 <p className="text-sm text-muted-foreground mt-0.5">
@@ -245,7 +238,7 @@ export default function AdminContestDetailsPage() {
                             variant={
                                 contest.isVerified ? 'destructive' : 'default'
                             }
-                            className="gap-2"
+                            className="gap-2 text-xs font-semibold uppercase tracking-wider"
                         >
                             {contest.isVerified ? (
                                 <XCircle className="w-4 h-4" />
@@ -255,7 +248,7 @@ export default function AdminContestDetailsPage() {
                             {verifying
                                 ? 'Updating...'
                                 : contest.isVerified
-                                  ? 'Unverify Contest'
+                                  ? 'Unverify'
                                   : 'Verify Contest'}
                         </Button>
                     </div>
@@ -263,7 +256,6 @@ export default function AdminContestDetailsPage() {
             </div>
 
             <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 space-y-8">
-                {/* Contest Metadata */}
                 <section className="grid sm:grid-cols-3 gap-4">
                     <div className="bg-card border border-border rounded-xl p-4">
                         <div className="flex items-center gap-2 text-muted-foreground mb-1">
@@ -272,7 +264,7 @@ export default function AdminContestDetailsPage() {
                                 Start Time
                             </span>
                         </div>
-                        <div className="font-medium">
+                        <div className="font-mono text-sm">
                             {new Date(
                                 contest.contest_start_time
                             ).toLocaleString()}
@@ -285,7 +277,7 @@ export default function AdminContestDetailsPage() {
                                 End Time
                             </span>
                         </div>
-                        <div className="font-medium">
+                        <div className="font-mono text-sm">
                             {new Date(
                                 contest.contest_end_time
                             ).toLocaleString()}
@@ -299,18 +291,18 @@ export default function AdminContestDetailsPage() {
                             </span>
                         </div>
                         <div
-                            className={`font-medium ${contest.isVerified ? 'text-green-600' : 'text-amber-600'}`}
+                            className={`font-semibold text-sm ${contest.isVerified ? 'text-emerald-500' : 'text-amber-500'}`}
                         >
                             {contest.isVerified
                                 ? 'Verified'
-                                : 'Unverified (Pending Review)'}
+                                : 'Pending Review'}
                         </div>
                     </div>
                 </section>
 
                 {contest.description && (
                     <section className="bg-card border border-border rounded-xl p-5 space-y-2">
-                        <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+                        <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                             Description
                         </h3>
                         <p className="text-sm text-foreground whitespace-pre-wrap">
@@ -319,11 +311,10 @@ export default function AdminContestDetailsPage() {
                     </section>
                 )}
 
-                {/* Problems List */}
                 <section className="space-y-4">
                     <div className="flex items-center gap-2 border-b border-border pb-2">
                         <Trophy className="w-5 h-5 text-primary" />
-                        <h2 className="text-lg font-bold">
+                        <h2 className="text-lg font-bold font-serif">
                             Problems ({problems.length})
                         </h2>
                     </div>

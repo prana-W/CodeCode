@@ -1,7 +1,6 @@
 import {useState, useEffect} from 'react';
 import {useParams, useNavigate, useOutletContext} from 'react-router-dom';
-import {toast} from 'sonner';
-import {Trophy, FileText, CheckCircle2, Loader2, BarChart2} from 'lucide-react';
+import {Trophy, CheckCircle2, BarChart2} from 'lucide-react';
 import api from '@/lib/axios';
 
 const PROBLEM_LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
@@ -10,7 +9,7 @@ export default function ContestProblemsTab() {
     const {id} = useParams();
     const {problems} = useOutletContext();
     const navigate = useNavigate();
-    const [countsMap, setCountsMap] = useState({}); // { problem_id: count }
+    const [countsMap, setCountsMap] = useState({});
     const [solvedSet, setSolvedSet] = useState(new Set());
 
     useEffect(() => {
@@ -21,7 +20,7 @@ export default function ContestProblemsTab() {
                 );
                 setSolvedSet(new Set(res.data.data || []));
             } catch (err) {
-                // Ignore silent error
+                // silent fail
             }
         };
         fetchSolved();
@@ -41,12 +40,12 @@ export default function ContestProblemsTab() {
                 });
                 setCountsMap(newMap);
             } catch (err) {
-                // Ignore silent errors for polling
+                // silent fail
             }
         };
 
         fetchCounts();
-        const interval = setInterval(fetchCounts, 60000); // Auto-update every 1 minute
+        const interval = setInterval(fetchCounts, 60000);
         return () => clearInterval(interval);
     }, [id, problems]);
 
@@ -99,7 +98,7 @@ export default function ContestProblemsTab() {
                                 <td className="px-6 py-4 text-center relative">
                                     {isSolved && (
                                         <div className="absolute left-3 top-1/2 -translate-y-1/2">
-                                            <CheckCircle2 className="w-4 h-4 text-green-500" />
+                                            <CheckCircle2 className="w-4 h-4 text-emerald-500" />
                                         </div>
                                     )}
                                     <span className="inline-flex items-center justify-center w-6 h-6 rounded font-bold text-sm bg-primary/10 text-primary">
@@ -111,19 +110,19 @@ export default function ContestProblemsTab() {
                                         {prob.title}
                                     </div>
                                     <div className="flex items-center gap-3 mt-1">
-                                        <span className="text-xs text-muted-foreground">
+                                        <span className="text-xs text-muted-foreground font-mono">
                                             Time limit: {prob.time_limit_ms} ms
                                         </span>
-                                        <span className="text-xs text-muted-foreground">
+                                        <span className="text-xs text-muted-foreground font-mono">
                                             Memory: {prob.memory_limit_mb} MB
                                         </span>
-                                        <span className="text-xs text-muted-foreground font-medium text-amber-600">
+                                        <span className="text-xs text-emerald-500 font-semibold font-mono">
                                             {prob.score} pts
                                         </span>
                                     </div>
                                 </td>
                                 <td className="px-6 py-4 text-center">
-                                    <div className="flex items-center justify-center gap-1.5 text-sm font-medium text-muted-foreground">
+                                    <div className="flex items-center justify-center gap-1.5 text-sm font-medium text-muted-foreground font-mono">
                                         {submissions}
                                     </div>
                                 </td>

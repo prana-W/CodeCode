@@ -3,8 +3,6 @@ import {useNavigate} from 'react-router-dom';
 import {toast} from 'sonner';
 import {
     ShieldCheck,
-    Calendar,
-    Clock,
     ChevronRight,
     Search,
     ArrowUpDown,
@@ -31,7 +29,6 @@ function formatTime(iso) {
     });
 }
 
-// ─── Skeleton Row ────────────────────────────────────────────────────────
 function SkeletonRow() {
     return (
         <tr>
@@ -54,13 +51,11 @@ function SkeletonRow() {
     );
 }
 
-// ─── Contest Row ─────────────────────────────────────────────────────────
 function ContestRow({contest}) {
     const navigate = useNavigate();
 
     return (
         <tr className="group border-b border-border transition-colors hover:bg-muted/30">
-            {/* Title + Author */}
             <td className="px-4 py-3.5">
                 <div className="flex items-center gap-3">
                     <div
@@ -79,39 +74,35 @@ function ContestRow({contest}) {
                 </div>
             </td>
 
-            {/* Division */}
             <td className="px-4 py-3.5 text-center">
-                <span className="text-xs font-medium text-foreground">
+                <span className="text-xs font-semibold text-foreground font-mono">
                     Div. {contest.division}
                 </span>
             </td>
 
-            {/* Start Time */}
-            <td className="px-4 py-3.5 text-center">
-                <div className="text-sm text-foreground">
+            <td className="px-4 py-3.5 text-center font-mono">
+                <div className="text-xs text-foreground">
                     {formatDate(contest.contest_start_time)}
                 </div>
-                <div className="text-xs text-muted-foreground">
+                <div className="text-[10px] text-muted-foreground mt-0.5">
                     {formatTime(contest.contest_start_time)}
                 </div>
             </td>
 
-            {/* Status */}
             <td className="px-4 py-3.5 text-center">
                 {contest.isVerified ? (
-                    <span className="inline-flex items-center gap-1 text-xs text-green-600 font-medium px-2 py-1 bg-green-500/10 rounded-md">
+                    <span className="inline-flex items-center gap-1 text-[11px] text-emerald-500 font-semibold px-2 py-0.5 bg-emerald-500/10 rounded-md">
                         <ShieldCheck className="w-3 h-3" />
                         Verified
                     </span>
                 ) : (
-                    <span className="inline-flex items-center gap-1 text-xs text-amber-600 font-medium px-2 py-1 bg-amber-500/10 rounded-md">
+                    <span className="inline-flex items-center gap-1 text-[11px] text-amber-500 font-semibold px-2 py-0.5 bg-amber-500/10 rounded-md">
                         <Filter className="w-3 h-3" />
                         Unverified
                     </span>
                 )}
             </td>
 
-            {/* Action */}
             <td className="px-4 py-3.5 text-center">
                 <Button
                     size="sm"
@@ -119,15 +110,15 @@ function ContestRow({contest}) {
                     onClick={() =>
                         navigate(`/admin/verify-contests/${contest.id}`)
                     }
-                    className="gap-1.5 text-xs"
+                    className="gap-1.5 text-xs font-semibold uppercase tracking-wider"
                 >
                     {contest.isVerified ? (
                         <>
-                            <Eye className="w-3 h-3" /> View
+                            <Eye className="w-3.5 h-3.5" /> View
                         </>
                     ) : (
                         <>
-                            Review <ChevronRight className="w-3 h-3" />
+                            Review <ChevronRight className="w-3.5 h-3.5" />
                         </>
                     )}
                 </Button>
@@ -136,7 +127,6 @@ function ContestRow({contest}) {
     );
 }
 
-// ─── Main Page ───────────────────────────────────────────────────────────
 export default function VerifyContestsPage() {
     const [contests, setContests] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -240,7 +230,7 @@ export default function VerifyContestsPage() {
                             <ShieldCheck className="w-5 h-5 text-primary-foreground" />
                         </div>
                         <div>
-                            <h1 className="text-2xl font-bold tracking-tight text-foreground">
+                            <h1 className="text-2xl md:text-3xl font-serif font-semibold tracking-tight text-foreground">
                                 Admin: Verify Contests
                             </h1>
                             <p className="text-sm text-muted-foreground mt-0.5">
@@ -254,7 +244,6 @@ export default function VerifyContestsPage() {
 
             <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 space-y-6">
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                    {/* Filter Tabs */}
                     <div className="flex items-center gap-1 border-b border-border pb-0 w-full sm:w-auto overflow-x-auto">
                         {[
                             {key: 'all', label: 'All'},
@@ -272,7 +261,7 @@ export default function VerifyContestsPage() {
                             >
                                 {label}
                                 <span
-                                    className={`ml-1.5 text-xs px-1.5 py-0.5 rounded-full ${
+                                    className={`ml-1.5 text-xs font-mono px-1.5 py-0.5 rounded-full ${
                                         filter === key
                                             ? 'bg-primary/10 text-primary'
                                             : 'bg-muted text-muted-foreground'
@@ -284,7 +273,6 @@ export default function VerifyContestsPage() {
                         ))}
                     </div>
 
-                    {/* Search */}
                     <div className="relative w-full sm:w-72">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
                         <Input

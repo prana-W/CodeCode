@@ -4,8 +4,15 @@ import {Card} from '@/components/ui/card';
 import {Button} from '@/components/ui/button';
 import {Input} from '@/components/ui/input';
 import api from '@/lib/axios';
+import {useTheme} from '@/components/theme-provider';
 
 export default function HelpPanel({contest}) {
+    const {theme} = useTheme();
+    const isDark =
+        theme === 'dark' ||
+        (theme === 'system' &&
+            window.matchMedia('(prefers-color-scheme: dark)').matches);
+
     const isPastEnd =
         contest && new Date(contest.contest_end_time) < new Date();
     const allowAI = contest ? isPastEnd || contest.ai_assistance : false;
@@ -208,6 +215,7 @@ export default function HelpPanel({contest}) {
                                     src="https://en.m.wikipedia.org/wiki/Competitive_programming"
                                     title="Wikipedia"
                                     className="w-full flex-1 border-0 bg-white dark:bg-zinc-900"
+                                    style={isDark ? {filter: 'invert(0.9) hue-rotate(180deg)'} : {}}
                                 />
                             </div>
                         )}

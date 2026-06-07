@@ -33,7 +33,6 @@ const EMPTY_FORM = {
 
 const PROBLEM_LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
-// ─── Problem Card ────────────────────────────────────────────────────────
 function ProblemCard({problem, index, isEditing, onEdit, onDelete, deleting}) {
     return (
         <div
@@ -45,7 +44,7 @@ function ProblemCard({problem, index, isEditing, onEdit, onDelete, deleting}) {
         >
             <div className="p-4">
                 <div className="flex items-start gap-3">
-                    <div className="problem-letter shrink-0 mt-0.5">
+                    <div className="problem-letter shrink-0 mt-0.5 font-mono">
                         {PROBLEM_LETTERS[index] || index + 1}
                     </div>
                     <div className="flex-1 min-w-0">
@@ -82,22 +81,21 @@ function ProblemCard({problem, index, isEditing, onEdit, onDelete, deleting}) {
                     </div>
                 </div>
 
-                {/* Badges */}
-                <div className="flex flex-wrap gap-2 mt-3 ml-11">
+                <div className="flex flex-wrap gap-2 mt-3 ml-11 font-mono text-[11px]">
                     <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-secondary text-secondary-foreground">
-                        <Star className="w-3 h-3" />
+                        <Star className="w-3 h-3 text-amber-500" />
                         {problem.score} pts
                     </span>
                     <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-secondary text-secondary-foreground">
-                        <Hash className="w-3 h-3" />
+                        <Hash className="w-3 h-3 text-blue-500" />
                         Rating {problem.rating}
                     </span>
                     <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-secondary text-secondary-foreground">
-                        <Clock className="w-3 h-3" />
+                        <Clock className="w-3 h-3 text-emerald-500" />
                         {problem.time_limit_ms}ms
                     </span>
                     <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-secondary text-secondary-foreground">
-                        <Cpu className="w-3 h-3" />
+                        <Cpu className="w-3 h-3 text-purple-500" />
                         {problem.memory_limit_mb}MB
                     </span>
                 </div>
@@ -106,7 +104,6 @@ function ProblemCard({problem, index, isEditing, onEdit, onDelete, deleting}) {
     );
 }
 
-// ─── Main Page ───────────────────────────────────────────────────────────
 export default function ProblemsPage() {
     const {contestId} = useParams();
     const navigate = useNavigate();
@@ -121,7 +118,6 @@ export default function ProblemsPage() {
     const [deletingId, setDeletingId] = useState(null);
     const [showForm, setShowForm] = useState(false);
 
-    // Fetch contest info + problems
     useEffect(() => {
         const fetch = async () => {
             setLoading(true);
@@ -236,7 +232,6 @@ export default function ProblemsPage() {
                 toast.success('Problem created.');
             }
 
-            // Refresh problems
             const res = await api.get(`/problems?contest_id=${contestId}`);
             setProblems(res.data.data || []);
             resetForm();
@@ -270,22 +265,21 @@ export default function ProblemsPage() {
 
     return (
         <div className="min-h-screen bg-background">
-            {/* Header */}
             <div className="border-b border-border bg-card/50">
                 <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8">
-                    <nav className="flex items-center mb-4">
-                        <Link to="/design-contest" className="breadcrumb-link">
+                    <nav className="flex items-center mb-4 font-mono text-xs">
+                        <Link to="/design-contest" className="breadcrumb-link text-muted-foreground hover:text-foreground">
                             My Contests
                         </Link>
-                        <span className="breadcrumb-sep">›</span>
+                        <span className="breadcrumb-sep mx-2 text-muted-foreground/50">›</span>
                         <Link
                             to={`/design-contest/contest/${contestId}`}
-                            className="breadcrumb-link"
+                            className="breadcrumb-link text-muted-foreground hover:text-foreground"
                         >
                             {contestTitle}
                         </Link>
-                        <span className="breadcrumb-sep">›</span>
-                        <span className="text-sm text-foreground font-medium">
+                        <span className="breadcrumb-sep mx-2 text-muted-foreground/50">›</span>
+                        <span className="text-foreground font-medium">
                             Problems
                         </span>
                     </nav>
@@ -296,7 +290,7 @@ export default function ProblemsPage() {
                                 <BookOpen className="w-5 h-5 text-primary-foreground" />
                             </div>
                             <div>
-                                <h1 className="text-2xl font-bold tracking-tight text-foreground">
+                                <h1 className="text-2xl md:text-3xl font-serif font-semibold tracking-tight text-foreground">
                                     Problems
                                 </h1>
                                 <p className="text-sm text-muted-foreground mt-0.5">
@@ -309,7 +303,7 @@ export default function ProblemsPage() {
                         <Button
                             id="create-new-problem"
                             onClick={handleCreateNew}
-                            className="gap-2 shrink-0"
+                            className="gap-2 shrink-0 text-xs font-semibold uppercase tracking-wider"
                         >
                             <Plus className="w-4 h-4" />
                             New Problem
@@ -319,14 +313,13 @@ export default function ProblemsPage() {
             </div>
 
             <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8 space-y-8">
-                {/* Problems list */}
                 {problems.length === 0 && !showForm ? (
                     <div className="rounded-xl border border-dashed border-border py-16 text-center">
                         <BookOpen className="w-10 h-10 text-muted-foreground/40 mx-auto mb-3" />
                         <p className="text-sm text-muted-foreground mb-4">
                             No problems yet. Create your first one!
                         </p>
-                        <Button onClick={handleCreateNew} className="gap-2">
+                        <Button onClick={handleCreateNew} className="gap-2 text-xs font-semibold uppercase tracking-wider">
                             <Plus className="w-4 h-4" />
                             Create Problem
                         </Button>
@@ -347,16 +340,15 @@ export default function ProblemsPage() {
                     </div>
                 )}
 
-                {/* Problem Form */}
                 {showForm && (
                     <div ref={formRef} className="space-y-8 pt-4">
                         <div className="flex items-center justify-between">
-                            <h2 className="text-lg font-bold text-foreground">
+                            <h2 className="text-lg font-bold text-foreground font-serif">
                                 {editingId ? 'Edit Problem' : 'New Problem'}
                             </h2>
                             <button
                                 onClick={resetForm}
-                                className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
+                                className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors font-semibold uppercase tracking-wider"
                             >
                                 <X className="w-3.5 h-3.5" />
                                 Cancel
@@ -364,11 +356,10 @@ export default function ProblemsPage() {
                         </div>
 
                         <form onSubmit={handleSubmit} className="space-y-8">
-                            {/* Title */}
                             <section className="space-y-2">
                                 <Label
                                     htmlFor="prob-title"
-                                    className="text-sm font-semibold"
+                                    className="text-xs font-semibold uppercase tracking-wider text-muted-foreground"
                                 >
                                     Problem Title{' '}
                                     <span className="text-destructive">*</span>
@@ -387,16 +378,15 @@ export default function ProblemsPage() {
                                 />
                             </section>
 
-                            {/* Score, Rating, Limits */}
                             <section className="space-y-4">
-                                <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+                                <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                                     Constraints & Scoring
                                 </h3>
                                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                                     <div className="space-y-1.5">
                                         <Label
                                             htmlFor="prob-score"
-                                            className="text-sm flex items-center gap-1"
+                                            className="text-xs flex items-center gap-1 font-semibold uppercase tracking-wider text-muted-foreground"
                                         >
                                             <Star className="w-3.5 h-3.5 text-muted-foreground" />
                                             Score{' '}
@@ -422,7 +412,7 @@ export default function ProblemsPage() {
                                     <div className="space-y-1.5">
                                         <Label
                                             htmlFor="prob-rating"
-                                            className="text-sm flex items-center gap-1"
+                                            className="text-xs flex items-center gap-1 font-semibold uppercase tracking-wider text-muted-foreground"
                                         >
                                             <Hash className="w-3.5 h-3.5 text-muted-foreground" />
                                             Rating{' '}
@@ -447,7 +437,7 @@ export default function ProblemsPage() {
                                     <div className="space-y-1.5">
                                         <Label
                                             htmlFor="prob-time"
-                                            className="text-sm flex items-center gap-1"
+                                            className="text-xs flex items-center gap-1 font-semibold uppercase tracking-wider text-muted-foreground"
                                         >
                                             <Clock className="w-3.5 h-3.5 text-muted-foreground" />
                                             Time (ms)
@@ -470,7 +460,7 @@ export default function ProblemsPage() {
                                     <div className="space-y-1.5">
                                         <Label
                                             htmlFor="prob-mem"
-                                            className="text-sm flex items-center gap-1"
+                                            className="text-xs flex items-center gap-1 font-semibold uppercase tracking-wider text-muted-foreground"
                                         >
                                             <Cpu className="w-3.5 h-3.5 text-muted-foreground" />
                                             Memory (MB)
@@ -493,10 +483,9 @@ export default function ProblemsPage() {
                                 </div>
                             </section>
 
-                            {/* Problem Statement (Markdown) */}
                             <section className="space-y-3">
                                 <div>
-                                    <Label className="text-sm font-semibold">
+                                    <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                                         Problem Statement{' '}
                                         <span className="text-destructive">
                                             *
@@ -526,10 +515,9 @@ export default function ProblemsPage() {
                                 </div>
                             </section>
 
-                            {/* Explanation (Markdown, optional) */}
                             <section className="space-y-3">
                                 <div>
-                                    <Label className="text-sm font-semibold">
+                                    <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                                         Explanation / Editorial
                                         <span className="text-xs text-muted-foreground font-normal ml-2">
                                             (optional)
@@ -559,12 +547,12 @@ export default function ProblemsPage() {
                                 </div>
                             </section>
 
-                            {/* Submit buttons */}
                             <div className="flex justify-end gap-3 pt-4 border-t border-border">
                                 <Button
                                     type="button"
                                     variant="outline"
                                     onClick={resetForm}
+                                    className="text-xs font-semibold uppercase tracking-wider"
                                 >
                                     Cancel
                                 </Button>
@@ -572,7 +560,7 @@ export default function ProblemsPage() {
                                     id="prob-submit"
                                     type="submit"
                                     disabled={submitting}
-                                    className="gap-2"
+                                    className="gap-2 text-xs font-semibold uppercase tracking-wider"
                                 >
                                     <Save className="w-4 h-4" />
                                     {submitting
@@ -588,12 +576,11 @@ export default function ProblemsPage() {
                     </div>
                 )}
 
-                {/* Bottom navigation */}
                 <div className="flex items-center justify-between pt-6 border-t border-border">
                     <Button
                         variant="outline"
                         onClick={() => navigate('/design-contest')}
-                        className="gap-2"
+                        className="gap-2 text-xs font-semibold uppercase tracking-wider"
                     >
                         <LogOut className="w-4 h-4" />
                         Save & Exit
@@ -604,7 +591,7 @@ export default function ProblemsPage() {
                             navigate(`/design-contest/testcases/${contestId}`)
                         }
                         disabled={problems.length === 0}
-                        className="gap-2"
+                        className="gap-2 text-xs font-semibold uppercase tracking-wider"
                     >
                         Save & Continue
                         <ChevronRight className="w-4 h-4" />

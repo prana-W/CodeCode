@@ -34,7 +34,7 @@ export default function ContestLeaderboardTab() {
 
         const interval = setInterval(() => {
             fetchLeaderboard();
-        }, 60000); // Update every minute
+        }, 60000);
 
         return () => clearInterval(interval);
     }, [id]);
@@ -62,7 +62,7 @@ export default function ContestLeaderboardTab() {
     return (
         <div className="space-y-4">
             <div className="flex items-center justify-between">
-                <h2 className="text-lg font-semibold tracking-tight text-foreground flex items-center gap-2">
+                <h2 className="text-lg font-serif font-semibold tracking-tight text-foreground flex items-center gap-2">
                     <Trophy className="w-5 h-5 text-amber-500" /> Standings
                 </h2>
                 <Button
@@ -70,7 +70,7 @@ export default function ContestLeaderboardTab() {
                     size="sm"
                     onClick={() => fetchLeaderboard(true)}
                     disabled={refreshing}
-                    className="gap-2"
+                    className="gap-2 text-xs font-semibold uppercase tracking-wider"
                 >
                     <RotateCw
                         className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`}
@@ -107,7 +107,6 @@ export default function ContestLeaderboardTab() {
                     </thead>
                     <tbody className="divide-y divide-border">
                         {leaderboard.map((user, rank) => {
-                            // Safely parse solved_problems if it's a string, MySQL JSON_ARRAYAGG sometimes returns stringified JSON
                             let solvedList = [];
                             try {
                                 solvedList =
@@ -118,7 +117,6 @@ export default function ContestLeaderboardTab() {
                                 solvedList = [];
                             }
 
-                            // Build map of problem_id -> data
                             const solvedMap = {};
                             solvedList.forEach((s) => {
                                 if (s && s.problem_id) {
@@ -131,7 +129,7 @@ export default function ContestLeaderboardTab() {
                                     key={user.user_id}
                                     className="hover:bg-muted/30 transition-colors"
                                 >
-                                    <td className="px-4 py-3 text-center border-r border-border font-medium text-sm text-muted-foreground">
+                                    <td className="px-4 py-3 text-center border-r border-border font-mono text-xs text-muted-foreground">
                                         {rank + 1}
                                     </td>
                                     <td className="px-4 py-3 border-r border-border">
@@ -142,10 +140,10 @@ export default function ContestLeaderboardTab() {
                                             {user.name}
                                         </div>
                                     </td>
-                                    <td className="px-4 py-3 text-center border-r border-border font-bold text-foreground">
+                                    <td className="px-4 py-3 text-center border-r border-border font-mono font-bold text-foreground">
                                         {user.total_score || 0}
                                     </td>
-                                    <td className="px-4 py-3 text-center border-r border-border text-sm text-muted-foreground">
+                                    <td className="px-4 py-3 text-center border-r border-border font-mono text-xs text-muted-foreground">
                                         {user.total_penalty_minutes || 0}
                                     </td>
                                     {problems.map((prob) => {
@@ -158,10 +156,10 @@ export default function ContestLeaderboardTab() {
                                             >
                                                 {solvedData ? (
                                                     <div className="flex flex-col items-center">
-                                                        <span className="text-green-500 font-bold text-sm">
+                                                        <span className="text-emerald-500 font-bold font-mono text-sm">
                                                             +{solvedData.score}
                                                         </span>
-                                                        <span className="text-xs text-muted-foreground mt-0.5">
+                                                        <span className="text-[10px] font-mono text-muted-foreground mt-0.5">
                                                             {
                                                                 solvedData.penalty_minutes
                                                             }
@@ -169,7 +167,7 @@ export default function ContestLeaderboardTab() {
                                                         </span>
                                                     </div>
                                                 ) : (
-                                                    <span className="text-muted-foreground/30">
+                                                    <span className="text-muted-foreground/30 font-mono">
                                                         -
                                                     </span>
                                                 )}

@@ -52,7 +52,7 @@ export default function ContestProblemView() {
                 variant="ghost"
                 size="sm"
                 onClick={() => navigate(`/contest/${id}/problems`)}
-                className="gap-2 -ml-3"
+                className="gap-2 -ml-3 text-xs font-semibold uppercase tracking-wider"
             >
                 <ChevronLeft className="w-4 h-4" /> Back to Problems
             </Button>
@@ -60,19 +60,19 @@ export default function ContestProblemView() {
             <div className="bg-card border border-border rounded-xl p-6 md:p-8">
                 <div className="flex flex-col md:flex-row md:items-start justify-between gap-6 mb-8 border-b border-border pb-6">
                     <div>
-                        <h1 className="text-2xl md:text-3xl font-bold mb-3">
+                        <h1 className="text-2xl md:text-3xl font-serif font-semibold text-foreground mb-3">
                             {problem.title}
                         </h1>
-                        <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
-                            <span className="flex items-center gap-1.5 bg-muted/50 px-2.5 py-1 rounded-md">
-                                <Clock className="w-4 h-4" />
+                        <div className="flex flex-wrap gap-4 text-xs">
+                            <span className="flex items-center gap-1.5 bg-muted/50 px-2.5 py-1 rounded-md text-muted-foreground font-mono">
+                                <Clock className="w-4 h-4 text-muted-foreground/60" />
                                 {problem.time_limit_ms} ms
                             </span>
-                            <span className="flex items-center gap-1.5 bg-muted/50 px-2.5 py-1 rounded-md">
-                                <Database className="w-4 h-4" />
+                            <span className="flex items-center gap-1.5 bg-muted/50 px-2.5 py-1 rounded-md text-muted-foreground font-mono">
+                                <Database className="w-4 h-4 text-muted-foreground/60" />
                                 {problem.memory_limit_mb} MB
                             </span>
-                            <span className="flex items-center gap-1.5 bg-amber-500/10 text-amber-600 font-medium px-2.5 py-1 rounded-md">
+                            <span className="flex items-center gap-1.5 bg-amber-500/10 text-amber-500 font-semibold px-2.5 py-1 rounded-md font-mono">
                                 {problem.score} Points
                             </span>
                         </div>
@@ -99,7 +99,7 @@ export default function ContestProblemView() {
 
                 {problem.explanation && (
                     <div className="mt-12 pt-8 border-t border-border">
-                        <h3 className="text-lg font-bold mb-4 uppercase tracking-wide text-muted-foreground">
+                        <h3 className="text-sm font-semibold mb-4 uppercase tracking-wider text-muted-foreground">
                             Note
                         </h3>
                         <div className="prose prose-slate dark:prose-invert max-w-none text-muted-foreground">
