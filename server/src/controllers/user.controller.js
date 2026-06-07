@@ -198,6 +198,28 @@ const getContestHistory = asyncHandler(async (req, res) => {
         );
 });
 
+const getActivityStats = asyncHandler(async (req, res) => {
+    const {username} = req.params;
+    const year = parseInt(req.query.year) || new Date().getFullYear();
+
+    const user = await User.findByUsername(username);
+    if (!user) {
+        throw new ApiError(statusCode.NOT_FOUND, 'User not found.');
+    }
+
+    const stats = await User.getActivityStats(user.id, year);
+
+    return res
+        .status(statusCode.OK)
+        .json(
+            new ApiResponse(
+                statusCode.OK,
+                'Activity stats fetched successfully.',
+                stats
+            )
+        );
+});
+
 export {
     getUserById,
     getUserByUsername,
@@ -206,4 +228,5 @@ export {
     deleteUser,
     heartbeat,
     getContestHistory,
+    getActivityStats,
 };

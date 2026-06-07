@@ -7,6 +7,7 @@ import {
     deleteUser,
     heartbeat,
     getContestHistory,
+    getActivityStats,
 } from '../controllers/user.controller.js';
 import {verifyToken} from '../middlewares/index.js';
 import {profileUpdateLimiter} from '../middlewares/rateLimit.middleware.js';
@@ -20,6 +21,7 @@ router.post('/heartbeat', heartbeat);
 router.get('/rankings', getRankings);
 router.get('/username/:username', getUserByUsername);
 router.get('/username/:username/contest-history', getContestHistory);
+router.get('/username/:username/activity-stats', getActivityStats);
 router.get('/:id', getUserById);
 router.patch('/:id', profileUpdateLimiter, updateUser);
 router.delete('/:id', deleteUser);

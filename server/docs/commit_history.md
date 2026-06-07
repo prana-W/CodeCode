@@ -813,3 +813,11 @@ So, basically fixed 512 GB for compilation code docker container and variable me
 ## Commit - Later 3
 
 - I have also added final ranking of each pariticipant in the contest registration table itself
+
+## Commit - Later 4
+
+- Now, I have added the rating graph functionality for each user. By using the contest_registrations table, we can know all the contest user participated in, their delta, final ranking and rating.
+
+## Commit - Later 5
+
+- I have added heatmap to display the user activity, for each and every day of the current year. Basically, display small blocks and make a API call that aggregates all the submissions made by the user. Then we get data like total submissions for each day, total submission that was accepted for each day, total submission that was accepted the entire year and all time and so on.
