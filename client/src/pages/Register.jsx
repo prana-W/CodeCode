@@ -9,7 +9,6 @@ import {
     User,
     AtSign,
     Building2,
-    Code2,
 } from 'lucide-react';
 import {Button} from '@/components/ui/button';
 import {Input} from '@/components/ui/input';
@@ -121,9 +120,7 @@ export default function Register() {
             <div className="flex-1 flex items-start justify-center px-8 py-12 overflow-y-auto">
                 <div className="w-full max-w-md space-y-8">
                     <div className="flex items-center gap-2 lg:hidden">
-                        <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary">
-                            <Code2 className="w-4 h-4 text-primary-foreground" />
-                        </div>
+                        <img src="/favicon.svg" alt="CodeCode" className="w-8 h-8 object-contain" />
                         <span className="text-lg font-bold tracking-tight text-foreground">
                             CodeCode
                         </span>

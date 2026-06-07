@@ -1,7 +1,7 @@
 import {useState, useEffect} from 'react';
 import api from '@/lib/axios';
 import {Link, NavLink, useNavigate} from 'react-router-dom';
-import {Code2, Menu, X, LogOut, Sun, Moon} from 'lucide-react';
+import {Menu, X, LogOut, Sun, Moon} from 'lucide-react';
 import {Button} from '@/components/ui/button';
 import {useAuth} from '@/context/AuthContext';
 import {toast} from 'sonner';
@@ -87,9 +87,7 @@ export default function Header() {
             <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 flex items-center justify-between h-16">
                 {/* Logo */}
                 <Link to="/" className="flex items-center gap-2 shrink-0">
-                    <div className="flex items-center justify-center w-8 h-8 rounded-md bg-primary">
-                        <Code2 className="w-5 h-5 text-primary-foreground" />
-                    </div>
+                    <img src="/favicon.svg" alt="CodeCode" className="w-8 h-8 object-contain" />
                     <span className="font-bold text-xl tracking-tight text-foreground uppercase">
                         CodeCode
                     </span>

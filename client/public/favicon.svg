@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <style>
+    /* Light Mode: Deep forest green */
+    .icon-stroke {
+      stroke: oklch(0.42 0.13 155);
+      stroke-width: 10;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    .icon-fill {
+      fill: oklch(0.42 0.13 155);
+    }
+
+    /* Dark Mode: Bright sage green */
+    @media (prefers-color-scheme: dark) {
+      .icon-stroke {
+        stroke: oklch(0.73 0.17 148);
+      }
+      .icon-fill {
+        fill: oklch(0.73 0.17 148);
+      }
+    }
+  </style>
+
+  <polyline points="18,14 44,32 18,50" class="icon-stroke" />
+  
+  <rect x="38" y="46" width="16" height="10" rx="3" class="icon-fill" />
+</svg>

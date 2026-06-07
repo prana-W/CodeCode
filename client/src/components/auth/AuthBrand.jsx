@@ -1,4 +1,3 @@
-import {Code2} from 'lucide-react';
 
 export default function AuthBrand() {
     return (
@@ -18,9 +17,7 @@ export default function AuthBrand() {
 
             {/* Logo */}
             <div className="relative flex items-center gap-2.5 z-10">
-                <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-primary/15 border border-primary/20">
-                    <Code2 className="w-5 h-5 text-primary" />
-                </div>
+                <img src="/favicon.svg" alt="CodeCode" className="w-9 h-9 object-contain" />
                 <span className="text-xl font-bold tracking-tight text-foreground:dark font-serif">
                     CodeCode
                 </span>

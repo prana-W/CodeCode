@@ -1,5 +1,5 @@
 import {useState, useEffect} from 'react';
-import {Code2, Github, Twitter, Heart, Clock, Star} from 'lucide-react';
+import {Github, Twitter, Heart, Clock, Star} from 'lucide-react';
 import api from '@/lib/axios';
 
 export default function Footer() {
@@ -35,9 +35,7 @@ export default function Footer() {
                     {/* Left Section: Brand & Copyright */}
                     <div className="flex flex-col items-center md:items-start gap-2">
                         <div className="flex items-center gap-2">
-                            <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary/10">
-                                <Code2 className="w-5 h-5 text-primary" />
-                            </div>
+                            <img src="/favicon.svg" alt="CodeCode" className="w-8 h-8 object-contain" />
                             <span className="text-lg font-black text-foreground tracking-tight">
                                 CodeCode
                             </span>
