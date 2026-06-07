@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import {
     User as UserIcon, Mail, Building2, TrendingUp, Trophy,
@@ -16,15 +16,16 @@ import { getRankDetails } from '@/constants/ratings';
 export default function UserProfile() {
     const { user } = useAuth();
     const navigate = useNavigate();
+    const { username } = useParams();
     const [profile, setProfile] = useState(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const fetchProfile = async () => {
-            if (!user?.id) return;
+            if (!username) return;
             setLoading(true);
             try {
-                const res = await api.get(`/users/${user.id}`);
+                const res = await api.get(`/users/username/${username}`);
                 setProfile(res.data.data);
             } catch (err) {
                 toast.error(err?.response?.data?.message || 'Failed to load profile details.');
@@ -34,7 +35,7 @@ export default function UserProfile() {
         };
 
         fetchProfile();
-    }, [user?.id]);
+    }, [username]);
 
     if (loading) {
         return (
@@ -166,15 +167,17 @@ export default function UserProfile() {
                         </div>
                     </CardContent>
 
-                    <CardFooter className="flex justify-end border-t border-border p-4 bg-muted/5">
-                        <Button
-                            onClick={() => navigate('/user-profile/edit')}
-                            className="gap-2"
-                        >
-                            <Edit3 className="w-4 h-4" />
-                            Update Profile
-                        </Button>
-                    </CardFooter>
+                    {user?.username === profile.username && (
+                        <CardFooter className="flex justify-end border-t border-border p-4 bg-muted/5">
+                            <Button
+                                onClick={() => navigate('/user-profile/edit')}
+                                className="gap-2"
+                            >
+                                <Edit3 className="w-4 h-4" />
+                                Update Profile
+                            </Button>
+                        </CardFooter>
+                    )}
                 </Card>
 
             </div>

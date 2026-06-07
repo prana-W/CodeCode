@@ -27,8 +27,9 @@ export default function Header() {
         
         if (user.role === 'admin') {
             return [
-                { to: '/verify-contests', label: 'VERIFY CONTESTS' },
+                  { to: '', label: 'HOME' },
                 { to: '/contests', label: 'CONTESTS' },
+                { to: '/admin/verify-contests', label: 'VERIFY CONTESTS' },
                 { to: '/about', label: 'ABOUT' },
             ];
         }

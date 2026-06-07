@@ -51,7 +51,7 @@ const router = createBrowserRouter([
                 ),
             },
             {
-                path: 'user-profile',
+                path: 'user-profile/:username',
                 element: (
                     <ProtectedRoute>
                         <UserProfile />
@@ -66,7 +66,6 @@ const router = createBrowserRouter([
                     </ProtectedRoute>
                 ),
             },
-            // ── Contest Participation Flow ───────────────────────────
             {
                 path: 'contest/:id',
                 element: (
@@ -101,7 +100,6 @@ const router = createBrowserRouter([
                     }
                 ]
             },
-            // ── Design Contest Flow ──────────────────────────────────
             {
                 path: 'design-contest',
                 element: (

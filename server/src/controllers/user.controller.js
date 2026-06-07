@@ -22,6 +22,26 @@ const getUserById = asyncHandler(async (req, res) => {
             )
         );
 });
+const getUserByUsername = asyncHandler(async (req, res) => {
+    const {username} = req.params;
+
+    const user = await User.findByUsername(username);
+    if (!user) {
+        throw new ApiError(statusCode.NOT_FOUND, 'User not found.');
+    }
+
+    const {password, ...userDetails} = user;
+
+    return res
+        .status(statusCode.OK)
+        .json(
+            new ApiResponse(
+                statusCode.OK,
+                'User details fetched successfully.',
+                userDetails
+            )
+        );
+});
 
 const updateUser = asyncHandler(async (req, res) => {
     const {id} = req.params;
@@ -103,4 +123,4 @@ const deleteUser = asyncHandler(async (req, res) => {
         .json(new ApiResponse(statusCode.OK, 'User deleted successfully.'));
 });
 
-export {getUserById, updateUser, deleteUser};
+export {getUserById, getUserByUsername, updateUser, deleteUser};

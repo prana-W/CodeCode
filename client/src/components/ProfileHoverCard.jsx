@@ -37,7 +37,7 @@ export default function ProfileHoverCard({ user }) {
         <HoverCard open={open} onOpenChange={setOpen} openDelay={200} closeDelay={100}>
             <HoverCardTrigger asChild>
                 <Link 
-                    to="/user-profile" 
+                    to={`/user-profile/${user.username}`} 
                     className={`font-medium transition-colors hover:underline underline-offset-4 ${profile ? rank.colorClass : 'text-foreground'}`}
                 >
                     {displayName}

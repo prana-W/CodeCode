@@ -119,7 +119,7 @@ export default function UserProfileEdit() {
             localStorage.setItem('user', JSON.stringify(updatedUserData));
 
             toast.success('Profile updated successfully!');
-            navigate('/user-profile');
+            navigate(`/user-profile/${user.username}`);
         } catch (err) {
             toast.error(err?.response?.data?.message || 'Failed to update profile.');
         } finally {
@@ -170,7 +170,7 @@ export default function UserProfileEdit() {
 
                     <Button
                         variant="ghost"
-                        onClick={() => navigate('/user-profile')}
+                        onClick={() => navigate(`/user-profile/${user.username}`)}
                         className="gap-1.5 text-xs text-muted-foreground hover:text-foreground"
                     >
                         <ArrowLeft className="w-4 h-4" />
@@ -324,7 +324,7 @@ export default function UserProfileEdit() {
                             <Button
                                 type="button"
                                 variant="outline"
-                                onClick={() => navigate('/user-profile')}
+                                onClick={() => navigate(`/user-profile/${user.username}`)}
                                 disabled={updating}
                             >
                                 Cancel
