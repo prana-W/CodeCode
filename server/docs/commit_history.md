@@ -821,3 +821,7 @@ So, basically fixed 512 GB for compilation code docker container and variable me
 ## Commit - Later 5
 
 - I have added heatmap to display the user activity, for each and every day of the current year. Basically, display small blocks and make a API call that aggregates all the submissions made by the user. Then we get data like total submissions for each day, total submission that was accepted for each day, total submission that was accepted the entire year and all time and so on.
+
+## Commit - Later 6
+
+- I have now added a custom invocation feature. User send their source_code with their custom input, a invocationId is generated in the server and a temp directory is created in the server with the code and input data, then a queue is formed for custom invoacation with the key as custom invocation id (created using crypto.uuid() or something), then a worker picks up the job (it has higher priority), and gives to the online judge with sufficient time and memmory limits, the code finally executes and the invocationId and output is stored in Redis with a TTL of 2 minutes, then temp directory is deleted. Meanwhile user sends a request every 5 seconds, with the customInvocationId, if it exists in redis, then the ouput (or error message) is sent back else user keeps on polling (for 2 minute) after that polling stops. 

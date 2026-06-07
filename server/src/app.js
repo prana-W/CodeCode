@@ -11,6 +11,7 @@ import submissionRouter from './routes/submission.routes.js';
 import userRouter from './routes/user.routes.js';
 import aiRouter from './routes/ai.routes.js';
 import statisticsRouter from './routes/statistics.routes.js';
+import customInvocationRouter from './routes/custom-invocation.routes.js';
 import morgan from 'morgan';
 import {apiLimiter} from './middlewares/rateLimit.middleware.js';
 import swaggerUi from 'swagger-ui-express';
@@ -55,6 +56,7 @@ app.use('/api/v1/submissions', submissionRouter);
 app.use('/api/v1/users', userRouter);
 app.use('/api/v1/ai', aiRouter);
 app.use('/api/v1/statistics', statisticsRouter);
+app.use('/api/v1/custom-invocation', customInvocationRouter);
 
 // Error Handling
 app.use(errorHandler());

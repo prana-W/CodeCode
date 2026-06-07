@@ -21,6 +21,7 @@ import {
     UserProfile,
     UserProfileEdit,
     RankingsPage,
+    CustomInvocationPage,
 } from './pages/index.js';
 
 import ErrorBoundary from './components/ErrorBoundary.jsx';
@@ -77,6 +78,14 @@ const router = createBrowserRouter([
                 element: (
                     <ProtectedRoute>
                         <ContestsPage />
+                    </ProtectedRoute>
+                ),
+            },
+            {
+                path: 'custom-invocation',
+                element: (
+                    <ProtectedRoute>
+                        <CustomInvocationPage />
                     </ProtectedRoute>
                 ),
             },

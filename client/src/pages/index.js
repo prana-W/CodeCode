@@ -22,6 +22,7 @@ import AboutUs from './AboutUs.jsx';
 import UserProfile from './UserProfile.jsx';
 import UserProfileEdit from './UserProfileEdit.jsx';
 import RankingsPage from './RankingsPage.jsx';
+import CustomInvocationPage from './CustomInvocationPage.jsx';
 
 export {
     Home,
@@ -46,4 +47,5 @@ export {
     ContestSubmitTab,
     ContestSubmissionsTab,
     ContestLeaderboardTab,
+    CustomInvocationPage,
 };

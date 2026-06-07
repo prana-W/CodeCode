@@ -8,8 +8,8 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "concurrently \"nodemon -r dotenv/config src/index.js\" \"nodemon -r dotenv/config src/workers/judgeWorker.js\"",
-    "start": "concurrently \"node -r dotenv/config src/index.js\" \"node -r dotenv/config src/workers/judgeWorker.js\"",
+    "dev": "concurrently \"nodemon -r dotenv/config src/index.js\" \"nodemon -r dotenv/config src/workers/judgeWorker.js\" \"nodemon -r dotenv/config src/workers/customInvocationWorker.js\"",
+    "start": "concurrently \"node -r dotenv/config src/index.js\" \"node -r dotenv/config src/workers/judgeWorker.js\" \"node -r dotenv/config src/workers/customInvocationWorker.js\"",
     "format": "prettier --write ."
   },
   "dependencies": {
