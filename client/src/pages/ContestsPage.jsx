@@ -134,7 +134,7 @@ function ContestRow({contest, regStatus, onRegister, onUnregister}) {
     const started = isContestStarted(contest);
     const showRegister = !isRegistered && canRegister(contest);
     const showUnregister = isRegistered && canUnregister(contest);
-    const showEnter = isRegistered && started && status === 'running';
+    const showEnter = (isRegistered && started && status === 'running') || status === 'past';
 
     const handleRegister = async () => {
         setActing(true);
@@ -271,6 +271,7 @@ function ContestRow({contest, regStatus, onRegister, onUnregister}) {
                 ) : showEnter ? (
                     <Button
                         size="sm"
+                        variant={status === 'past' ? 'outline' : 'default'}
                         onClick={handleEnter}
                         className="gap-1.5 text-xs"
                     >
@@ -667,7 +668,7 @@ export default function ContestsPage() {
                                                 </th>
                                             </tr>
                                         </thead>
-                                        <tbody className="opacity-60">
+                                        <tbody>
                                             {past.map((c) => (
                                                 <ContestRow
                                                     key={c.id}
