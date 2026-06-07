@@ -64,7 +64,7 @@ class Problem {
     static async findByIdWithSampleTestCases(problem_id) {
         const [rows] = await pool.query(
             `SELECT p.problem_id, p.contest_id, p.title, p.score, p.rating,
-                    p.statement, p.explanation,
+                    p.statement, p.explanation, p.time_limit_ms, p.memory_limit_mb,
                     c.authored_by AS contest_authored_by,
                     c.contest_start_time, c.contest_end_time,
                     tc.test_case_id, tc.input_data, tc.expected_output, tc.is_sample

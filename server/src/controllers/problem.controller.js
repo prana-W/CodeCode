@@ -231,6 +231,8 @@ const getProblemById = asyncHandler(async (req, res) => {
         title: first.title,
         score: first.score,
         ...(showRating ? {rating: first.rating} : {}),
+        time_limit_ms: first.time_limit_ms,
+        memory_limit_mb: first.memory_limit_mb,
         statement: first.statement,
         explanation: first.explanation,
         sample_test_cases: sampleTestCases,

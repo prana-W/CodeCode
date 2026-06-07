@@ -4,6 +4,7 @@ import {toast} from 'sonner';
 import {RefreshCcw, Loader2, Code2, ListChecks} from 'lucide-react';
 import {Button} from '@/components/ui/button';
 import api from '@/lib/axios';
+import {getVerdictDetails} from '@/constants/verdicts';
 
 function formatDate(iso) {
     return new Date(iso).toLocaleString('en-US', {
@@ -14,25 +15,6 @@ function formatDate(iso) {
         second: '2-digit',
         hour12: true,
     });
-}
-
-function getVerdictStyle(verdict) {
-    switch (verdict) {
-        case 'Accepted':
-            return 'text-green-600 bg-green-500/10 font-bold';
-        case 'Wrong Answer':
-            return 'text-red-600 bg-red-500/10 font-semibold';
-        case 'Time Limit Exceeded':
-            return 'text-orange-600 bg-orange-500/10 font-semibold';
-        case 'Memory Limit Exceeded':
-            return 'text-orange-600 bg-orange-500/10 font-semibold';
-        case 'Compilation Error':
-            return 'text-amber-600 bg-amber-500/10 font-semibold';
-        case 'Runtime Error':
-            return 'text-amber-600 bg-amber-500/10 font-semibold';
-        default:
-            return 'text-muted-foreground bg-muted font-medium'; // pending
-    }
 }
 
 export default function ContestSubmissionsTab() {
@@ -160,11 +142,14 @@ export default function ContestSubmissionsTab() {
                                             : sub.language}
                                     </td>
                                     <td className="px-6 py-3 text-center">
-                                        <span
-                                            className={`inline-flex px-2 py-1 rounded text-xs ${getVerdictStyle(sub.verdict)}`}
-                                        >
-                                            {sub.verdict}
-                                        </span>
+                                        {(() => {
+                                            const v = getVerdictDetails(sub.verdict);
+                                            return (
+                                                <span className={`inline-flex px-2 py-1 rounded text-xs ${v.colorClass}`}>
+                                                     {v.label}
+                                                </span>
+                                            );
+                                        })()}
                                     </td>
                                     <td className="px-6 py-3 text-sm text-center font-mono">
                                         {sub.execution_time_ms != null

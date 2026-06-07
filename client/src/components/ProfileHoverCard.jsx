@@ -15,21 +15,22 @@ export default function ProfileHoverCard({user}) {
     const [open, setOpen] = useState(false);
 
     useEffect(() => {
-        if (open && !profile) {
-            const fetchProfile = async () => {
-                setLoading(true);
-                try {
-                    const res = await api.get(`/users/${user.id}`);
-                    setProfile(res.data.data);
-                } catch (err) {
-                    console.error('Failed to load profile', err);
-                } finally {
-                    setLoading(false);
-                }
-            };
-            fetchProfile();
-        }
-    }, [open, profile, user.id]);
+        if (!user?.id) return;
+        
+        const fetchProfile = async () => {
+            setLoading(true);
+            try {
+                const res = await api.get(`/users/${user.id}`);
+                setProfile(res.data.data);
+            } catch (err) {
+                console.error('Failed to load profile', err);
+            } finally {
+                setLoading(false);
+            }
+        };
+        
+        fetchProfile();
+    }, [user?.id]);
 
     // Format display name
     const displayName = user.name ?? user.username;
