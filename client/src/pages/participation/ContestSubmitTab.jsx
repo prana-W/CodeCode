@@ -6,7 +6,7 @@ import {
     useLocation,
 } from 'react-router-dom';
 import {toast} from 'sonner';
-import {Send, Loader2, Code2} from 'lucide-react';
+import {Send, Loader2, Code2, Upload} from 'lucide-react';
 import {Button} from '@/components/ui/button';
 import api from '@/lib/axios';
 import Editor from '@monaco-editor/react';
@@ -34,6 +34,33 @@ export default function ContestSubmitTab() {
 
     const {theme} = useTheme();
     const editorTheme = theme === 'dark' ? 'vs-dark' : 'light';
+
+    const handleFileUpload = (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            const content = event.target?.result;
+            if (typeof content === 'string') {
+                const ext = file.name.split('.').pop()?.toLowerCase();
+                let lang = '';
+                if (ext === 'cpp' || ext === 'cc') lang = 'cpp';
+                else if (ext === 'c') lang = 'c';
+                else if (ext === 'py') lang = 'python';
+                else if (ext === 'java') lang = 'java';
+                else if (ext === 'js') lang = 'javascript';
+                setForm(prev => ({
+                    ...prev,
+                    source_code: content,
+                    ...(lang && VALID_LANGUAGES.includes(lang) ? { language: lang } : {}),
+                }));
+                toast.success(`Loaded ${file.name} successfully!`);
+            }
+        };
+        reader.onerror = () => toast.error('Failed to read file.');
+        reader.readAsText(file);
+        e.target.value = '';
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -143,9 +170,22 @@ export default function ContestSubmitTab() {
                 </div>
 
                 <div className="space-y-2">
-                    <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                        Source Code
-                    </label>
+                    <div className="flex items-center justify-between">
+                        <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                            Source Code
+                        </label>
+                        <label className="flex items-center gap-1.5 cursor-pointer px-2.5 py-1 rounded-md border border-border bg-secondary hover:bg-secondary/80 transition-colors text-[10px] text-muted-foreground uppercase tracking-widest">
+                            <Upload className="w-3 h-3" />
+                            <span>Choose File</span>
+                            <input
+                                type="file"
+                                accept=".cpp,.cc,.c,.py,.java,.js"
+                                className="hidden"
+                                onChange={handleFileUpload}
+                                disabled={submitting}
+                            />
+                        </label>
+                    </div>
                     <div className="rounded-md border border-border overflow-hidden bg-card" style={{ height: '400px' }}>
                         <Editor
                             height="100%"

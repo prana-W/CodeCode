@@ -1,9 +1,9 @@
-import {useState, useEffect, useRef} from 'react';
-import {toast} from 'sonner';
-import {Play, Loader2, Terminal, AlertTriangle, Cpu, Clock, CheckCircle2, ChevronDown} from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { toast } from 'sonner';
+import { Play, Loader2, Terminal, AlertTriangle, Cpu, Clock, CheckCircle2, ChevronDown, Upload } from 'lucide-react';
 import api from '@/lib/axios';
 import Editor from '@monaco-editor/react';
-import {useTheme} from '@/components/theme-provider';
+import { useTheme } from '@/components/theme-provider';
 
 const VALID_LANGUAGES = ['cpp', 'c', 'java', 'python', 'javascript'];
 
@@ -72,7 +72,7 @@ const VERDICT_CONFIG = {
     },
 };
 
-function VerdictBadge({verdict}) {
+function VerdictBadge({ verdict }) {
     const cfg = VERDICT_CONFIG[verdict] ?? {
         label: verdict,
         icon: Terminal,
@@ -90,14 +90,14 @@ function VerdictBadge({verdict}) {
     );
 }
 
-function StatusBar({verdict}) {
+function StatusBar({ verdict }) {
     const cfg = VERDICT_CONFIG[verdict];
     if (!cfg) return null;
     return <div className={`h-0.5 w-full ${cfg.bar} rounded-full mb-4 opacity-80`} />;
 }
 
 export default function CustomInvocationPage() {
-    const [form, setForm] = useState({language: 'cpp', source_code: '', input_data: ''});
+    const [form, setForm] = useState({ language: 'cpp', source_code: '', input_data: '' });
     const [executing, setExecuting] = useState(false);
     const [progressStatus, setProgressStatus] = useState('');
     const [result, setResult] = useState(null);
@@ -108,13 +108,40 @@ export default function CustomInvocationPage() {
     const stdinTextareaRef = useRef(null);
     const stdinGutterRef = useRef(null);
 
-    const {theme} = useTheme();
+    const { theme } = useTheme();
     const editorTheme = theme === 'dark' ? 'vs-dark' : 'light';
 
     const handleStdinScroll = (e) => {
         if (stdinGutterRef.current) {
             stdinGutterRef.current.scrollTop = e.target.scrollTop;
         }
+    };
+
+    const handleFileUpload = (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            const content = event.target?.result;
+            if (typeof content === 'string') {
+                const ext = file.name.split('.').pop()?.toLowerCase();
+                let lang = '';
+                if (ext === 'cpp' || ext === 'cc') lang = 'cpp';
+                else if (ext === 'c') lang = 'c';
+                else if (ext === 'py') lang = 'python';
+                else if (ext === 'java') lang = 'java';
+                else if (ext === 'js') lang = 'javascript';
+                setForm(prev => ({
+                    ...prev,
+                    source_code: content,
+                    ...(lang && VALID_LANGUAGES.includes(lang) ? { language: lang } : {}),
+                }));
+                toast.success(`Loaded ${file.name} successfully!`);
+            }
+        };
+        reader.onerror = () => toast.error('Failed to read file.');
+        reader.readAsText(file);
+        e.target.value = '';
     };
 
     useEffect(() => {
@@ -148,7 +175,7 @@ export default function CustomInvocationPage() {
                 language: form.language,
                 input_data: form.input_data,
             });
-            const {customInvocationId} = response.data;
+            const { customInvocationId } = response.data;
             startPolling(customInvocationId);
         } catch (err) {
             toast.error(err?.response?.data?.message || 'Failed to start execution.');
@@ -168,7 +195,7 @@ export default function CustomInvocationPage() {
             setProgressStatus(`Running... ${elapsedSeconds}s`);
             try {
                 const statusRes = await api.get(`/custom-invocation/status/${customInvocationId}`);
-                const {status, data} = statusRes.data;
+                const { status, data } = statusRes.data;
                 if (status === 'completed') {
                     clearInterval(pollingIntervalRef.current);
                     clearTimeout(pollingTimeoutRef.current);
@@ -190,7 +217,7 @@ export default function CustomInvocationPage() {
             clearInterval(pollingIntervalRef.current);
             setExecuting(false);
             setProgressStatus('');
-            setResult({verdict: 'timeout', error: "Server didn't respond within 2 minutes."});
+            setResult({ verdict: 'timeout', error: "Server didn't respond within 2 minutes." });
             toast.error("Execution timed out.");
         }, 120000);
     };
@@ -239,7 +266,7 @@ export default function CustomInvocationPage() {
                                             key={lang}
                                             type="button"
                                             onClick={() => {
-                                                setForm((f) => ({...f, language: lang}));
+                                                setForm((f) => ({ ...f, language: lang }));
                                                 setLangOpen(false);
                                             }}
                                             className={`w-full text-left px-4 py-2.5 text-xs uppercase tracking-widest flex items-center gap-2 transition-colors
@@ -259,10 +286,10 @@ export default function CustomInvocationPage() {
                 </div>
 
                 {/* ── Main Layout: fixed table-like structure to prevent layout shift ── */}
-                <div className="flex gap-5" style={{alignItems: 'flex-start'}}>
+                <div className="flex gap-5" style={{ alignItems: 'flex-start' }}>
 
                     {/* ── Left Panel: Code + Input ── */}
-                    <div className="flex-none" style={{width: '60%', minWidth: 0}}>
+                    <div className="flex-none" style={{ width: '60%', minWidth: 0 }}>
                         <form onSubmit={handleRun} className="flex flex-col gap-4">
 
                             {/* Source Code */}
@@ -274,9 +301,22 @@ export default function CustomInvocationPage() {
                                             source_code.{form.language === 'cpp' ? 'cpp' : form.language === 'javascript' ? 'js' : form.language}
                                         </span>
                                     </div>
-                                    <span className="text-[10px] text-muted-foreground/60 font-mono">
-                                        {form.source_code.split('\n').length} lines
-                                    </span>
+                                    <div className="flex items-center gap-3">
+                                        <span className="text-[10px] text-muted-foreground/60 font-mono">
+                                            {form.source_code.split('\n').length} lines
+                                        </span>
+                                        <label className="flex items-center gap-1.5 cursor-pointer px-2.5 py-1 rounded-md border border-border bg-secondary hover:bg-secondary/80 transition-colors text-[10px] text-muted-foreground uppercase tracking-widest">
+                                            <Upload className="w-3 h-3" />
+                                            <span>Choose File</span>
+                                            <input
+                                                type="file"
+                                                accept=".cpp,.cc,.c,.py,.java,.js"
+                                                className="hidden"
+                                                onChange={handleFileUpload}
+                                                disabled={executing}
+                                            />
+                                        </label>
+                                    </div>
                                 </div>
                                 <div className="relative border-t border-border" style={{ height: '420px' }}>
                                     <Editor
@@ -284,7 +324,7 @@ export default function CustomInvocationPage() {
                                         language={form.language === 'cpp' ? 'cpp' : form.language === 'javascript' ? 'javascript' : form.language === 'python' ? 'python' : form.language === 'java' ? 'java' : 'c'}
                                         theme={editorTheme}
                                         value={form.source_code}
-                                        onChange={(val) => setForm({...form, source_code: val || ''})}
+                                        onChange={(val) => setForm({ ...form, source_code: val || '' })}
                                         options={{
                                             minimap: { enabled: false },
                                             fontSize: 14,
@@ -325,7 +365,7 @@ export default function CustomInvocationPage() {
                                     <textarea
                                         ref={stdinTextareaRef}
                                         value={form.input_data}
-                                        onChange={(e) => setForm({...form, input_data: e.target.value})}
+                                        onChange={(e) => setForm({ ...form, input_data: e.target.value })}
                                         onScroll={handleStdinScroll}
                                         className="flex-1 resize-none py-4 pl-4 pr-5 text-sm font-mono bg-transparent text-foreground placeholder-muted-foreground/40 focus:outline-none leading-relaxed h-full overflow-y-auto"
                                         style={{ caretColor: 'var(--primary)' }}
@@ -360,10 +400,10 @@ export default function CustomInvocationPage() {
                     </div>
 
                     {/* ── Right Panel: Output ── */}
-                    <div className="flex-none" style={{width: 'calc(40% - 20px)', minWidth: 0}}>
+                    <div className="flex-none" style={{ width: 'calc(40% - 20px)', minWidth: 0 }}>
                         <div
                             className="rounded-xl border border-border bg-card overflow-hidden"
-                            style={{height: '600px', display: 'flex', flexDirection: 'column'}}
+                            style={{ height: '600px', display: 'flex', flexDirection: 'column' }}
                         >
                             {/* Output Header */}
                             <div className="flex-none flex items-center justify-between px-4 py-2.5 border-b border-border bg-muted/40">
@@ -408,7 +448,7 @@ export default function CustomInvocationPage() {
                                                 <div
                                                     key={i}
                                                     className="w-1 h-1 rounded-full bg-primary/40 animate-bounce"
-                                                    style={{animationDelay: `${i * 0.15}s`}}
+                                                    style={{ animationDelay: `${i * 0.15}s` }}
                                                 />
                                             ))}
                                         </div>
@@ -445,7 +485,7 @@ export default function CustomInvocationPage() {
                                                     </span>
                                                     <pre
                                                         className="flex-1 text-sm font-mono text-amber-600 dark:text-amber-400 whitespace-pre-wrap break-words leading-relaxed p-3 rounded-lg bg-amber-400/5 border border-amber-400/10 overflow-auto"
-                                                        style={{minHeight: 0}}
+                                                        style={{ minHeight: 0 }}
                                                     >
                                                         {result.compilationError}
                                                     </pre>
@@ -457,7 +497,7 @@ export default function CustomInvocationPage() {
                                                     </span>
                                                     <pre
                                                         className="flex-1 text-sm font-mono text-foreground whitespace-pre-wrap break-words leading-relaxed p-3 rounded-lg bg-muted/30 border border-border overflow-auto shadow-inner"
-                                                        style={{minHeight: 0}}
+                                                        style={{ minHeight: 0 }}
                                                     >
                                                         {result.output || (
                                                             <span className="italic text-muted-foreground">
