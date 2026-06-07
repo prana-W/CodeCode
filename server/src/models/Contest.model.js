@@ -69,7 +69,13 @@ class Contest {
 
     static async update(
         id,
-        {description, division, contest_start_time, contest_end_time, ai_assistance}
+        {
+            description,
+            division,
+            contest_start_time,
+            contest_end_time,
+            ai_assistance,
+        }
     ) {
         const [result] = await pool.query(
             `UPDATE contests

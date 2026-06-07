@@ -5,9 +5,17 @@ import Contest from '../models/Contest.model.js';
 
 const getStatistics = asyncHandler(async (req, res) => {
     // Run all count queries in parallel for better performance
-    const [usersResult, contestsResult, problemsResult, submissionsResult, upcomingContests] = await Promise.all([
+    const [
+        usersResult,
+        contestsResult,
+        problemsResult,
+        submissionsResult,
+        upcomingContests,
+    ] = await Promise.all([
         pool.query('SELECT COUNT(*) AS count FROM users'),
-        pool.query('SELECT COUNT(*) AS count FROM contests WHERE isVerified = 1'),
+        pool.query(
+            'SELECT COUNT(*) AS count FROM contests WHERE isVerified = 1'
+        ),
         pool.query('SELECT COUNT(*) AS count FROM problems'),
         pool.query('SELECT COUNT(*) AS count FROM submissions'),
         Contest.getUpcomingPublic(),

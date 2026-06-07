@@ -4,10 +4,20 @@ import {Flame, Zap, CheckCircle2, Code2} from 'lucide-react';
 // ─── helpers ────────────────────────────────────────────────────────────────
 
 const MONTHS = [
-    'Jan','Feb','Mar','Apr','May','Jun',
-    'Jul','Aug','Sep','Oct','Nov','Dec',
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
 ];
-const WEEKDAYS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 function buildGrid(year, heatmap) {
     // index heatmap by day string for O(1) lookup
@@ -35,16 +45,13 @@ function buildGrid(year, heatmap) {
             dow: d.getDay(),
             month: d.getMonth(),
             day: d.getDate(),
-            total:    data?.total    ?? 0,
+            total: data?.total ?? 0,
             accepted: data?.accepted ?? 0,
         });
     }
 
     // Pad the front with empty cells so the grid starts on Sunday
-    const paddedCells = [
-        ...Array(startDow).fill(null),
-        ...cells,
-    ];
+    const paddedCells = [...Array(startDow).fill(null), ...cells];
 
     // Split into columns of 7 (weeks)
     const weeks = [];
@@ -58,14 +65,14 @@ function buildGrid(year, heatmap) {
 // intensity: 0–4 levels based on accepted count
 function intensityLevel(accepted) {
     if (accepted === 0) return 0;
-    if (accepted <= 1)  return 1;
-    if (accepted <= 3)  return 2;
-    if (accepted <= 6)  return 3;
+    if (accepted <= 1) return 1;
+    if (accepted <= 3) return 2;
+    if (accepted <= 6) return 3;
     return 4;
 }
 
 const INTENSITY_CLASSES = [
-    'bg-muted/40 border-border/30',          // 0 – empty
+    'bg-muted/40 border-border/30', // 0 – empty
     'bg-emerald-500/25 border-emerald-500/20', // 1
     'bg-emerald-500/50 border-emerald-500/30', // 2
     'bg-emerald-500/75 border-emerald-500/40', // 3
@@ -78,7 +85,9 @@ const YEAR_RANGE = 3; // show current year and 2 previous years in selector
 
 function StatPill({icon: Icon, label, value, className = ''}) {
     return (
-        <div className={`flex items-center gap-2 px-4 py-2.5 rounded-lg border bg-muted/20 ${className}`}>
+        <div
+            className={`flex items-center gap-2 px-4 py-2.5 rounded-lg border bg-muted/20 ${className}`}
+        >
             <Icon className="w-4 h-4 text-muted-foreground shrink-0" />
             <div className="min-w-0">
                 <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground leading-none mb-0.5">
@@ -100,9 +109,9 @@ function CellTooltip({info}) {
     const date = new Date(cell.dateStr + 'T00:00:00');
     const label = date.toLocaleDateString('en-US', {
         weekday: 'short',
-        month:   'short',
-        day:     'numeric',
-        year:    'numeric',
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
     });
 
     const top = rect.top - 8;
@@ -116,9 +125,15 @@ function CellTooltip({info}) {
         >
             <p className="font-semibold text-foreground mb-1">{label}</p>
             <p className="text-muted-foreground">
-                <span className="text-emerald-500 font-bold">{cell.accepted}</span> accepted
+                <span className="text-emerald-500 font-bold">
+                    {cell.accepted}
+                </span>{' '}
+                accepted
                 {' · '}
-                <span className="font-bold text-foreground">{cell.total}</span> total
+                <span className="font-bold text-foreground">
+                    {cell.total}
+                </span>{' '}
+                total
             </p>
         </div>
     );
@@ -148,7 +163,7 @@ export default function ActivityHeatmap({stats, loading, onYearChange}) {
     const [hoveredCell, setHoveredCell] = useState(null);
     const currentYear = new Date().getFullYear();
 
-    const year   = stats?.year   ?? currentYear;
+    const year = stats?.year ?? currentYear;
     const heatmap = stats?.heatmap ?? [];
 
     const years = Array.from({length: YEAR_RANGE}, (_, i) => currentYear - i);
@@ -239,7 +254,10 @@ export default function ActivityHeatmap({stats, loading, onYearChange}) {
                                     <div
                                         key={colIdx}
                                         className="flex-1 text-[10px] text-muted-foreground font-medium"
-                                        style={{overflow: 'visible', whiteSpace: 'nowrap'}}
+                                        style={{
+                                            overflow: 'visible',
+                                            whiteSpace: 'nowrap',
+                                        }}
                                     >
                                         {label ? MONTHS[label.month] : ''}
                                     </div>
@@ -252,64 +270,88 @@ export default function ActivityHeatmap({stats, loading, onYearChange}) {
                             {/* columns = weeks */}
                             {weeks.map((week, colIdx) => {
                                 return (
-                                <div
-                                    key={colIdx}
-                                    className="flex flex-col flex-1 gap-[2px]"
-                                >
-                                    {week.map((cell, rowIdx) => {
-                                        if (!cell) {
+                                    <div
+                                        key={colIdx}
+                                        className="flex flex-col flex-1 gap-[2px]"
+                                    >
+                                        {week.map((cell, rowIdx) => {
+                                            if (!cell) {
+                                                return (
+                                                    <div
+                                                        key={rowIdx}
+                                                        className="w-full aspect-square rounded-[2px]"
+                                                    />
+                                                );
+                                            }
+                                            const level = intensityLevel(
+                                                cell.accepted
+                                            );
+                                            const isHovered =
+                                                hoveredCell?.dateStr ===
+                                                cell.dateStr;
+
+                                            const today = new Date();
+                                            const todayStr = new Date(
+                                                today.getTime() -
+                                                    today.getTimezoneOffset() *
+                                                        60000
+                                            )
+                                                .toISOString()
+                                                .slice(0, 10);
+                                            const isPast =
+                                                cell.dateStr <= todayStr;
+
+                                            let cellClass =
+                                                INTENSITY_CLASSES[level];
+                                            if (level === 0 && isPast) {
+                                                cellClass =
+                                                    'bg-muted/80 border-border/50';
+                                            }
+
                                             return (
                                                 <div
                                                     key={rowIdx}
-                                                    className="w-full aspect-square rounded-[2px]"
-                                                />
-                                            );
-                                        }
-                                        const level = intensityLevel(cell.accepted);
-                                        const isHovered = hoveredCell?.dateStr === cell.dateStr;
-                                        
-                                        const today = new Date();
-                                        const todayStr = new Date(today.getTime() - today.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
-                                        const isPast = cell.dateStr <= todayStr;
-                                        
-                                        let cellClass = INTENSITY_CLASSES[level];
-                                        if (level === 0 && isPast) {
-                                            cellClass = 'bg-muted/80 border-border/50';
-                                        }
-
-                                        return (
-                                            <div
-                                                key={rowIdx}
-                                                className={`w-full aspect-square rounded-[2px] border cursor-pointer transition-colors
+                                                    className={`w-full aspect-square rounded-[2px] border cursor-pointer transition-colors
                                                     ${cellClass}
                                                     ${isHovered ? 'ring-1 ring-emerald-400 ring-offset-1 ring-offset-background z-10' : ''}`}
-                                                onMouseEnter={(e) => {
-                                                    const rect = e.target.getBoundingClientRect();
-                                                    setHoveredCell({cell, rect});
-                                                }}
-                                                onMouseLeave={() => setHoveredCell(null)}
-                                            />
-                                        );
-                                    })}
-                                </div>
-                            )})}
+                                                    onMouseEnter={(e) => {
+                                                        const rect =
+                                                            e.target.getBoundingClientRect();
+                                                        setHoveredCell({
+                                                            cell,
+                                                            rect,
+                                                        });
+                                                    }}
+                                                    onMouseLeave={() =>
+                                                        setHoveredCell(null)
+                                                    }
+                                                />
+                                            );
+                                        })}
+                                    </div>
+                                );
+                            })}
                         </div>
                     </div>
                 </div>
 
                 {/* legend */}
                 <div className="flex items-center justify-end gap-1.5 mt-3">
-                    <span className="text-[10px] text-muted-foreground mr-0.5">Less</span>
+                    <span className="text-[10px] text-muted-foreground mr-0.5">
+                        Less
+                    </span>
                     {INTENSITY_CLASSES.map((cls, i) => (
                         <div
                             key={i}
                             className={`w-[11px] h-[11px] rounded-[2px] border ${cls}`}
                         />
                     ))}
-                    <span className="text-[10px] text-muted-foreground ml-0.5">More</span>
+                    <span className="text-[10px] text-muted-foreground ml-0.5">
+                        More
+                    </span>
                 </div>
             </div>
-            
+
             <CellTooltip info={hoveredCell} />
         </div>
     );

@@ -156,9 +156,7 @@ export default function RatingGraph({history, loading}) {
         if (!selected?.months) return history;
         const cutoff = new Date();
         cutoff.setMonth(cutoff.getMonth() - selected.months);
-        return history.filter(
-            (d) => new Date(d.contest_end_time) >= cutoff
-        );
+        return history.filter((d) => new Date(d.contest_end_time) >= cutoff);
     }, [history, range]);
 
     // Compute gradient stops from rating tiers
@@ -172,10 +170,7 @@ export default function RatingGraph({history, loading}) {
         return RATING_TIERS.slice()
             .reverse()
             .map((tier) => {
-                const pct = Math.max(
-                    0,
-                    Math.min(1, (tier.max - minR) / span)
-                );
+                const pct = Math.max(0, Math.min(1, (tier.max - minR) / span));
                 return {offset: `${(1 - pct) * 100}%`, color: tier.hexColor};
             });
     }, [filtered]);
@@ -404,7 +399,9 @@ export default function RatingGraph({history, loading}) {
                                                     {d.contest_title}
                                                 </div>
                                                 <div className="text-muted-foreground/70 mt-0.5">
-                                                    {fmtDate(d.contest_end_time)}
+                                                    {fmtDate(
+                                                        d.contest_end_time
+                                                    )}
                                                 </div>
                                             </td>
                                             <td className="px-4 py-2.5 text-center font-semibold text-foreground">

@@ -1,17 +1,24 @@
 import {useState, useEffect} from 'react';
 import api from '@/lib/axios';
 import {Link, NavLink, useNavigate} from 'react-router-dom';
-import {Code2, Menu, X, LogOut} from 'lucide-react';
+import {Code2, Menu, X, LogOut, Sun, Moon} from 'lucide-react';
 import {Button} from '@/components/ui/button';
 import {useAuth} from '@/context/AuthContext';
 import {toast} from 'sonner';
 import ProfileHoverCard from './ProfileHoverCard';
+import {useTheme} from '@/components/theme-provider';
 
 export default function Header() {
     const {user, logout} = useAuth();
     const navigate = useNavigate();
     const [mobileOpen, setMobileOpen] = useState(false);
     const [onlineCount, setOnlineCount] = useState(null);
+    const {theme, setTheme} = useTheme();
+    const isDark = theme === 'dark';
+
+    const toggleTheme = () => {
+        setTheme(isDark ? 'light' : 'dark');
+    };
 
     useEffect(() => {
         if (!user) {
@@ -89,7 +96,30 @@ export default function Header() {
                 </Link>
 
                 {/* Desktop Auth */}
-                <div className="hidden md:flex items-center text-sm font-semibold tracking-wide">
+                <div className="hidden md:flex items-center gap-4 text-sm font-semibold tracking-wide">
+                    {/* Theme Toggle Slider */}
+                    <button
+                        onClick={toggleTheme}
+                        className="relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out bg-muted hover:bg-muted/80 focus:outline-none"
+                        aria-label="Toggle theme"
+                    >
+                        <span
+                            className={`pointer-events-none block h-5 w-5 rounded-full bg-card shadow-md ring-0 transition-transform duration-200 ease-in-out flex items-center justify-center ${
+                                isDark ? 'translate-x-5' : 'translate-x-0'
+                            }`}
+                        >
+                            {isDark ? (
+                                <Moon className="h-3.5 w-3.5 text-primary" />
+                            ) : (
+                                <Sun className="h-3.5 w-3.5 text-amber-500" />
+                            )}
+                        </span>
+                    </button>
+
+                    <span className="text-muted-foreground/60 font-normal">
+                        |
+                    </span>
+
                     {user ? (
                         <>
                             <ProfileHoverCard user={user} />
@@ -124,19 +154,39 @@ export default function Header() {
                     )}
                 </div>
 
-                {/* Mobile hamburger */}
-                <button
-                    id="header-mobile-toggle"
-                    className="md:hidden p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-                    onClick={() => setMobileOpen((v) => !v)}
-                    aria-label="Toggle menu"
-                >
-                    {mobileOpen ? (
-                        <X className="w-5 h-5" />
-                    ) : (
-                        <Menu className="w-5 h-5" />
-                    )}
-                </button>
+                {/* Mobile Controls (Theme Toggle + Hamburger) */}
+                <div className="flex md:hidden items-center gap-3">
+                    <button
+                        onClick={toggleTheme}
+                        className="relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out bg-muted hover:bg-muted/80 focus:outline-none"
+                        aria-label="Toggle theme"
+                    >
+                        <span
+                            className={`pointer-events-none block h-5 w-5 rounded-full bg-card shadow-md ring-0 transition-transform duration-200 ease-in-out flex items-center justify-center ${
+                                isDark ? 'translate-x-5' : 'translate-x-0'
+                            }`}
+                        >
+                            {isDark ? (
+                                <Moon className="h-3.5 w-3.5 text-primary" />
+                            ) : (
+                                <Sun className="h-3.5 w-3.5 text-amber-500" />
+                            )}
+                        </span>
+                    </button>
+
+                    <button
+                        id="header-mobile-toggle"
+                        className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                        onClick={() => setMobileOpen((v) => !v)}
+                        aria-label="Toggle menu"
+                    >
+                        {mobileOpen ? (
+                            <X className="w-5 h-5" />
+                        ) : (
+                            <Menu className="w-5 h-5" />
+                        )}
+                    </button>
+                </div>
             </div>
 
             {/* Bottom Row: Navigation Bar (Only for logged-in users) */}
@@ -210,7 +260,9 @@ export default function Header() {
                                                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                                                 <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span>
                                             </span>
-                                            <span>online users: {onlineCount}</span>
+                                            <span>
+                                                online users: {onlineCount}
+                                            </span>
                                         </div>
                                     )}
                                 </div>

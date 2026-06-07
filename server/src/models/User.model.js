@@ -154,12 +154,15 @@ class User {
         );
 
         // 3. Year totals (reuse heatmap rows for efficiency)
-        const yearTotal    = heatmapRows.reduce((s, r) => s + Number(r.total),    0);
-        const yearAccepted = heatmapRows.reduce((s, r) => s + Number(r.accepted), 0);
+        const yearTotal = heatmapRows.reduce((s, r) => s + Number(r.total), 0);
+        const yearAccepted = heatmapRows.reduce(
+            (s, r) => s + Number(r.accepted),
+            0
+        );
 
         // 4. Streak calculation — based on days with at least 1 accepted submission
         //    We need accepted-day history across ALL years for streak, not just current year
-        const [[{ allDaysAccepted }]] = await pool.query(
+        const [[{allDaysAccepted}]] = await pool.query(
             `SELECT GROUP_CONCAT(DISTINCT DATE(submitted_at) ORDER BY DATE(submitted_at) ASC) AS allDaysAccepted
              FROM submissions
              WHERE submitted_by = ? AND verdict = 'accepted'`,
@@ -182,7 +185,10 @@ class User {
                 const d = new Date(days[i]);
                 const expected = new Date(today);
                 expected.setDate(expected.getDate() - streak);
-                if (d.toISOString().slice(0, 10) === expected.toISOString().slice(0, 10)) {
+                if (
+                    d.toISOString().slice(0, 10) ===
+                    expected.toISOString().slice(0, 10)
+                ) {
                     streak++;
                 } else {
                     break;
@@ -195,7 +201,10 @@ class User {
                     const d = new Date(days[i]);
                     const expected = new Date(yesterday);
                     expected.setDate(expected.getDate() - streakFromYesterday);
-                    if (d.toISOString().slice(0, 10) === expected.toISOString().slice(0, 10)) {
+                    if (
+                        d.toISOString().slice(0, 10) ===
+                        expected.toISOString().slice(0, 10)
+                    ) {
                         streakFromYesterday++;
                     } else {
                         break;
@@ -226,13 +235,14 @@ class User {
 
         return {
             heatmap: heatmapRows.map((r) => ({
-                day: r.day instanceof Date
-                    ? r.day.toISOString().slice(0, 10)
-                    : String(r.day),
-                total:    Number(r.total),
+                day:
+                    r.day instanceof Date
+                        ? r.day.toISOString().slice(0, 10)
+                        : String(r.day),
+                total: Number(r.total),
                 accepted: Number(r.accepted),
             })),
-            allTimeTotal:    Number(allTime.total    ?? 0),
+            allTimeTotal: Number(allTime.total ?? 0),
             allTimeAccepted: Number(allTime.accepted ?? 0),
             yearTotal,
             yearAccepted,

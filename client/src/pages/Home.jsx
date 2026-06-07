@@ -332,8 +332,6 @@ function HeroSection({ stats, loading }) {
                                 <div className="mt-4 pl-4 text-purple-400">return <span className="text-orange-400">0</span><span className="text-gray-200">;</span></div>
                                 <div className="text-gray-200">{"}"}</div>
                                 
-                                {/* Blinking cursor */}
-                                <div className="inline-block w-2 h-4 bg-primary ml-1 animate-pulse align-middle" />
                             </div>
                         </div>
 

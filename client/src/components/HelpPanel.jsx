@@ -1,16 +1,14 @@
-import { useState, useRef, useEffect } from 'react';
-import {
-    HelpCircle, Send, Sparkles, BookOpen,
-    Loader2, X
-} from 'lucide-react';
-import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import {useState, useRef, useEffect} from 'react';
+import {HelpCircle, Send, Sparkles, BookOpen, Loader2, X} from 'lucide-react';
+import {Card} from '@/components/ui/card';
+import {Button} from '@/components/ui/button';
+import {Input} from '@/components/ui/input';
 import api from '@/lib/axios';
 
-export default function HelpPanel({ contest }) {
-    const isPastEnd = contest && new Date(contest.contest_end_time) < new Date();
-    const allowAI = contest ? (isPastEnd || contest.ai_assistance) : false;
+export default function HelpPanel({contest}) {
+    const isPastEnd =
+        contest && new Date(contest.contest_end_time) < new Date();
+    const allowAI = contest ? isPastEnd || contest.ai_assistance : false;
 
     const [isOpen, setIsOpen] = useState(false);
     const [activeTab, setActiveTab] = useState(allowAI ? 'ai' : 'wiki'); // 'ai' | 'wiki'
@@ -23,7 +21,10 @@ export default function HelpPanel({ contest }) {
 
     // AI Chat State
     const [messages, setMessages] = useState([
-        { sender: 'assistant', text: "Hello! I am Deco, your coding assistant. Ask me for hints or help with coding concepts!" }
+        {
+            sender: 'assistant',
+            text: 'Hello! I am Deco, your coding assistant. Ask me for hints or help with coding concepts!',
+        },
     ]);
     const [aiInput, setAiInput] = useState('');
     const [loadingAi, setLoadingAi] = useState(false);
@@ -34,7 +35,7 @@ export default function HelpPanel({ contest }) {
     // Auto-scroll AI chat
     useEffect(() => {
         if (messagesEndRef.current) {
-            messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+            messagesEndRef.current.scrollIntoView({behavior: 'smooth'});
         }
     }, [messages, isOpen]);
 
@@ -64,26 +65,31 @@ export default function HelpPanel({ contest }) {
         if (!text || loadingAi) return;
 
         // Add user message
-        const userMsg = { sender: 'user', text };
-        setMessages(prev => [...prev, userMsg]);
+        const userMsg = {sender: 'user', text};
+        setMessages((prev) => [...prev, userMsg]);
         setAiInput('');
         setLoadingAi(true);
 
         try {
-            const res = await api.post('/ai/ask', { prompt: text });
-            const replyText = res.data?.data?.hint || "Sorry, I couldn't generate a hint.";
-            setMessages(prev => [...prev, { sender: 'assistant', text: replyText }]);
+            const res = await api.post('/ai/ask', {prompt: text});
+            const replyText =
+                res.data?.data?.hint || "Sorry, I couldn't generate a hint.";
+            setMessages((prev) => [
+                ...prev,
+                {sender: 'assistant', text: replyText},
+            ]);
         } catch (err) {
-            setMessages(prev => [...prev, {
-                sender: 'assistant',
-                text: "Error: Failed to connect to the assistant. Ensure Ollama is running."
-            }]);
+            setMessages((prev) => [
+                ...prev,
+                {
+                    sender: 'assistant',
+                    text: 'Error: Failed to connect to the assistant. Ensure Ollama is running.',
+                },
+            ]);
         } finally {
             setLoadingAi(false);
         }
     };
-
-
 
     return (
         <>
@@ -94,7 +100,11 @@ export default function HelpPanel({ contest }) {
                     onClick={() => setIsOpen(!isOpen)}
                     className="w-14 h-14 rounded-full shadow-2xl flex items-center justify-center bg-primary hover:bg-primary/95 text-primary-foreground transition-all duration-300 transform hover:scale-105"
                 >
-                    {isOpen ? <X className="w-6 h-6 animate-in fade-in zoom-in" /> : <HelpCircle className="w-6 h-6 animate-in fade-in zoom-in" />}
+                    {isOpen ? (
+                        <X className="w-6 h-6 animate-in fade-in zoom-in" />
+                    ) : (
+                        <HelpCircle className="w-6 h-6 animate-in fade-in zoom-in" />
+                    )}
                 </Button>
             </div>
 
@@ -109,10 +119,11 @@ export default function HelpPanel({ contest }) {
                         {!!allowAI && (
                             <button
                                 onClick={() => setActiveTab('ai')}
-                                className={`flex-1 pt-1 pb-2 text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 border-b-2 transition-all ${activeTab === 'ai'
-                                    ? 'border-primary text-primary bg-background/50'
-                                    : 'border-transparent text-muted-foreground hover:text-foreground'
-                                    }`}
+                                className={`flex-1 pt-1 pb-2 text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 border-b-2 transition-all ${
+                                    activeTab === 'ai'
+                                        ? 'border-primary text-primary bg-background/50'
+                                        : 'border-transparent text-muted-foreground hover:text-foreground'
+                                }`}
                             >
                                 <Sparkles className="w-3.5 h-3.5" />
                                 AI Assistant
@@ -120,10 +131,11 @@ export default function HelpPanel({ contest }) {
                         )}
                         <button
                             onClick={() => setActiveTab('wiki')}
-                            className={`flex-1 pt-1 pb-2 text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 border-b-2 transition-all ${activeTab === 'wiki'
-                                ? 'border-primary text-primary bg-background/50'
-                                : 'border-transparent text-muted-foreground hover:text-foreground'
-                                }`}
+                            className={`flex-1 pt-1 pb-2 text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 border-b-2 transition-all ${
+                                activeTab === 'wiki'
+                                    ? 'border-primary text-primary bg-background/50'
+                                    : 'border-transparent text-muted-foreground hover:text-foreground'
+                            }`}
                         >
                             <BookOpen className="w-3.5 h-3.5" />
                             Wikipedia
@@ -132,7 +144,6 @@ export default function HelpPanel({ contest }) {
 
                     {/* Tab Content Area */}
                     <div className="flex-1 overflow-hidden relative flex flex-col bg-card">
-
                         {/* Tab 1: AI Assistant */}
                         {!!allowAI && activeTab === 'ai' && (
                             <div className="flex-1 flex flex-col overflow-hidden">
@@ -142,10 +153,13 @@ export default function HelpPanel({ contest }) {
                                             key={i}
                                             className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}
                                         >
-                                            <div className={`max-w-[85%] rounded-2xl px-4 py-2.5 text-sm shadow-sm leading-relaxed ${msg.sender === 'user'
-                                                ? 'bg-primary text-primary-foreground rounded-tr-none'
-                                                : 'bg-muted/80 text-foreground rounded-tl-none border border-border'
-                                                }`}>
+                                            <div
+                                                className={`max-w-[85%] rounded-2xl px-4 py-2.5 text-sm shadow-sm leading-relaxed ${
+                                                    msg.sender === 'user'
+                                                        ? 'bg-primary text-primary-foreground rounded-tr-none'
+                                                        : 'bg-muted/80 text-foreground rounded-tl-none border border-border'
+                                                }`}
+                                            >
                                                 {msg.text}
                                             </div>
                                         </div>
@@ -154,22 +168,33 @@ export default function HelpPanel({ contest }) {
                                         <div className="flex justify-start">
                                             <div className="bg-muted/80 text-foreground border border-border rounded-2xl rounded-tl-none px-4 py-3 text-sm shadow-sm flex items-center gap-2">
                                                 <Loader2 className="w-4 h-4 animate-spin text-primary" />
-                                                <span>Assistant is writing...</span>
+                                                <span>
+                                                    Assistant is writing...
+                                                </span>
                                             </div>
                                         </div>
                                     )}
                                     <div ref={messagesEndRef} />
                                 </div>
 
-                                <form onSubmit={handleSendAi} className="p-3 border-t border-border bg-muted/20 flex gap-2 shrink-0">
+                                <form
+                                    onSubmit={handleSendAi}
+                                    className="p-3 border-t border-border bg-muted/20 flex gap-2 shrink-0"
+                                >
                                     <Input
                                         value={aiInput}
-                                        onChange={(e) => setAiInput(e.target.value)}
+                                        onChange={(e) =>
+                                            setAiInput(e.target.value)
+                                        }
                                         placeholder="Ask a question or request a hint..."
                                         disabled={loadingAi}
                                         className="flex-1 bg-background border-border"
                                     />
-                                    <Button type="submit" disabled={loadingAi || !aiInput.trim()} size="icon">
+                                    <Button
+                                        type="submit"
+                                        disabled={loadingAi || !aiInput.trim()}
+                                        size="icon"
+                                    >
                                         <Send className="w-4 h-4" />
                                     </Button>
                                 </form>

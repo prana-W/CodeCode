@@ -132,7 +132,7 @@ const deleteUser = asyncHandler(async (req, res) => {
 });
 
 const getRankings = asyncHandler(async (req, res) => {
-    const { institute, sortBy } = req.query;
+    const {institute, sortBy} = req.query;
     const users = await User.getRankings(institute, sortBy);
 
     return res
@@ -161,7 +161,13 @@ const heartbeat = asyncHandler(async (req, res) => {
     let onlineUsersCount = 0;
 
     do {
-        const [nextCursor, keys] = await redis.scan(cursor, 'MATCH', 'online_user:*', 'COUNT', 100);
+        const [nextCursor, keys] = await redis.scan(
+            cursor,
+            'MATCH',
+            'online_user:*',
+            'COUNT',
+            100
+        );
         cursor = nextCursor;
         onlineUsersCount += keys.length;
     } while (cursor !== '0');
@@ -169,11 +175,9 @@ const heartbeat = asyncHandler(async (req, res) => {
     return res
         .status(statusCode.OK)
         .json(
-            new ApiResponse(
-                statusCode.OK,
-                'Heartbeat acknowledged.',
-                { onlineUsers: onlineUsersCount }
-            )
+            new ApiResponse(statusCode.OK, 'Heartbeat acknowledged.', {
+                onlineUsers: onlineUsersCount,
+            })
         );
 });
 

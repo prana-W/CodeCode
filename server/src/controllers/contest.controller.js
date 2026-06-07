@@ -15,8 +15,14 @@ const createContest = asyncHandler(async (req, res) => {
         );
     }
 
-    const {title, description, contest_start_time, contest_end_time, division, ai_assistance} =
-        req.body;
+    const {
+        title,
+        description,
+        contest_start_time,
+        contest_end_time,
+        division,
+        ai_assistance,
+    } = req.body;
 
     if (!title || !contest_start_time || !contest_end_time || !division) {
         throw new ApiError(
@@ -296,7 +302,9 @@ const registerForContest = asyncHandler(async (req, res) => {
         req.userId
     );
 
-    const totalRegistered = await ContestRegistration.getCountByContest(Number(contest_id));
+    const totalRegistered = await ContestRegistration.getCountByContest(
+        Number(contest_id)
+    );
 
     return res.status(statusCode.CREATED).json(
         new ApiResponse(
@@ -335,7 +343,9 @@ const checkRegistration = asyncHandler(async (req, res) => {
         req.userId
     );
 
-    const totalRegistered = await ContestRegistration.getCountByContest(Number(contest_id));
+    const totalRegistered = await ContestRegistration.getCountByContest(
+        Number(contest_id)
+    );
 
     if (registration) {
         return res.status(statusCode.OK).json(

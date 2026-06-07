@@ -10,9 +10,11 @@ export default function Footer() {
         api.get('/')
             .then((res) => {
                 if (res.data?.data?.serverTime) {
-                    let currentTime = new Date(res.data.data.serverTime).getTime();
+                    let currentTime = new Date(
+                        res.data.data.serverTime
+                    ).getTime();
                     setServerTime(new Date(currentTime));
-                    
+
                     interval = setInterval(() => {
                         currentTime += 1000;
                         setServerTime(new Date(currentTime));
@@ -41,17 +43,20 @@ export default function Footer() {
                             </span>
                         </div>
                         <p className="text-sm text-muted-foreground font-medium">
-                            © {new Date().getFullYear()} CodeCode. All rights reserved.
+                            © {new Date().getFullYear()} CodeCode. All rights
+                            reserved.
                         </p>
                     </div>
 
                     {/* Middle Section: Made with Love */}
                     <div className="flex flex-col items-center justify-center gap-2">
                         <p className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground">
-                            Made with <Heart className="w-4 h-4 text-red-500 fill-red-500" /> by
-                            <a 
-                                href="https://pranaw-kumar-portfolio.vercel.app" 
-                                target="_blank" 
+                            Made with{' '}
+                            <Heart className="w-4 h-4 text-red-500 fill-red-500" />{' '}
+                            by
+                            <a
+                                href="https://pranaw-kumar-portfolio.vercel.app"
+                                target="_blank"
                                 rel="noreferrer"
                                 className="text-foreground hover:text-primary transition-colors font-bold"
                             >
@@ -61,7 +66,10 @@ export default function Footer() {
                         <div className="flex items-center gap-1.5 text-xs text-muted-foreground bg-muted/50 px-3 py-1 rounded-full">
                             <Clock className="w-3.5 h-3.5" />
                             {serverTime ? (
-                                <span className="tabular-nums">Server Time: {serverTime.toLocaleTimeString()}</span>
+                                <span className="tabular-nums">
+                                    Server Time:{' '}
+                                    {serverTime.toLocaleTimeString()}
+                                </span>
                             ) : (
                                 <span>Connecting...</span>
                             )}
@@ -77,7 +85,9 @@ export default function Footer() {
                             className="group flex items-center gap-2 px-4 py-2 rounded-full border border-border bg-muted/30 hover:bg-muted/50 hover:border-primary/50 transition-all duration-300"
                         >
                             <Star className="w-4 h-4 text-muted-foreground group-hover:text-yellow-500 group-hover:fill-yellow-500 transition-colors" />
-                            <span className="text-sm font-semibold text-foreground">Star now on GitHub</span>
+                            <span className="text-sm font-semibold text-foreground">
+                                Star now on GitHub
+                            </span>
                         </a>
                         <a
                             href="https://github.com/prana-W"
