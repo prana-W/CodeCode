@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import {Button} from '@/components/ui/button';
 import api from '@/lib/axios';
+import HelpPanel from '@/components/HelpPanel';
 
 export default function ContestParticipationLayout() {
     const {id} = useParams();
@@ -128,6 +129,7 @@ export default function ContestParticipationLayout() {
             <main className="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 py-8">
                 <Outlet context={{contest, problems}} />
             </main>
+            <HelpPanel />
         </div>
     );
 }
