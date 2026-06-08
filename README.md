@@ -3,7 +3,7 @@
 ![Home Page](./assets/home.png)
 *A sleek, high-performance competitive programming platform built for algorithmic contests and continuous learning.*
 
-[![Watch Demo Video Here]()
+[Watch Demo Video Here]()
 *(Will be added soon!)*
 
 ---
@@ -25,6 +25,15 @@ Unlike traditional platforms that rely on slow HTTP polling, CodeCode utilizes a
 
 ![Contest Arena](./assets/contest.png)
 *The Contest Arena featuring the built-in Monaco Editor and real-time Socket.io execution feedback.*
+
+![Custom Invocation](./assets/custom_invocation.png)
+*Integrated code runner supporting custom inputs and instant compilation feedback.*
+
+![Problem Design & AI Refiner](./assets/problem_statement_design_and%20_ai_refiner.png)
+*Contest creation editor with automated problem statement refinement and testcase generation powered by AI.*
+
+![Contest Leaderboard](./assets/leaderboard.png)
+*Real-time contest standings and live leaderboard to track participant performance and submissions.*
 
 ---
 
