@@ -7,6 +7,7 @@ class ContestStanding {
                 cs.user_id,
                 u.username,
                 u.name,
+                cr.delta,
                 COUNT(cs.problem_id)                                                    AS problems_solved,
                 SUM(p.score)                                                            AS total_score,
                 SUM(TIMESTAMPDIFF(MINUTE, c.contest_start_time, s.submitted_at))       AS total_penalty_minutes,
@@ -23,8 +24,9 @@ class ContestStanding {
              JOIN problems   p  ON cs.problem_id             = p.problem_id
              JOIN submissions s ON cs.accepted_submission_id = s.submission_id
              JOIN contests    c  ON cs.contest_id             = c.id
+             LEFT JOIN contest_registrations cr ON cr.contest_id = cs.contest_id AND cr.user_id = cs.user_id
              WHERE cs.contest_id = ?
-             GROUP BY cs.user_id, u.username, u.name
+             GROUP BY cs.user_id, u.username, u.name, cr.delta
              ORDER BY final_score DESC`,
             [contest_id]
         );

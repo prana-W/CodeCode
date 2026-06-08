@@ -9,7 +9,7 @@ const PROBLEM_LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
 export default function ContestLeaderboardTab() {
     const {id} = useParams();
-    const {problems} = useOutletContext();
+    const {contest, problems} = useOutletContext();
     const [leaderboard, setLeaderboard] = useState([]);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
@@ -59,6 +59,8 @@ export default function ContestLeaderboardTab() {
         );
     }
 
+    const showDelta = contest?.contest_evaluation === 'completed';
+
     return (
         <div className="space-y-4">
             <div className="flex items-center justify-between">
@@ -89,6 +91,11 @@ export default function ContestLeaderboardTab() {
                             <th className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-r border-border min-w-[150px]">
                                 Participant
                             </th>
+                            {showDelta && (
+                                <th className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-r border-border text-center w-20">
+                                    Delta
+                                </th>
+                            )}
                             <th className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-r border-border text-center w-20">
                                 =
                             </th>
@@ -140,6 +147,19 @@ export default function ContestLeaderboardTab() {
                                             {user.name}
                                         </div>
                                     </td>
+                                    {showDelta && (
+                                        <td className="px-4 py-3 text-center border-r border-border font-mono font-bold">
+                                            <span className={
+                                                !user.delta || user.delta === 0 
+                                                    ? 'text-muted-foreground' 
+                                                    : user.delta > 0 
+                                                        ? 'text-emerald-500' 
+                                                        : 'text-red-500'
+                                            }>
+                                                {user.delta > 0 ? `+${user.delta}` : (user.delta || 0)}
+                                            </span>
+                                        </td>
+                                    )}
                                     <td className="px-4 py-3 text-center border-r border-border font-mono font-bold text-foreground">
                                         {user.final_score || 0}
                                     </td>
