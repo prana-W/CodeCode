@@ -25,6 +25,7 @@ import MDEditor from '@uiw/react-md-editor';
 import Editor from '@monaco-editor/react';
 import { useTheme } from '@/components/theme-provider';
 import { getVerdictDetails } from '@/constants/verdicts';
+import { HelpContent } from '@/components/HelpPanel';
 
 const VALID_LANGUAGES = ['cpp', 'c', 'java', 'python', 'javascript'];
 const LANG_LABEL = {
@@ -38,9 +39,10 @@ const LANG_LABEL = {
 export default function ContestProblemView() {
     const { id, problemId } = useParams();
     const navigate = useNavigate();
-    const { contest, solvedIds, setSolvedIds } = useOutletContext();
+    const { contest, problems, solvedIds, setSolvedIds } = useOutletContext();
     const [problem, setProblem] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [isHelpOpen, setIsHelpOpen] = useState(false);
 
     // UI Split Pane states
     const [leftWidth, setLeftWidth] = useState(50);
@@ -303,6 +305,11 @@ export default function ContestProblemView() {
 
     if (!problem) return null;
 
+    const problemIndex = problems.findIndex(p => p.problem_id === Number(problemId));
+    const prevProblem = problemIndex > 0 ? problems[problemIndex - 1] : null;
+    const nextProblem = problemIndex !== -1 && problemIndex < problems.length - 1 ? problems[problemIndex + 1] : null;
+    const problemLetter = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'[problemIndex] || problemIndex + 1;
+
     return (
         <div className="flex-1 flex flex-col w-full overflow-hidden bg-card animate-in fade-in duration-500 min-h-0 border-t border-border">
             {/* Header bar */}
@@ -331,6 +338,14 @@ export default function ContestProblemView() {
                     </div>
                 </div>
                 <div className="flex items-center gap-4 text-sm font-semibold tracking-wide">
+                    <div className="flex items-center border-r border-border pr-4 mr-1">
+                        <Button variant="ghost" size="sm" disabled={!prevProblem} asChild={!!prevProblem}>
+                            {prevProblem ? <Link to={`/contest/${id}/problem/${prevProblem.problem_id}`}>Prev</Link> : <span>Prev</span>}
+                        </Button>
+                        <Button variant="ghost" size="sm" disabled={!nextProblem} asChild={!!nextProblem}>
+                            {nextProblem ? <Link to={`/contest/${id}/problem/${nextProblem.problem_id}`}>Next</Link> : <span>Next</span>}
+                        </Button>
+                    </div>
                     <span className="flex items-center gap-1.5 text-muted-foreground"><Clock className="w-4 h-4" />{problem.time_limit_ms}ms</span>
                     <span className="flex items-center gap-1.5 text-muted-foreground"><Database className="w-4 h-4" />{problem.memory_limit_mb}MB</span>
                     <span className="text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded text-xs">{problem.score} pts</span>
@@ -342,7 +357,7 @@ export default function ContestProblemView() {
                 {/* LEFT PANE: Problem Statement */}
                 <div style={{ width: `${leftWidth}%` }} className="h-full overflow-y-auto custom-scrollbar p-6">
                     <h1 className="text-2xl font-serif font-semibold text-foreground mb-6 flex items-center gap-3">
-                        {problem.title}
+                        <span>{problemLetter}. {problem.title}</span>
                         {solvedIds && solvedIds.includes(Number(problemId)) && <CheckCircle2 className="w-6 h-6 text-emerald-500" />}
                     </h1>
                     <div className="prose prose-slate dark:prose-invert max-w-none prose-headings:font-bold prose-a:text-primary mb-12">
@@ -402,6 +417,11 @@ export default function ContestProblemView() {
                     {/* Monaco Editor */}
                     <div className="flex-1 relative bg-background min-h-0" onPaste={handlePaste} onCopyCapture={(e) => { }}>
                         {isResizing && <div className={`absolute inset-0 z-50 ${isResizing === 'horizontal' ? 'cursor-col-resize' : 'cursor-row-resize'}`} />}
+                        
+                        <div className={`absolute inset-0 z-40 bg-card flex flex-col border border-border transition-all duration-300 ease-in-out ${isHelpOpen ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible pointer-events-none translate-y-2'}`}>
+                            <HelpContent contest={contest} />
+                        </div>
+                        
                         <Editor
                             height="100%"
                             language={language === 'cpp' ? 'cpp' : language === 'javascript' ? 'javascript' : language === 'python' ? 'python' : language === 'java' ? 'java' : 'c'}
@@ -512,24 +532,35 @@ export default function ContestProblemView() {
                     </div>
 
                     {/* Execution Actions (Footer) */}
-                    <div className="h-14 border-t border-border bg-muted/20 flex items-center justify-end px-4 gap-3 shrink-0">
-                        <Button
-                            variant="secondary"
-                            className="gap-2 w-32"
-                            onClick={handleRunCode}
-                            disabled={isRunning || isSubmitting}
-                        >
-                            {isRunning ? <Loader2 className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4" />}
-                            Run Code
-                        </Button>
-                        <Button
-                            className="gap-2 w-32 bg-emerald-600 hover:bg-emerald-700 text-white"
-                            onClick={handleSubmitCode}
-                            disabled={isRunning || isSubmitting}
-                        >
-                            {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-                            Submit
-                        </Button>
+                    <div className="h-14 border-t border-border bg-muted/20 flex items-center justify-between px-4 gap-3 shrink-0">
+                        <div>
+                            <Button 
+                                variant={isHelpOpen ? "default" : "outline"}
+                                className={`w-28 font-semibold flex items-center justify-center transition-all duration-300 ${isHelpOpen ? 'bg-primary text-primary-foreground' : ''}`}
+                                onClick={() => setIsHelpOpen(!isHelpOpen)}
+                            >
+                                {isHelpOpen ? 'Close Help' : 'Help'}
+                            </Button>
+                        </div>
+                        <div className="flex items-center gap-3">
+                            <Button
+                                variant="secondary"
+                                className="gap-2 w-32"
+                                onClick={handleRunCode}
+                                disabled={isRunning || isSubmitting}
+                            >
+                                {isRunning ? <Loader2 className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4" />}
+                                Run Code
+                            </Button>
+                            <Button
+                                className="gap-2 w-32 bg-emerald-600 hover:bg-emerald-700 text-white"
+                                onClick={handleSubmitCode}
+                                disabled={isRunning || isSubmitting}
+                            >
+                                {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                                Submit
+                            </Button>
+                        </div>
                     </div>
                 </div>
             </div>

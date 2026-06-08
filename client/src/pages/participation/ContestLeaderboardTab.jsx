@@ -141,7 +141,7 @@ export default function ContestLeaderboardTab() {
                                         </div>
                                     </td>
                                     <td className="px-4 py-3 text-center border-r border-border font-mono font-bold text-foreground">
-                                        {user.total_score || 0}
+                                        {user.final_score || 0}
                                     </td>
                                     <td className="px-4 py-3 text-center border-r border-border font-mono text-xs text-muted-foreground">
                                         {user.total_penalty_minutes || 0}
