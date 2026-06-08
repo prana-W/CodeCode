@@ -160,9 +160,9 @@ function TestcasePanel({problem, index, testcase, onRefresh}) {
                 'http://localhost:8000/api/v1';
             const response = await fetch(`${apiUrl}/ai/external/stream`, {
                 method: 'POST',
+                credentials: 'include',
                 headers: {
                     'Content-Type': 'application/json',
-                    Authorization: `Bearer ${token}`,
                 },
                 body: JSON.stringify({
                     intent: 'testcase_generation',
@@ -190,7 +190,7 @@ function TestcasePanel({problem, index, testcase, onRefresh}) {
                 done = readerDone;
                 if (value) {
                     const chunkStr = decoder.decode(value, {stream: true});
-                    const lines = chunkStr.split('\\n');
+                    const lines = chunkStr.split('\n');
                     for (const line of lines) {
                         if (line.startsWith('data: ')) {
                             const dataStr = line.slice(6);
@@ -204,7 +204,7 @@ function TestcasePanel({problem, index, testcase, onRefresh}) {
                                     currentContent += parsed.text;
                                     let newFormState = {};
                                     const markerRegex =
-                                        /\\[(HIDDEN_INPUT|HIDDEN_OUTPUT|SAMPLE_INPUT|SAMPLE_OUTPUT)\\]/g;
+                                        /\[(HIDDEN_INPUT|HIDDEN_OUTPUT|SAMPLE_INPUT|SAMPLE_OUTPUT)\]/g;
                                     let matches = [];
                                     let match;
                                     while (

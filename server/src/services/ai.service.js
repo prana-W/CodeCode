@@ -70,6 +70,7 @@ export const generateExternalResponse = async (userPrompt, intent) => {
             contents: userPrompt,
             config: {
                 systemInstruction: systemPrompt,
+                maxOutputTokens: 600,
             },
         });
 

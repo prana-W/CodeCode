@@ -84,7 +84,7 @@ Core Rules:
 3. Ensure that mathematical or programming terms are used correctly.
 4. Do NOT solve the problem.
 5. Do NOT write code.
-6. Return only the refined problem statement.
+6. Return ONLY the refined problem statement. Do NOT include any pleasantries, conversational text, or explanations.
 `;
 
 export const PROMPT_TESTCASE_GENERATION = `
@@ -106,4 +106,5 @@ Core Rules:
 
 4. Do NOT solve the problem or provide solution code.
 5. If a section is empty or not applicable, just leave the space after the marker blank.
+6. EXTREMELY IMPORTANT: Do NOT include ANY conversational text, explanations, code blocks, or markdown formatting whatsoever. Output ONLY the data underneath the exact markers.
 `;

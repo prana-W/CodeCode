@@ -166,9 +166,9 @@ export default function ProblemsPage() {
                 'http://localhost:8000/api/v1';
             const response = await fetch(`${apiUrl}/ai/external/stream`, {
                 method: 'POST',
+                credentials: 'include',
                 headers: {
                     'Content-Type': 'application/json',
-                    Authorization: `Bearer ${token}`,
                 },
                 body: JSON.stringify({
                     intent: 'problem_statement_refining',
@@ -189,7 +189,7 @@ export default function ProblemsPage() {
                 done = readerDone;
                 if (value) {
                     const chunkStr = decoder.decode(value, {stream: true});
-                    const lines = chunkStr.split('\\n'); // Split by new lines for SSE
+                    const lines = chunkStr.split('\n'); // Split by new lines for SSE
                     for (const line of lines) {
                         if (line.startsWith('data: ')) {
                             const dataStr = line.slice(6);
