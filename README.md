@@ -125,4 +125,4 @@ For deep dives into the technical implementations:
 
 ---
 
-**Made with love by Pranaw Kumar.**
+**Made with ❤️ by Pranaw Kumar.**
