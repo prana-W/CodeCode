@@ -5,7 +5,7 @@ import {runCustomInvocationJudge} from '../services/judge.service.js';
 const worker = new Worker(
     'custom-invocation-queue',
     async (job) => {
-        const {customInvocationId, source_code, language, input_data} = job.data;
+        const {customInvocationId, source_code, language, input_data, time_limit_ms, memory_limit_mb} = job.data;
 
         console.log(`[Worker] Started custom invocation ${customInvocationId}`);
 
@@ -15,6 +15,8 @@ const worker = new Worker(
                 source_code,
                 language,
                 input_data,
+                time_limit_ms,
+                memory_limit_mb,
             });
 
             console.log(`[Worker] Custom invocation ${customInvocationId} completed. Verdict: ${result.verdict}`);

@@ -31,7 +31,7 @@ import {
 } from '@/components/ui/alert-dialog';
 
 const PROBLEM_LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-const EMPTY_TC = {input_data: '', expected_output: '', is_sample: false};
+const EMPTY_TC = {input_data: '', expected_output: '', sample_input_data: '', sample_expected_output: ''};
 
 function TestcasePanel({problem, index, testcase, onRefresh}) {
     const [open, setOpen] = useState(!testcase);
@@ -47,7 +47,8 @@ function TestcasePanel({problem, index, testcase, onRefresh}) {
         setForm({
             input_data: testcase.input_data || '',
             expected_output: testcase.expected_output || '',
-            is_sample: Boolean(testcase.is_sample),
+            sample_input_data: testcase.sample_input_data || '',
+            sample_expected_output: testcase.sample_expected_output || '',
         });
         setEditingId(testcase.test_case_id);
         setOpen(true);
@@ -93,7 +94,8 @@ function TestcasePanel({problem, index, testcase, onRefresh}) {
                 await api.patch(`/testcases/${editingId}`, {
                     input_data: form.input_data,
                     expected_output: form.expected_output,
-                    is_sample: form.is_sample,
+                    sample_input_data: form.sample_input_data,
+                    sample_expected_output: form.sample_expected_output,
                 });
                 toast.success('Test case updated.');
             } else {
@@ -101,7 +103,8 @@ function TestcasePanel({problem, index, testcase, onRefresh}) {
                     problem_id: problem.problem_id,
                     input_data: form.input_data,
                     expected_output: form.expected_output,
-                    is_sample: form.is_sample,
+                    sample_input_data: form.sample_input_data,
+                    sample_expected_output: form.sample_expected_output,
                 });
                 toast.success('Test case created.');
             }
@@ -156,9 +159,9 @@ function TestcasePanel({problem, index, testcase, onRefresh}) {
                             Missing
                         </span>
                     )}
-                    {hasTestcase && testcase.is_sample && (
+                    {hasTestcase && testcase.sample_input_data && (
                         <span className="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary font-semibold">
-                            Sample
+                            Sample included
                         </span>
                     )}
                 </div>
@@ -207,7 +210,7 @@ function TestcasePanel({problem, index, testcase, onRefresh}) {
                             <div className="grid sm:grid-cols-2 gap-3">
                                 <div>
                                     <p className="text-[10px] font-semibold text-muted-foreground mb-1 uppercase tracking-wider">
-                                        Input
+                                        Hidden Input
                                     </p>
                                     <pre className="text-xs font-mono bg-muted/30 border rounded-lg p-3 overflow-auto max-h-32 whitespace-pre-wrap break-all shadow-inner">
                                         {testcase.input_data}
@@ -215,10 +218,26 @@ function TestcasePanel({problem, index, testcase, onRefresh}) {
                                 </div>
                                 <div>
                                     <p className="text-[10px] font-semibold text-muted-foreground mb-1 uppercase tracking-wider">
-                                        Expected Output
+                                        Hidden Expected Output
                                     </p>
                                     <pre className="text-xs font-mono bg-muted/30 border rounded-lg p-3 overflow-auto max-h-32 whitespace-pre-wrap break-all shadow-inner">
                                         {testcase.expected_output}
+                                    </pre>
+                                </div>
+                                <div>
+                                    <p className="text-[10px] font-semibold text-muted-foreground mb-1 uppercase tracking-wider">
+                                        Sample Input
+                                    </p>
+                                    <pre className="text-xs font-mono bg-muted/30 border rounded-lg p-3 overflow-auto max-h-32 whitespace-pre-wrap break-all shadow-inner">
+                                        {testcase.sample_input_data}
+                                    </pre>
+                                </div>
+                                <div>
+                                    <p className="text-[10px] font-semibold text-muted-foreground mb-1 uppercase tracking-wider">
+                                        Sample Expected Output
+                                    </p>
+                                    <pre className="text-xs font-mono bg-muted/30 border rounded-lg p-3 overflow-auto max-h-32 whitespace-pre-wrap break-all shadow-inner">
+                                        {testcase.sample_expected_output}
                                     </pre>
                                 </div>
                             </div>
@@ -233,14 +252,14 @@ function TestcasePanel({problem, index, testcase, onRefresh}) {
                                         htmlFor={`tc-input-${problem.problem_id}`}
                                         className="text-xs font-semibold uppercase tracking-wider text-muted-foreground"
                                     >
-                                        Input Data{' '}
+                                        Hidden Input Data{' '}
                                         <span className="text-destructive">
                                             *
                                         </span>
                                     </Label>
                                     <Textarea
                                         id={`tc-input-${problem.problem_id}`}
-                                        rows={5}
+                                        rows={4}
                                         placeholder={'3\n1 2 3'}
                                         value={form.input_data}
                                         onChange={(e) =>
@@ -257,14 +276,14 @@ function TestcasePanel({problem, index, testcase, onRefresh}) {
                                         htmlFor={`tc-output-${problem.problem_id}`}
                                         className="text-xs font-semibold uppercase tracking-wider text-muted-foreground"
                                     >
-                                        Expected Output{' '}
+                                        Hidden Expected Output{' '}
                                         <span className="text-destructive">
                                             *
                                         </span>
                                     </Label>
                                     <Textarea
                                         id={`tc-output-${problem.problem_id}`}
-                                        rows={5}
+                                        rows={4}
                                         placeholder={'6'}
                                         value={form.expected_output}
                                         onChange={(e) =>
@@ -276,25 +295,50 @@ function TestcasePanel({problem, index, testcase, onRefresh}) {
                                         className="resize-y font-mono text-sm bg-muted/10"
                                     />
                                 </div>
+                                <div className="space-y-1.5">
+                                    <Label
+                                        htmlFor={`tc-sample-input-${problem.problem_id}`}
+                                        className="text-xs font-semibold uppercase tracking-wider text-muted-foreground"
+                                    >
+                                        Sample Input Data{' '}
+                                        <span className="text-muted-foreground font-normal lowercase">(Visible to contestants)</span>
+                                    </Label>
+                                    <Textarea
+                                        id={`tc-sample-input-${problem.problem_id}`}
+                                        rows={3}
+                                        placeholder={'Sample input...'}
+                                        value={form.sample_input_data}
+                                        onChange={(e) =>
+                                            setForm((p) => ({
+                                                ...p,
+                                                sample_input_data: e.target.value,
+                                            }))
+                                        }
+                                        className="resize-y font-mono text-sm bg-muted/10"
+                                    />
+                                </div>
+                                <div className="space-y-1.5">
+                                    <Label
+                                        htmlFor={`tc-sample-output-${problem.problem_id}`}
+                                        className="text-xs font-semibold uppercase tracking-wider text-muted-foreground"
+                                    >
+                                        Sample Expected Output
+                                    </Label>
+                                    <Textarea
+                                        id={`tc-sample-output-${problem.problem_id}`}
+                                        rows={3}
+                                        placeholder={'Sample output...'}
+                                        value={form.sample_expected_output}
+                                        onChange={(e) =>
+                                            setForm((p) => ({
+                                                ...p,
+                                                sample_expected_output: e.target.value,
+                                            }))
+                                        }
+                                        className="resize-y font-mono text-sm bg-muted/10"
+                                    />
+                                </div>
                             </div>
-
-                            <button
-                                type="button"
-                                onClick={() =>
-                                    setForm((p) => ({
-                                        ...p,
-                                        is_sample: !p.is_sample,
-                                    }))
-                                }
-                                className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-foreground hover:text-primary transition-colors"
-                            >
-                                {form.is_sample ? (
-                                    <CheckSquare className="w-5 h-5 text-primary" />
-                                ) : (
-                                    <Square className="w-5 h-5 text-muted-foreground" />
-                                )}
-                                Mark as sample (visible to contestants)
-                            </button>
 
                             <div className="flex justify-end gap-2">
                                 {editingId && (

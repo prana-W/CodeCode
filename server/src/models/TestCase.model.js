@@ -1,11 +1,11 @@
 import pool from '../db/db.js';
 
 class TestCase {
-    static async create({problem_id, input_data, expected_output, is_sample}) {
+    static async create({problem_id, input_data, expected_output, sample_input_data, sample_expected_output}) {
         const [result] = await pool.query(
-            `INSERT INTO test_cases (problem_id, input_data, expected_output, is_sample)
-             VALUES (?, ?, ?, ?)`,
-            [problem_id, input_data, expected_output, is_sample ?? false]
+            `INSERT INTO test_cases (problem_id, input_data, expected_output, sample_input_data, sample_expected_output)
+             VALUES (?, ?, ?, ?, ?)`,
+            [problem_id, input_data, expected_output, sample_input_data, sample_expected_output]
         );
         return result.insertId;
     }
@@ -53,13 +53,13 @@ class TestCase {
 
     static async update(
         test_case_id,
-        {input_data, expected_output, is_sample}
+        {input_data, expected_output, sample_input_data, sample_expected_output}
     ) {
         const [result] = await pool.query(
             `UPDATE test_cases
-             SET input_data = ?, expected_output = ?, is_sample = ?
+             SET input_data = ?, expected_output = ?, sample_input_data = ?, sample_expected_output = ?
              WHERE test_case_id = ?`,
-            [input_data, expected_output, is_sample, test_case_id]
+            [input_data, expected_output, sample_input_data, sample_expected_output, test_case_id]
         );
         return result;
     }

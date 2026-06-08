@@ -263,10 +263,11 @@ export async function runCustomInvocationJudge({
     source_code,
     language,
     input_data,
+    time_limit_ms = 10000,
+    memory_limit_mb = 512,
 }) {
-    const time_limit_ms = 10000;
-    const timeoutSecs = 10;
-    const memStr = '512m';
+    const timeoutSecs = Math.ceil(time_limit_ms / 1000);
+    const memStr = `${memory_limit_mb}m`;
     const compileMemStr = '512m';
 
     const sandboxRoot = path.join(process.cwd(), 'sandbox');

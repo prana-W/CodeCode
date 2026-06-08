@@ -110,7 +110,7 @@ export default function UserTemplates() {
                                             <Badge variant={template.is_default ? "default" : "secondary"} className="uppercase tracking-widest text-[10px]">
                                                 {template.language}
                                             </Badge>
-                                            {template.is_default && (
+                                            {!!template.is_default && (
                                                 <span className="flex items-center gap-1 text-[10px] uppercase font-bold text-primary tracking-widest">
                                                     <Star className="w-3 h-3 fill-primary" />
                                                     Default
@@ -144,9 +144,6 @@ export default function UserTemplates() {
                                 </pre>
                             </CardContent>
                             <CardFooter className="pt-2 border-t bg-muted/10 flex justify-between items-center">
-                                <div className="text-[10px] text-muted-foreground uppercase tracking-widest font-semibold">
-                                    ID: {template.template_id}
-                                </div>
                                 {!template.is_default && (
                                     <Button
                                         variant="outline"

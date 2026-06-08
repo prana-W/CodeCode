@@ -1,8 +1,13 @@
 import Submission from '../models/Submission.model.js';
 import ContestRegistration from '../models/ContestRegistration.model.js';
+import Problem from '../models/Problem.model.js';
+import TestCase from '../models/TestCase.model.js';
 import {ApiError, ApiResponse, asyncHandler} from '../utility/index.js';
 import statusCode from '../constants/statusCode.js';
 import submissionQueue from '../queues/submissionQueue.js';
+import customInvocationQueue from '../queues/customInvocationQueue.js';
+import redis from '../config/redis.js';
+import crypto from 'crypto';
 
 const createSubmission = asyncHandler(async (req, res) => {
     const {problem_id, language, source_code} = req.body;
@@ -177,10 +182,104 @@ const getSolvedProblems = asyncHandler(async (req, res) => {
         );
 });
 
+const runAgainstSample = asyncHandler(async (req, res) => {
+    const {problem_id, language, source_code} = req.body;
+
+    if (!problem_id || !language || !source_code) {
+        throw new ApiError(
+            statusCode.BAD_REQUEST,
+            'problem_id, language and source_code are required.'
+        );
+    }
+
+    if (!Submission.validLanguages.includes(language)) {
+        throw new ApiError(
+            statusCode.BAD_REQUEST,
+            `language must be one of: ${Submission.validLanguages.join(', ')}.`
+        );
+    }
+
+    const problem = await Problem.findWithContest(Number(problem_id));
+    if (!problem) {
+        throw new ApiError(statusCode.NOT_FOUND, 'Problem not found.');
+    }
+
+    const isCreator = problem.contest_authored_by === req.userId;
+    const isAdmin = req.role === 'admin';
+    const now = new Date();
+    const startTime = new Date(problem.contest_start_time);
+    const endTime = new Date(problem.contest_end_time);
+
+    if (!isAdmin && !isCreator) {
+        if (now < startTime) {
+            throw new ApiError(
+                statusCode.FORBIDDEN,
+                'Contest has not started yet.'
+            );
+        }
+
+        if (now >= startTime && now <= endTime) {
+            const registration = await ContestRegistration.findByUserAndContest(
+                problem.contest_id,
+                req.userId
+            );
+            if (!registration) {
+                throw new ApiError(
+                    statusCode.FORBIDDEN,
+                    'You must be registered for the contest to run code during the contest window.'
+                );
+            }
+        }
+    }
+
+    const testcase = await TestCase.findByProblemId(Number(problem_id));
+    if (!testcase) {
+        throw new ApiError(
+            statusCode.NOT_FOUND,
+            'No test case found for this problem.'
+        );
+    }
+
+    const customInvocationId = crypto.randomUUID();
+    const key = `custom_invocation:${customInvocationId}`;
+
+    const pendingVal = {
+        status: 'pending',
+        userId: req.userId,
+        customInvocationId,
+    };
+    await redis.set(key, JSON.stringify(pendingVal), 'EX', 120);
+
+    await customInvocationQueue.add(
+        'run',
+        {
+            customInvocationId,
+            userId: req.userId,
+            source_code,
+            language,
+            input_data: testcase.sample_input_data,
+            time_limit_ms: problem.time_limit_ms,
+            memory_limit_mb: problem.memory_limit_mb,
+        },
+        {priority: 1}
+    );
+
+    return res
+        .status(statusCode.OK)
+        .json(
+            new ApiResponse(
+                statusCode.OK,
+                'Code submitted for sample run successfully.',
+                {customInvocationId}
+            )
+        );
+});
+
 export {
     createSubmission,
     getContestSubmissions,
     getSubmissionById,
     getSubmissionCounts,
     getSolvedProblems,
+    runAgainstSample,
 };
