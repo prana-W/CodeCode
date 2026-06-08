@@ -45,7 +45,7 @@ class Submission {
         const [rows] = await pool.query(
             `SELECT s.submission_id, s.problem_id, s.submitted_by, s.submitted_at,
                     s.verdict, s.language, s.execution_time_ms, s.memory_used_kb,
-                    c.authored_by AS contest_authored_by
+                    c.authored_by AS contest_authored_by, p.title AS problem_title
              FROM submissions s
              JOIN problems p ON s.problem_id = p.problem_id
              JOIN contests c ON p.contest_id = c.id
@@ -58,7 +58,7 @@ class Submission {
 
     static async findByIdWithContest(submission_id) {
         const [rows] = await pool.query(
-            `SELECT s.*, c.authored_by AS contest_authored_by
+            `SELECT s.*, c.authored_by AS contest_authored_by, p.title AS problem_title
              FROM submissions s
              JOIN problems p ON s.problem_id = p.problem_id
              JOIN contests c ON p.contest_id = c.id
