@@ -825,3 +825,11 @@ So, basically fixed 512 GB for compilation code docker container and variable me
 ## Commit - Later 6
 
 - I have now added a custom invocation feature. User send their source_code with their custom input, a invocationId is generated in the server and a temp directory is created in the server with the code and input data, then a queue is formed for custom invoacation with the key as custom invocation id (created using crypto.uuid() or something), then a worker picks up the job (it has higher priority), and gives to the online judge with sufficient time and memmory limits, the code finally executes and the invocationId and output is stored in Redis with a TTL of 2 minutes, then temp directory is deleted. Meanwhile user sends a request every 5 seconds, with the customInvocationId, if it exists in redis, then the ouput (or error message) is sent back else user keeps on polling (for 2 minute) after that polling stops. 
+
+## Commit - Later 7
+
+- I have added template feature. User can add, edit and delete templates. Also modifiying and creating a template during an ongoing contest is disabled
+
+- I have also modified testcases, to now include both sample ip/op and hidden ip/op, sample would be used to run the code and hidden would be use to submit the code. Run the code would just use the same flow as custom invocation, by temperarily creating the entry in redis, input would be received from stdin
+
+- I am planning to add inbuilt code editor and remove submit code by pasting entirely. Users can only choose their pre-defined template, and not allow external paste, only allow internal copy/pastes. This would be added later

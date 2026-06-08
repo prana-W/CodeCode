@@ -1,6 +1,12 @@
 import db from '../db/db.js';
+import ContestRegistration from '../models/ContestRegistration.model.js';
 import { ApiError, ApiResponse, asyncHandler } from '../utility/index.js';
 import statusCode from '../constants/statusCode.js';
+
+export const getOngoingContestStatus = asyncHandler(async (req, res) => {
+    const hasOngoing = await ContestRegistration.hasOngoingContest(req.userId);
+    res.status(statusCode.OK).json(new ApiResponse(statusCode.OK, 'Ongoing contest status retrieved.', { hasOngoing }));
+});
 
 export const getTemplates = asyncHandler(async (req, res) => {
     const userId = req.userId;
@@ -32,6 +38,11 @@ export const createTemplate = asyncHandler(async (req, res) => {
 
     if (!title || !source_code || !language) {
         throw new ApiError(statusCode.BAD_REQUEST, 'Title, source code, and language are required.');
+    }
+
+    const hasOngoing = await ContestRegistration.hasOngoingContest(req.userId);
+    if (hasOngoing) {
+        throw new ApiError(statusCode.FORBIDDEN, 'A contest is currently ongoing. Kindly wait for it to finish before creating a template.');
     }
 
     const connection = await db.getConnection();
@@ -68,6 +79,11 @@ export const updateTemplate = asyncHandler(async (req, res) => {
 
     if (!title || !source_code || !language) {
         throw new ApiError(statusCode.BAD_REQUEST, 'Title, source code, and language are required.');
+    }
+
+    const hasOngoing = await ContestRegistration.hasOngoingContest(req.userId);
+    if (hasOngoing) {
+        throw new ApiError(statusCode.FORBIDDEN, 'A contest is currently ongoing. Kindly wait for it to finish before updating a template.');
     }
 
     const connection = await db.getConnection();
@@ -127,6 +143,11 @@ export const deleteTemplate = asyncHandler(async (req, res) => {
 export const setDefaultTemplate = asyncHandler(async (req, res) => {
     const userId = req.userId;
     const { id } = req.params;
+
+    const hasOngoing = await ContestRegistration.hasOngoingContest(userId);
+    if (hasOngoing) {
+        throw new ApiError(statusCode.FORBIDDEN, 'A contest is currently ongoing. Kindly wait for it to finish before updating a template.');
+    }
 
     const connection = await db.getConnection();
     await connection.beginTransaction();

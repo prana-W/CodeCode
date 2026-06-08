@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import api from '@/lib/axios';
 import { toast } from 'sonner';
-import { ArrowLeft, Save, Loader2, Star } from 'lucide-react';
+import { ArrowLeft, Save, Loader2, Star, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Editor from '@monaco-editor/react';
 import { useTheme } from '@/components/theme-provider';
@@ -30,20 +30,26 @@ export default function TemplateEditor() {
     });
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
+    const [hasOngoing, setHasOngoing] = useState(false);
 
     const { theme } = useTheme();
     const editorTheme = theme === 'dark' ? 'vs-dark' : 'light';
 
     useEffect(() => {
-        const fetchTemplate = async () => {
+        const fetchTemplateAndStatus = async () => {
             try {
-                const response = await api.get(`/user-templates/${id}`);
+                const [templateRes, statusRes] = await Promise.all([
+                    api.get(`/user-templates/${id}`),
+                    api.get('/user-templates/ongoing-contest-status')
+                ]);
+                
                 setTemplate({
-                    title: response.data.data.title || 'Untitled Template',
-                    source_code: response.data.data.source_code,
-                    language: response.data.data.language,
-                    is_default: response.data.data.is_default === 1 || response.data.data.is_default === true
+                    title: templateRes.data.data.title || 'Untitled Template',
+                    source_code: templateRes.data.data.source_code,
+                    language: templateRes.data.data.language,
+                    is_default: templateRes.data.data.is_default === 1 || templateRes.data.data.is_default === true
                 });
+                setHasOngoing(statusRes.data.data.hasOngoing);
             } catch (error) {
                 toast.error(error.response?.data?.message || 'Failed to load template.');
                 navigate('/templates');
@@ -51,7 +57,7 @@ export default function TemplateEditor() {
                 setLoading(false);
             }
         };
-        fetchTemplate();
+        fetchTemplateAndStatus();
     }, [id, navigate]);
 
     const handleSave = async (exitAfter = false) => {
@@ -90,7 +96,8 @@ export default function TemplateEditor() {
                             type="text"
                             value={template.title}
                             onChange={(e) => setTemplate({ ...template, title: e.target.value })}
-                            className="text-lg font-bold tracking-tight text-foreground bg-transparent border-b border-transparent hover:border-border focus:border-primary focus:outline-none w-full px-1 py-0.5 transition-colors placeholder:text-muted-foreground/50"
+                            disabled={hasOngoing}
+                            className="text-lg font-bold tracking-tight text-foreground bg-transparent border-b border-transparent hover:border-border focus:border-primary focus:outline-none w-full px-1 py-0.5 transition-colors placeholder:text-muted-foreground/50 disabled:opacity-50 disabled:cursor-not-allowed"
                             placeholder="Template Title"
                             spellCheck={false}
                         />
@@ -109,7 +116,8 @@ export default function TemplateEditor() {
                         <select
                             value={template.language}
                             onChange={(e) => setTemplate({ ...template, language: e.target.value })}
-                            className="text-sm bg-secondary border border-border rounded-md px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-primary"
+                            disabled={hasOngoing}
+                            className="text-sm bg-secondary border border-border rounded-md px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             {VALID_LANGUAGES.map(lang => (
                                 <option key={lang} value={lang}>{LANG_LABEL[lang]}</option>
@@ -123,6 +131,7 @@ export default function TemplateEditor() {
                             id="default-switch"
                             checked={template.is_default}
                             onCheckedChange={(checked) => setTemplate({ ...template, is_default: checked })}
+                            disabled={hasOngoing}
                         />
                         <Label htmlFor="default-switch" className="flex items-center gap-1.5 cursor-pointer">
                             <Star className={`w-4 h-4 ${template.is_default ? 'fill-primary text-primary' : 'text-muted-foreground'}`} />
@@ -132,10 +141,16 @@ export default function TemplateEditor() {
 
                     {/* Actions */}
                     <div className="flex items-center gap-2 border-l border-border pl-6">
+                        {hasOngoing && (
+                            <div className="flex items-center gap-1.5 text-amber-500 bg-amber-500/10 px-2 py-1.5 rounded text-[10px] uppercase tracking-wider font-semibold mr-2">
+                                <Info className="w-3.5 h-3.5" />
+                                <span>Contest ongoing (Read-only)</span>
+                            </div>
+                        )}
                         <Button variant="outline" onClick={() => navigate('/templates')}>
                             Exit
                         </Button>
-                        <Button onClick={() => handleSave(true)} disabled={saving} className="gap-2">
+                        <Button onClick={() => handleSave(true)} disabled={saving || hasOngoing} className="gap-2">
                             {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
                             Save & Exit
                         </Button>
@@ -157,6 +172,7 @@ export default function TemplateEditor() {
                         lineNumbers: 'on',
                         scrollBeyondLastLine: false,
                         automaticLayout: true,
+                        readOnly: hasOngoing,
                         fontFamily: "'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace",
                         padding: { top: 16 }
                     }}

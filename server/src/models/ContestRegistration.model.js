@@ -117,6 +117,19 @@ class ContestRegistration {
         );
         return rows[0].count;
     }
+
+    static async hasOngoingContest(user_id) {
+        const [rows] = await pool.query(
+            `SELECT 1 FROM contest_registrations cr
+             JOIN contests c ON cr.contest_id = c.id
+             WHERE cr.user_id = ? 
+               AND NOW() >= c.contest_start_time 
+               AND NOW() <= c.contest_end_time
+             LIMIT 1`,
+            [user_id]
+        );
+        return rows.length > 0;
+    }
 }
 
 export default ContestRegistration;

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '@/lib/axios';
 import { toast } from 'sonner';
-import { FileCode2, Plus, Star, Trash2, Edit } from 'lucide-react';
+import { FileCode2, Plus, Star, Trash2, Edit, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -10,13 +10,18 @@ import { Badge } from '@/components/ui/badge';
 export default function UserTemplates() {
     const [templates, setTemplates] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [hasOngoing, setHasOngoing] = useState(false);
     const navigate = useNavigate();
 
     const fetchTemplates = async () => {
         setLoading(true);
         try {
-            const response = await api.get('/user-templates');
-            setTemplates(response.data.data);
+            const [templatesRes, statusRes] = await Promise.all([
+                api.get('/user-templates'),
+                api.get('/user-templates/ongoing-contest-status')
+            ]);
+            setTemplates(templatesRes.data.data);
+            setHasOngoing(statusRes.data.data.hasOngoing);
         } catch (error) {
             toast.error(error.response?.data?.message || 'Failed to load templates.');
         } finally {
@@ -77,10 +82,18 @@ export default function UserTemplates() {
                         Manage your code templates. Mark one as default to use it across the platform.
                     </p>
                 </div>
-                <Button onClick={handleCreateNew} className="gap-2">
-                    <Plus className="w-4 h-4" />
-                    New Template
-                </Button>
+                <div className="flex items-center gap-3">
+                    {hasOngoing && (
+                        <div className="flex items-center gap-2 text-amber-500 bg-amber-500/10 px-3 py-1.5 rounded-md text-xs font-medium">
+                            <Info className="w-4 h-4" />
+                            <span>A contest is currently ongoing. Kindly wait for it to finish before creating/updating templates.</span>
+                        </div>
+                    )}
+                    <Button onClick={handleCreateNew} className="gap-2" disabled={hasOngoing}>
+                        <Plus className="w-4 h-4" />
+                        New Template
+                    </Button>
+                </div>
             </div>
 
             {loading ? (
@@ -95,7 +108,7 @@ export default function UserTemplates() {
                         <p className="text-muted-foreground mb-6 max-w-sm text-sm">
                             Create your first template to speed up your coding sessions.
                         </p>
-                        <Button onClick={handleCreateNew}>Create Template</Button>
+                        <Button onClick={handleCreateNew} disabled={hasOngoing}>Create Template</Button>
                     </CardContent>
                 </Card>
             ) : (
@@ -124,6 +137,7 @@ export default function UserTemplates() {
                                             size="icon"
                                             className="h-8 w-8 text-muted-foreground hover:text-primary"
                                             onClick={() => navigate(`/templates/${template.template_id}`)}
+                                            disabled={hasOngoing}
                                         >
                                             <Edit className="w-4 h-4" />
                                         </Button>
@@ -132,6 +146,7 @@ export default function UserTemplates() {
                                             size="icon"
                                             className="h-8 w-8 text-muted-foreground hover:text-red-500"
                                             onClick={() => handleDelete(template.template_id)}
+                                            disabled={hasOngoing}
                                         >
                                             <Trash2 className="w-4 h-4" />
                                         </Button>
@@ -150,6 +165,7 @@ export default function UserTemplates() {
                                         size="sm"
                                         className="h-7 text-xs gap-1.5"
                                         onClick={() => handleSetDefault(template.template_id)}
+                                        disabled={hasOngoing}
                                     >
                                         <Star className="w-3.5 h-3.5" />
                                         Set Default
