@@ -153,7 +153,7 @@ function TestcasePanel({problem, index, testcase, onRefresh}) {
 
         try {
             const token = localStorage.getItem('token');
-            const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000/api/v1';
+            const apiUrl = import.meta.env.VITE_SERVER_URL || 'http://localhost:8000/api/v1';
             const response = await fetch(`${apiUrl}/ai/external/stream`, {
                 method: 'POST',
                 headers: {

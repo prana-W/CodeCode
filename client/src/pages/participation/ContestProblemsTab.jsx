@@ -76,15 +76,16 @@ export default function ContestProblemsTab() {
                                         `/contest/${id}/problem/${prob.problem_id}`
                                     )
                                 }
-                                className="group hover:bg-muted/30 transition-colors cursor-pointer"
+                                className={`group transition-colors cursor-pointer ${
+                                    isSolved
+                                        ? 'bg-emerald-500/10 hover:bg-emerald-500/20'
+                                        : 'hover:bg-muted/30'
+                                }`}
                             >
                                 <td className="px-6 py-4 text-center relative">
-                                    {isSolved && (
-                                        <div className="absolute left-3 top-1/2 -translate-y-1/2">
-                                            <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                                        </div>
-                                    )}
-                                    <span className="inline-flex items-center justify-center w-6 h-6 rounded font-bold text-sm bg-primary/10 text-primary">
+                                    <span className={`inline-flex items-center justify-center w-6 h-6 rounded font-bold text-sm ${
+                                        isSolved ? 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-400' : 'bg-primary/10 text-primary'
+                                    }`}>
                                         {letter}
                                     </span>
                                 </td>

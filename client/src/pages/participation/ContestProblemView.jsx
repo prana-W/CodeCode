@@ -70,8 +70,7 @@ export default function ContestProblemView() {
     const [pendingInvocationId, setPendingInvocationId] = useState(null);
     const [pendingSubmissionId, setPendingSubmissionId] = useState(null);
 
-    // Anti-cheat clipboard
-    const internalClipboardRef = useRef('');
+    // Anti-cheat: Track internal copy events from the editor
 
     useEffect(() => {
         const fetchData = async () => {
@@ -165,14 +164,14 @@ export default function ContestProblemView() {
     // Anti-cheat: Track internal copy events
     useEffect(() => {
         const handleGlobalCopy = () => {
-            if (editorRef.current) {
+            if (editorRef.current && editorRef.current.hasTextFocus()) {
                 const selection = editorRef.current.getSelection();
-                if (selection) {
+                if (selection && !selection.isEmpty()) {
                     const text = editorRef.current
                         .getModel()
                         ?.getValueInRange(selection);
                     if (text) {
-                        internalClipboardRef.current = text;
+                        localStorage.setItem('code_editor_clipboard', text);
                     }
                 }
             }
@@ -181,17 +180,28 @@ export default function ContestProblemView() {
         return () => document.removeEventListener('copy', handleGlobalCopy);
     }, []);
 
+    const isContestLive = () => {
+        if (!contest) return false;
+        const now = new Date();
+        const start = new Date(contest.contest_start_time);
+        const end = new Date(contest.contest_end_time);
+        return now >= start && now < end;
+    };
+
     const handlePaste = (e) => {
+        if (!isContestLive()) return;
+        
         const pastedText = e.clipboardData.getData('text');
+        const storedText = localStorage.getItem('code_editor_clipboard') || '';
         // Standardize line endings for comparison just in case
         if (
             pastedText.replace(/\r\n/g, '\n') !==
-            internalClipboardRef.current.replace(/\r\n/g, '\n')
+            storedText.replace(/\r\n/g, '\n')
         ) {
             e.preventDefault();
             e.stopPropagation();
             toast.error(
-                'External pasting is disabled during contests to prevent cheating.',
+                'External paste detected. Pasting from external sources is disabled during contests.',
                 {
                     position: 'top-center',
                 }
@@ -433,7 +443,13 @@ export default function ContestProblemView() {
                 {/* LEFT PANE: Problem Statement */}
                 <div
                     style={{width: `${leftWidth}%`}}
-                    className="h-full overflow-y-auto custom-scrollbar p-6"
+                    className={`h-full overflow-y-auto custom-scrollbar p-6 ${isContestLive() ? 'select-none' : ''}`}
+                    onCopy={(e) => {
+                        if (isContestLive()) {
+                            e.preventDefault();
+                            toast.error('Copying problem statements is disabled during live contests.');
+                        }
+                    }}
                 >
                     <h1 className="text-2xl font-serif font-semibold text-foreground mb-6 flex items-center gap-3">
                         <span>
@@ -520,7 +536,7 @@ export default function ContestProblemView() {
                     {/* Monaco Editor */}
                     <div
                         className="flex-1 relative bg-background min-h-0"
-                        onPaste={handlePaste}
+                        onPasteCapture={handlePaste}
                         onCopyCapture={(e) => {}}
                     >
                         {isResizing && (
