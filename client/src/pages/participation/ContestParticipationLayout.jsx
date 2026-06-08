@@ -1,4 +1,4 @@
-import {Outlet, NavLink, useParams, useNavigate} from 'react-router-dom';
+import {Outlet, NavLink, useParams, useNavigate, useLocation} from 'react-router-dom';
 import {useState, useEffect} from 'react';
 import {
     Trophy,
@@ -15,6 +15,7 @@ import HelpPanel from '@/components/HelpPanel';
 export default function ContestParticipationLayout() {
     const {id} = useParams();
     const navigate = useNavigate();
+    const location = useLocation();
     const [contest, setContest] = useState(null);
     const [problems, setProblems] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -58,11 +59,6 @@ export default function ContestParticipationLayout() {
             icon: <Trophy className="w-4 h-4" />,
         },
         {
-            to: `/contest/${id}/submit`,
-            label: 'Submit Code',
-            icon: <Code className="w-4 h-4" />,
-        },
-        {
             to: `/contest/${id}/submissions`,
             label: 'Submissions',
             icon: <ListChecks className="w-4 h-4" />,
@@ -74,10 +70,12 @@ export default function ContestParticipationLayout() {
         },
     ];
 
+    const isProblemView = location.pathname.includes('/problem/');
+
     return (
         <div className="min-h-screen bg-background flex flex-col">
             <div className="bg-card border-b border-border">
-                <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6">
+                <div className={`${isProblemView ? 'max-w-full' : 'max-w-6xl'} mx-auto px-4 sm:px-6 py-6`}>
                     <Button
                         variant="ghost"
                         size="sm"
@@ -103,7 +101,7 @@ export default function ContestParticipationLayout() {
                     </div>
                 </div>
 
-                <div className="max-w-6xl mx-auto px-4 sm:px-6">
+                <div className={`${isProblemView ? 'max-w-full' : 'max-w-6xl'} mx-auto px-4 sm:px-6`}>
                     <nav className="flex items-center gap-6 overflow-x-auto">
                         {navItems.map((item) => (
                             <NavLink
@@ -125,7 +123,7 @@ export default function ContestParticipationLayout() {
                 </div>
             </div>
 
-            <main className="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 py-8">
+            <main className={`flex-1 w-full mx-auto ${isProblemView ? 'max-w-[100rem]' : 'max-w-6xl'} px-4 sm:px-6 py-6 flex flex-col`}>
                 <Outlet context={{contest, problems}} />
             </main>
             <HelpPanel contest={contest} />

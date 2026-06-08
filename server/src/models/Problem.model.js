@@ -67,10 +67,10 @@ class Problem {
                     p.statement, p.explanation, p.time_limit_ms, p.memory_limit_mb,
                     c.authored_by AS contest_authored_by,
                     c.contest_start_time, c.contest_end_time,
-                    tc.test_case_id, tc.input_data, tc.expected_output, tc.is_sample
+                    tc.test_case_id, tc.sample_input_data, tc.sample_expected_output
              FROM problems p
              JOIN contests c ON p.contest_id = c.id
-             LEFT JOIN test_cases tc ON tc.problem_id = p.problem_id AND tc.is_sample = true
+             LEFT JOIN test_cases tc ON tc.problem_id = p.problem_id
              WHERE p.problem_id = ?`,
             [problem_id]
         );

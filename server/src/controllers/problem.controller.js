@@ -221,8 +221,8 @@ const getProblemById = asyncHandler(async (req, res) => {
         .filter((r) => r.test_case_id !== null)
         .map((r) => ({
             test_case_id: r.test_case_id,
-            input_data: r.input_data,
-            expected_output: r.expected_output,
+            input_data: r.sample_input_data,
+            expected_output: r.sample_expected_output,
         }));
 
     const problem = {

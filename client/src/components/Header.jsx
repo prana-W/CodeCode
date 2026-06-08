@@ -62,9 +62,7 @@ export default function Header() {
         if (user.role === 'admin') {
             return [
                 {to: '', label: 'HOME'},
-                {to: '/templates', label: 'TEMPLATES'},
                 {to: '/contests', label: 'CONTESTS'},
-                            {to: '/custom-invocation', label: 'CUSTOM INVOCATION'},
                 {to: '/admin/verify-contests', label: 'VERIFY CONTESTS'},
                 {to: '/admin/evaluate-contests', label: 'EVALUATE CONTESTS'},
                 {to: '/rankings', label: 'RANKINGS'},

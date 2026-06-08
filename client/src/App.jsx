@@ -14,7 +14,6 @@ import {
     ContestParticipationLayout,
     ContestProblemsTab,
     ContestProblemView,
-    ContestSubmitTab,
     ContestSubmissionsTab,
     ContestLeaderboardTab,
     AboutUs,
@@ -142,10 +141,6 @@ const router = createBrowserRouter([
                     {
                         path: 'problem/:problemId',
                         element: <ContestProblemView />,
-                    },
-                    {
-                        path: 'submit',
-                        element: <ContestSubmitTab />,
                     },
                     {
                         path: 'submissions',

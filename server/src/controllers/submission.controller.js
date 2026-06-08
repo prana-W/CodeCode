@@ -183,12 +183,12 @@ const getSolvedProblems = asyncHandler(async (req, res) => {
 });
 
 const runAgainstSample = asyncHandler(async (req, res) => {
-    const {problem_id, language, source_code} = req.body;
+    const {problem_id, language, source_code, input_data} = req.body;
 
-    if (!problem_id || !language || !source_code) {
+    if (!problem_id || !language || !source_code || input_data === undefined) {
         throw new ApiError(
             statusCode.BAD_REQUEST,
-            'problem_id, language and source_code are required.'
+            'problem_id, language, source_code and input_data are required.'
         );
     }
 
@@ -232,14 +232,6 @@ const runAgainstSample = asyncHandler(async (req, res) => {
         }
     }
 
-    const testcase = await TestCase.findByProblemId(Number(problem_id));
-    if (!testcase) {
-        throw new ApiError(
-            statusCode.NOT_FOUND,
-            'No test case found for this problem.'
-        );
-    }
-
     const customInvocationId = crypto.randomUUID();
     const key = `custom_invocation:${customInvocationId}`;
 
@@ -257,7 +249,7 @@ const runAgainstSample = asyncHandler(async (req, res) => {
             userId: req.userId,
             source_code,
             language,
-            input_data: testcase.sample_input_data,
+            input_data: String(input_data),
             time_limit_ms: problem.time_limit_ms,
             memory_limit_mb: problem.memory_limit_mb,
         },

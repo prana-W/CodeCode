@@ -832,4 +832,6 @@ So, basically fixed 512 GB for compilation code docker container and variable me
 
 - I have also modified testcases, to now include both sample ip/op and hidden ip/op, sample would be used to run the code and hidden would be use to submit the code. Run the code would just use the same flow as custom invocation, by temperarily creating the entry in redis, input would be received from stdin
 
-- I am planning to add inbuilt code editor and remove submit code by pasting entirely. Users can only choose their pre-defined template, and not allow external paste, only allow internal copy/pastes. This would be added later
+## Commit - Later 8
+
+- I have added inbuilt code editor and remove submit code  by pasting functionality entirely. Users can only choose from their pre-defined template, and not allow external paste, only allow internal copy/pastes. Also users can't mofiy/create their templates during an ongoing contest, to prevent pasting generated code/solution from the external source into template and then using that.
