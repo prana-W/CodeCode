@@ -12,6 +12,7 @@ const worker = new Worker(
             input_data,
             time_limit_ms,
             memory_limit_mb,
+            userId,
         } = job.data;
 
         console.log(`[Worker] Started custom invocation ${customInvocationId}`);
@@ -47,6 +48,15 @@ const worker = new Worker(
                 'EX',
                 120
             );
+
+            // Publish to sockets
+            if (userId) {
+                connection.publish('socket_updates', JSON.stringify({
+                    userId,
+                    event: 'custom_invocation_update',
+                    payload: val
+                }));
+            }
         } catch (err) {
             console.error(
                 `[Worker] Custom invocation ${customInvocationId} failed:`,
@@ -70,6 +80,15 @@ const worker = new Worker(
                 'EX',
                 120
             );
+
+            // Publish to sockets
+            if (userId) {
+                connection.publish('socket_updates', JSON.stringify({
+                    userId,
+                    event: 'custom_invocation_update',
+                    payload: val
+                }));
+            }
         }
     },
     {connection, concurrency: 2}

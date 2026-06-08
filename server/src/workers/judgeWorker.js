@@ -17,6 +17,11 @@ const worker = new Worker(
         if (!data.input_data) {
             await Submission.setVerdict(submissionId, 'runtime_error');
             console.error(`No test case found for submission ${submissionId}.`);
+            connection.publish('socket_updates', JSON.stringify({
+                userId: data.submitted_by,
+                event: 'submission_update',
+                payload: { submission_id: submissionId, verdict: 'runtime_error' }
+            }));
             return;
         }
 
@@ -47,12 +52,24 @@ const worker = new Worker(
             console.log(
                 `Submission ${submissionId}: ${verdict} (${execution_time_ms}ms, ${memory_used_kb}KB)`
             );
+            
+            // Publish to sockets
+            connection.publish('socket_updates', JSON.stringify({
+                userId: data.submitted_by,
+                event: 'submission_update',
+                payload: { submission_id: submissionId, verdict, execution_time_ms, memory_used_kb }
+            }));
         } catch (err) {
             console.error(
                 `Judge failed for submission ${submissionId}:`,
                 err.message
             );
             await Submission.setVerdict(submissionId, 'runtime_error');
+            connection.publish('socket_updates', JSON.stringify({
+                userId: data.submitted_by,
+                event: 'submission_update',
+                payload: { submission_id: submissionId, verdict: 'runtime_error' }
+            }));
         }
     },
     {connection, concurrency: 2}

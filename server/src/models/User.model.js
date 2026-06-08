@@ -174,21 +174,22 @@ class User {
 
         if (allDaysAccepted) {
             const days = allDaysAccepted.split(','); // already sorted ASC
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
-            const yesterday = new Date(today);
-            yesterday.setDate(yesterday.getDate() - 1);
+            
+            const toYYYYMMDD = (dateObj) => {
+                return [
+                    dateObj.getFullYear(),
+                    String(dateObj.getMonth() + 1).padStart(2, '0'),
+                    String(dateObj.getDate()).padStart(2, '0')
+                ].join('-');
+            };
 
             // Work backwards from today for current streak
             let streak = 0;
             for (let i = days.length - 1; i >= 0; i--) {
-                const d = new Date(days[i]);
-                const expected = new Date(today);
+                const dayStr = days[i];
+                const expected = new Date();
                 expected.setDate(expected.getDate() - streak);
-                if (
-                    d.toISOString().slice(0, 10) ===
-                    expected.toISOString().slice(0, 10)
-                ) {
+                if (dayStr === toYYYYMMDD(expected)) {
                     streak++;
                 } else {
                     break;
@@ -198,13 +199,10 @@ class User {
             if (streak === 0 && days.length > 0) {
                 let streakFromYesterday = 0;
                 for (let i = days.length - 1; i >= 0; i--) {
-                    const d = new Date(days[i]);
-                    const expected = new Date(yesterday);
-                    expected.setDate(expected.getDate() - streakFromYesterday);
-                    if (
-                        d.toISOString().slice(0, 10) ===
-                        expected.toISOString().slice(0, 10)
-                    ) {
+                    const dayStr = days[i];
+                    const expected = new Date();
+                    expected.setDate(expected.getDate() - 1 - streakFromYesterday);
+                    if (dayStr === toYYYYMMDD(expected)) {
                         streakFromYesterday++;
                     } else {
                         break;
@@ -237,7 +235,11 @@ class User {
             heatmap: heatmapRows.map((r) => ({
                 day:
                     r.day instanceof Date
-                        ? r.day.toISOString().slice(0, 10)
+                        ? [
+                              r.day.getFullYear(),
+                              String(r.day.getMonth() + 1).padStart(2, '0'),
+                              String(r.day.getDate()).padStart(2, '0')
+                          ].join('-')
                         : String(r.day),
                 total: Number(r.total),
                 accepted: Number(r.accepted),

@@ -14,6 +14,7 @@ import {
 import api from '@/lib/axios';
 import Editor from '@monaco-editor/react';
 import {useTheme} from '@/components/theme-provider';
+import {useSocket} from '@/context/SocketContext';
 
 const VALID_LANGUAGES = ['cpp', 'c', 'java', 'python', 'javascript'];
 
@@ -122,14 +123,15 @@ export default function CustomInvocationPage() {
     const [progressStatus, setProgressStatus] = useState('');
     const [result, setResult] = useState(null);
     const [langOpen, setLangOpen] = useState(false);
-    const pollingIntervalRef = useRef(null);
-    const pollingTimeoutRef = useRef(null);
+    const [pendingInvocationId, setPendingInvocationId] = useState(null);
+
     const langRef = useRef(null);
     const stdinTextareaRef = useRef(null);
     const stdinGutterRef = useRef(null);
 
     const {theme} = useTheme();
     const editorTheme = theme === 'dark' ? 'vs-dark' : 'light';
+    const {socket} = useSocket();
 
     const handleStdinScroll = (e) => {
         if (stdinGutterRef.current) {
@@ -167,13 +169,48 @@ export default function CustomInvocationPage() {
     };
 
     useEffect(() => {
-        return () => {
-            if (pollingIntervalRef.current)
-                clearInterval(pollingIntervalRef.current);
-            if (pollingTimeoutRef.current)
-                clearTimeout(pollingTimeoutRef.current);
+        if (!socket) return;
+        const handler = (data) => {
+            if (data.customInvocationId === pendingInvocationId) {
+                setResult(data);
+                setExecuting(false);
+                setProgressStatus('');
+                setPendingInvocationId(null);
+                toast.success('Execution finished!');
+            }
         };
-    }, []);
+        socket.on('custom_invocation_update', handler);
+        return () => socket.off('custom_invocation_update', handler);
+    }, [socket, pendingInvocationId]);
+
+    useEffect(() => {
+        if (!pendingInvocationId) return;
+
+        let elapsedSeconds = 0;
+        const intervalId = setInterval(() => {
+            elapsedSeconds += 5;
+            setProgressStatus(`Running... ${elapsedSeconds}s`);
+        }, 5000);
+
+        const timeoutId = setTimeout(() => {
+            clearInterval(intervalId);
+            if (executing) {
+                setExecuting(false);
+                setProgressStatus('');
+                setPendingInvocationId(null);
+                setResult({
+                    verdict: 'timeout',
+                    error: "Server didn't respond within 2 minutes.",
+                });
+                toast.error('Execution timed out.');
+            }
+        }, 120000);
+
+        return () => {
+            clearInterval(intervalId);
+            clearTimeout(timeoutId);
+        };
+    }, [pendingInvocationId, executing]);
 
     // Close language dropdown on outside click
     useEffect(() => {
@@ -201,7 +238,7 @@ export default function CustomInvocationPage() {
                 input_data: form.input_data,
             });
             const {customInvocationId} = response.data;
-            startPolling(customInvocationId);
+            setPendingInvocationId(customInvocationId);
         } catch (err) {
             toast.error(
                 err?.response?.data?.message || 'Failed to start execution.'
@@ -209,53 +246,6 @@ export default function CustomInvocationPage() {
             setExecuting(false);
             setProgressStatus('');
         }
-    };
-
-    const startPolling = (customInvocationId) => {
-        let elapsedSeconds = 0;
-        setProgressStatus('Running code...');
-        if (pollingIntervalRef.current)
-            clearInterval(pollingIntervalRef.current);
-        if (pollingTimeoutRef.current) clearTimeout(pollingTimeoutRef.current);
-
-        pollingIntervalRef.current = setInterval(async () => {
-            elapsedSeconds += 5;
-            setProgressStatus(`Running... ${elapsedSeconds}s`);
-            try {
-                const statusRes = await api.get(
-                    `/custom-invocation/status/${customInvocationId}`
-                );
-                const {status, data} = statusRes.data;
-                if (status === 'completed') {
-                    clearInterval(pollingIntervalRef.current);
-                    clearTimeout(pollingTimeoutRef.current);
-                    setResult(data);
-                    setExecuting(false);
-                    setProgressStatus('');
-                    toast.success('Execution finished!');
-                }
-            } catch (err) {
-                clearInterval(pollingIntervalRef.current);
-                clearTimeout(pollingTimeoutRef.current);
-                setExecuting(false);
-                setProgressStatus('');
-                toast.error(
-                    err?.response?.data?.message ||
-                        'Execution failed on server.'
-                );
-            }
-        }, 5000);
-
-        pollingTimeoutRef.current = setTimeout(() => {
-            clearInterval(pollingIntervalRef.current);
-            setExecuting(false);
-            setProgressStatus('');
-            setResult({
-                verdict: 'timeout',
-                error: "Server didn't respond within 2 minutes.",
-            });
-            toast.error('Execution timed out.');
-        }, 120000);
     };
 
     return (

@@ -31,6 +31,7 @@ import Layout from './Layout.jsx';
 
 import {createBrowserRouter, RouterProvider, Navigate} from 'react-router-dom';
 import {useAuth} from './context/AuthContext.jsx';
+import {SocketProvider} from './context/SocketContext.jsx';
 
 function ProtectedRoute({children}) {
     const {user} = useAuth();
@@ -220,7 +221,9 @@ function App() {
     return (
         <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
             <ErrorBoundary>
-                <RouterProvider router={router} />
+                <SocketProvider>
+                    <RouterProvider router={router} />
+                </SocketProvider>
             </ErrorBoundary>
         </ThemeProvider>
     );

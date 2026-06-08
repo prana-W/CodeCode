@@ -26,6 +26,7 @@ import Editor from '@monaco-editor/react';
 import {useTheme} from '@/components/theme-provider';
 import {getVerdictDetails} from '@/constants/verdicts';
 import {HelpContent} from '@/components/HelpPanel';
+import {useSocket} from '@/context/SocketContext';
 
 const VALID_LANGUAGES = ['cpp', 'c', 'java', 'python', 'javascript'];
 const LANG_LABEL = {
@@ -43,6 +44,7 @@ export default function ContestProblemView() {
     const [problem, setProblem] = useState(null);
     const [loading, setLoading] = useState(true);
     const [isHelpOpen, setIsHelpOpen] = useState(false);
+    const {socket} = useSocket();
 
     // UI Split Pane states
     const [leftWidth, setLeftWidth] = useState(50);
@@ -65,6 +67,8 @@ export default function ContestProblemView() {
     const [outputData, setOutputData] = useState(null);
     const [isRunning, setIsRunning] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [pendingInvocationId, setPendingInvocationId] = useState(null);
+    const [pendingSubmissionId, setPendingSubmissionId] = useState(null);
 
     // Anti-cheat clipboard
     const internalClipboardRef = useRef('');
@@ -106,6 +110,57 @@ export default function ContestProblemView() {
         };
         fetchData();
     }, [id, problemId, navigate]);
+
+    useEffect(() => {
+        if (!socket) return;
+
+        const handleCustomInvocationUpdate = (data) => {
+            if (data.customInvocationId === pendingInvocationId) {
+                setIsRunning(false);
+                setOutputData(data);
+                setPendingInvocationId(null);
+            }
+        };
+
+        const handleSubmissionUpdate = (data) => {
+            if (data.submission_id === pendingSubmissionId) {
+                const verdict = data.verdict;
+                if (verdict !== 'pending' && verdict !== 'running') {
+                    setIsSubmitting(false);
+                    setPendingSubmissionId(null);
+
+                    const vDetails = getVerdictDetails(verdict);
+                    const desc = `Time: ${data.execution_time_ms}ms | Memory: ${data.memory_used_kb}KB`;
+
+                    if (verdict === 'accepted') {
+                        toast.success(vDetails.label, {description: desc});
+                        setSolvedIds((prev) => {
+                            if (!prev.includes(Number(problemId))) {
+                                return [...prev, Number(problemId)];
+                            }
+                            return prev;
+                        });
+                    } else if (
+                        verdict === 'wrong_answer' ||
+                        verdict === 'compilation_error' ||
+                        verdict === 'runtime_error'
+                    ) {
+                        toast.error(vDetails.label, {description: desc});
+                    } else {
+                        toast.warning(vDetails.label, {description: desc});
+                    }
+                }
+            }
+        };
+
+        socket.on('custom_invocation_update', handleCustomInvocationUpdate);
+        socket.on('submission_update', handleSubmissionUpdate);
+
+        return () => {
+            socket.off('custom_invocation_update', handleCustomInvocationUpdate);
+            socket.off('submission_update', handleSubmissionUpdate);
+        };
+    }, [socket, pendingInvocationId, pendingSubmissionId, problemId, setSolvedIds]);
 
     // Anti-cheat: Track internal copy events
     useEffect(() => {
@@ -227,76 +282,13 @@ export default function ContestProblemView() {
             });
 
             const invocationId = res.data.data.customInvocationId;
-            pollCustomInvocation(invocationId);
+            setPendingInvocationId(invocationId);
         } catch (error) {
             setIsRunning(false);
             toast.error(
                 error.response?.data?.message || 'Failed to submit run task.'
             );
         }
-    };
-
-    const pollCustomInvocation = async (invocationId) => {
-        const interval = setInterval(async () => {
-            try {
-                const res = await api.get(
-                    `/custom-invocation/status/${invocationId}`
-                );
-                if (res.data.status === 'completed') {
-                    clearInterval(interval);
-                    setIsRunning(false);
-                    setOutputData(res.data.data);
-                }
-            } catch (error) {
-                if (error.response?.status === 404) {
-                    clearInterval(interval);
-                    setIsRunning(false);
-                    toast.error('Execution expired or not found');
-                }
-            }
-        }, 2000);
-    };
-
-    const pollSubmission = async (submissionId) => {
-        const interval = setInterval(async () => {
-            try {
-                const res = await api.get(`/submissions/${submissionId}`);
-                const verdict = res.data.data.verdict;
-
-                if (verdict !== 'pending' && verdict !== 'running') {
-                    clearInterval(interval);
-                    setIsSubmitting(false);
-
-                    const vDetails = getVerdictDetails(verdict);
-                    const desc = `Time: ${res.data.data.execution_time_ms}ms | Memory: ${res.data.data.memory_used_kb}KB`;
-
-                    if (verdict === 'accepted') {
-                        toast.success(vDetails.label, {description: desc});
-                    } else if (
-                        verdict === 'wrong_answer' ||
-                        verdict === 'compilation_error' ||
-                        verdict === 'runtime_error'
-                    ) {
-                        toast.error(vDetails.label, {description: desc});
-                    } else {
-                        toast.warning(vDetails.label, {description: desc});
-                    }
-
-                    if (verdict === 'accepted') {
-                        setSolvedIds((prev) => {
-                            if (!prev.includes(Number(problemId))) {
-                                return [...prev, Number(problemId)];
-                            }
-                            return prev;
-                        });
-                    }
-                }
-            } catch (error) {
-                clearInterval(interval);
-                setIsSubmitting(false);
-                toast.error('Error fetching submission verdict');
-            }
-        }, 3000);
     };
 
     const handleSubmitCode = async () => {
@@ -311,7 +303,7 @@ export default function ContestProblemView() {
                 source_code: sourceCode,
             });
             const submissionId = res.data.data.submission_id;
-            pollSubmission(submissionId);
+            setPendingSubmissionId(submissionId);
         } catch (error) {
             toast.error(
                 error.response?.data?.message || 'Failed to submit code.'

@@ -835,3 +835,43 @@ So, basically fixed 512 GB for compilation code docker container and variable me
 ## Commit - Later 8
 
 - I have added inbuilt code editor and remove submit code by pasting functionality entirely. Users can only choose from their pre-defined template, and not allow external paste, only allow internal copy/pastes. Also users can't mofiy/create their templates during an ongoing contest, to prevent pasting generated code/solution from the external source into template and then using that.
+
+## Commit - Later 9
+
+- I have now removed manual polling for submission, code run and custom invocation. Now I connect to my server via socket, and my server subscribes the redis channel because worker publish the result directly using reedis pub/sub, which my server subscribes and then emits back to the user
+
+Why can't we directly emit via socket from the worker itself?
+
+- A worker can access Socket.IO directly, but only if the worker itself owns the Socket.IO server instance or has a way to communicate with it.
+
+- The usual problem is that your worker and your main server are different processes.
+
+- A seperate worker is used intead of doing everything in node.js, because the single event loop of node.js would remain block as long as any process is being executed, so that's why worker is used, to prevent the single event loop of node.js from blocking. Also if worker crashes somehow, it won't disturb my main node.js process from execution
+
+Viewed CustomInvocationPage.jsx:220-243
+
+Here is the exact flow of the new real-time WebSocket architecture that we just built, taking a code submission as an example:
+
+### 1. Connection (Authentication & Rooms)
+When you log into the platform, the `<SocketProvider>` wrapper (in `App.jsx`) initializes a `socket.io-client` connection to the backend. The backend verifies your JWT cookie. Once verified, the backend Socket.io server assigns your specific socket connection to a "room" named strictly after your `userId`.
+*(This ensures that if you have 5 browser tabs open, all 5 tabs join the same room and stay perfectly in sync).*
+
+### 2. Job Queueing
+When you click **"Submit Code"** (or **"Execute"** for a custom invocation), the React frontend still makes a standard HTTP POST request. The API responds with an ID (e.g. `submission_id` or `customInvocationId`). 
+- **Before**: The frontend used `setInterval` to ping the API every 3-5 seconds asking, "Is it done yet?"
+- **Now**: The frontend simply stores that ID in a state variable (e.g. `pendingSubmissionId`) and patiently waits, listening for socket events.
+
+### 3. Worker Processing & Redis Pub/Sub
+The actual code execution happens inside isolated background processes (`judgeWorker.js` or `customInvocationWorker.js`). 
+Once a worker finishes compiling/executing your code and generates a final verdict (e.g., "Accepted" or "Runtime Error"), it uses `ioredis` to `.publish()` a message to an internal Redis channel called `socket_updates`. It tags this message with your specific `userId`.
+
+### 4. WebSocket Routing
+Your main backend server (`server/src/index.js`) is constantly subscribed to the `socket_updates` Redis channel. As soon as it hears a message from a worker, it parses the JSON. It sees your `userId` attached, and commands the Socket.io server to instantly broadcast that exact verdict payload directly to your private room: `io.to(userId).emit(...)`.
+
+### 5. Instant UI Update
+Back on the frontend (e.g., in `ContestProblemView.jsx` or `CustomInvocationPage.jsx`), an active `useEffect` listener receives the socket event. It matches the incoming `submission_id` against the `pendingSubmissionId` it was waiting for. If it matches, React instantly clears the loading state, fires the toast notification, and updates the UI!
+
+### Why is this better?
+- **Speed**: Verdicts arrive instantly the exact millisecond the worker finishes.
+- **Server Load**: We entirely eliminated thousands of redundant HTTP GET requests that were constantly hitting your database while users waited.
+- **Scalability**: Utilizing Redis Pub/Sub means that if you eventually run multiple Node.js instances, workers can talk to the sockets flawlessly across different servers!

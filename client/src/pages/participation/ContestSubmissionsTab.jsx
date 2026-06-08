@@ -6,6 +6,7 @@ import {Button} from '@/components/ui/button';
 import api from '@/lib/axios';
 import {getVerdictDetails} from '@/constants/verdicts';
 import Editor from '@monaco-editor/react';
+import {useSocket} from '@/context/SocketContext';
 
 function formatDate(iso) {
     return new Date(iso).toLocaleString('en-US', {
@@ -29,6 +30,7 @@ export default function ContestSubmissionsTab() {
     const [selectedSubId, setSelectedSubId] = useState(null);
     const [subDetails, setSubDetails] = useState(null);
     const [loadingDetails, setLoadingDetails] = useState(false);
+    const {socket} = useSocket();
 
     const autoRefresh = location.state?.autoRefresh;
 
@@ -73,25 +75,43 @@ export default function ContestSubmissionsTab() {
 
     useEffect(() => {
         fetchSubmissions();
+    }, [id]);
 
-        let intervalId;
-        let timeoutId;
-
-        if (autoRefresh) {
-            intervalId = setInterval(() => {
-                fetchSubmissions(true);
-            }, 5000);
-
-            timeoutId = setTimeout(() => {
-                clearInterval(intervalId);
-            }, 30000);
-        }
-
-        return () => {
-            if (intervalId) clearInterval(intervalId);
-            if (timeoutId) clearTimeout(timeoutId);
+    useEffect(() => {
+        if (!socket) return;
+        
+        const handleSubmissionUpdate = (data) => {
+            setSubmissions(prev => prev.map(sub => {
+                if (sub.submission_id === data.submission_id) {
+                    return {
+                        ...sub,
+                        verdict: data.verdict,
+                        execution_time_ms: data.execution_time_ms,
+                        memory_used_kb: data.memory_used_kb
+                    };
+                }
+                return sub;
+            }));
+            
+            // Also update modal if it's currently open
+            setSubDetails(prev => {
+                if (prev && prev.submission_id === data.submission_id) {
+                    return {
+                        ...prev,
+                        verdict: data.verdict,
+                        execution_time_ms: data.execution_time_ms,
+                        memory_used_kb: data.memory_used_kb
+                    };
+                }
+                return prev;
+            });
         };
-    }, [id, autoRefresh]);
+
+        socket.on('submission_update', handleSubmissionUpdate);
+        return () => {
+            socket.off('submission_update', handleSubmissionUpdate);
+        };
+    }, [socket]);
 
     useEffect(() => {
         if (selectedSubId) {
