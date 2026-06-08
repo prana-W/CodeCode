@@ -38,7 +38,11 @@ function buildGrid(year, heatmap) {
     const cells = [];
     for (let i = 0; i < totalDays; i++) {
         const d = new Date(year, 0, i + 1);
-        const dateStr = d.toISOString().slice(0, 10);
+        const dateStr = [
+            d.getFullYear(),
+            String(d.getMonth() + 1).padStart(2, '0'),
+            String(d.getDate()).padStart(2, '0')
+        ].join('-');
         const data = map[dateStr];
         cells.push({
             dateStr,
@@ -79,9 +83,7 @@ const INTENSITY_CLASSES = [
     'bg-emerald-500    border-emerald-600/60', // 4
 ];
 
-const YEAR_RANGE = 3; // show current year and 2 previous years in selector
-
-// ─── stat pill ──────────────────────────────────────────────────────────────
+const YEAR_RANGE = 3;
 
 function StatPill({icon: Icon, label, value, className = ''}) {
     return (
