@@ -115,7 +115,7 @@ export const generateExternalStream = async (userPrompt, intent, res) => {
         res.setHeader('Content-Type', 'text/event-stream');
         res.setHeader('Cache-Control', 'no-cache');
         res.setHeader('Connection', 'keep-alive');
-        
+
         // Write chunks as they arrive
         for await (const chunk of responseStream) {
             const text = chunk.text;
@@ -130,9 +130,14 @@ export const generateExternalStream = async (userPrompt, intent, res) => {
         console.error('[External AI Stream Error]:', error.message);
         // If headers are already sent, we cannot change status code.
         if (!res.headersSent) {
-            res.status(500).json({success: false, message: 'Failed to stream response.'});
+            res.status(500).json({
+                success: false,
+                message: 'Failed to stream response.',
+            });
         } else {
-            res.write(`data: ${JSON.stringify({error: 'Streaming failed'})}\n\n`);
+            res.write(
+                `data: ${JSON.stringify({error: 'Streaming failed'})}\n\n`
+            );
             res.end();
         }
     }

@@ -1112,7 +1112,7 @@ const swaggerDefinition = {
                             schema: {
                                 type: 'object',
                                 required: ['prompt'],
-                                properties: { prompt: { type: 'string' } },
+                                properties: {prompt: {type: 'string'}},
                             },
                         },
                     },
@@ -1133,7 +1133,10 @@ const swaggerDefinition = {
                             schema: {
                                 type: 'object',
                                 required: ['prompt', 'intent'],
-                                properties: { prompt: { type: 'string' }, intent: { type: 'string' } },
+                                properties: {
+                                    prompt: {type: 'string'},
+                                    intent: {type: 'string'},
+                                },
                             },
                         },
                     },
@@ -1154,7 +1157,10 @@ const swaggerDefinition = {
                             schema: {
                                 type: 'object',
                                 required: ['prompt', 'intent'],
-                                properties: { prompt: { type: 'string' }, intent: { type: 'string' } },
+                                properties: {
+                                    prompt: {type: 'string'},
+                                    intent: {type: 'string'},
+                                },
                             },
                         },
                     },
@@ -1188,9 +1194,9 @@ const swaggerDefinition = {
                             schema: {
                                 type: 'object',
                                 properties: {
-                                    source_code: { type: 'string' },
-                                    language: { type: 'string' },
-                                    input_data: { type: 'string' },
+                                    source_code: {type: 'string'},
+                                    language: {type: 'string'},
+                                    input_data: {type: 'string'},
                                 },
                             },
                         },
@@ -1247,10 +1253,10 @@ const swaggerDefinition = {
                             schema: {
                                 type: 'object',
                                 properties: {
-                                    title: { type: 'string' },
-                                    source_code: { type: 'string' },
-                                    language: { type: 'string' },
-                                    is_default: { type: 'boolean' },
+                                    title: {type: 'string'},
+                                    source_code: {type: 'string'},
+                                    language: {type: 'string'},
+                                    is_default: {type: 'boolean'},
                                 },
                             },
                         },
@@ -1266,7 +1272,12 @@ const swaggerDefinition = {
                 tags: ['User Templates'],
                 summary: 'Get template by ID',
                 parameters: [
-                    { in: 'path', name: 'id', required: true, schema: { type: 'integer' } },
+                    {
+                        in: 'path',
+                        name: 'id',
+                        required: true,
+                        schema: {type: 'integer'},
+                    },
                 ],
                 responses: {
                     200: {description: 'Template details'},
@@ -1276,7 +1287,12 @@ const swaggerDefinition = {
                 tags: ['User Templates'],
                 summary: 'Update template',
                 parameters: [
-                    { in: 'path', name: 'id', required: true, schema: { type: 'integer' } },
+                    {
+                        in: 'path',
+                        name: 'id',
+                        required: true,
+                        schema: {type: 'integer'},
+                    },
                 ],
                 requestBody: {
                     required: true,
@@ -1285,10 +1301,10 @@ const swaggerDefinition = {
                             schema: {
                                 type: 'object',
                                 properties: {
-                                    title: { type: 'string' },
-                                    source_code: { type: 'string' },
-                                    language: { type: 'string' },
-                                    is_default: { type: 'boolean' },
+                                    title: {type: 'string'},
+                                    source_code: {type: 'string'},
+                                    language: {type: 'string'},
+                                    is_default: {type: 'boolean'},
                                 },
                             },
                         },
@@ -1302,7 +1318,12 @@ const swaggerDefinition = {
                 tags: ['User Templates'],
                 summary: 'Delete template',
                 parameters: [
-                    { in: 'path', name: 'id', required: true, schema: { type: 'integer' } },
+                    {
+                        in: 'path',
+                        name: 'id',
+                        required: true,
+                        schema: {type: 'integer'},
+                    },
                 ],
                 responses: {
                     200: {description: 'Template deleted'},
@@ -1314,7 +1335,12 @@ const swaggerDefinition = {
                 tags: ['User Templates'],
                 summary: 'Set template as default',
                 parameters: [
-                    { in: 'path', name: 'id', required: true, schema: { type: 'integer' } },
+                    {
+                        in: 'path',
+                        name: 'id',
+                        required: true,
+                        schema: {type: 'integer'},
+                    },
                 ],
                 responses: {
                     200: {description: 'Template set as default'},

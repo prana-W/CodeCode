@@ -81,7 +81,9 @@ export default function UserTemplates() {
         try {
             await api.delete(`/user-templates/${templateToDelete}`);
             toast.success('Template deleted successfully.');
-            setTemplates(templates.filter((t) => t.template_id !== templateToDelete));
+            setTemplates(
+                templates.filter((t) => t.template_id !== templateToDelete)
+            );
         } catch (error) {
             toast.error(
                 error.response?.data?.message || 'Failed to delete template.'

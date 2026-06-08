@@ -46,7 +46,7 @@ function TestcasePanel({problem, index, testcase, onRefresh}) {
     const [editingId, setEditingId] = useState(null);
     const [submitting, setSubmitting] = useState(false);
     const [deleting, setDeleting] = useState(false);
-    
+
     const [aiPrompt, setAiPrompt] = useState('');
     const [isStreaming, setIsStreaming] = useState(false);
     const streamControllerRef = useRef(null);
@@ -141,7 +141,9 @@ function TestcasePanel({problem, index, testcase, onRefresh}) {
 
     const handleGenerateTestcase = async () => {
         if (!aiPrompt.trim()) {
-            return toast.error('Please provide a custom instruction for the AI.');
+            return toast.error(
+                'Please provide a custom instruction for the AI.'
+            );
         }
 
         const backupKey = `backup_tc_${problem.problem_id}`;
@@ -153,18 +155,20 @@ function TestcasePanel({problem, index, testcase, onRefresh}) {
 
         try {
             const token = localStorage.getItem('token');
-            const apiUrl = import.meta.env.VITE_SERVER_URL || 'http://localhost:8000/api/v1';
+            const apiUrl =
+                import.meta.env.VITE_SERVER_URL ||
+                'http://localhost:8000/api/v1';
             const response = await fetch(`${apiUrl}/ai/external/stream`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
+                    Authorization: `Bearer ${token}`,
                 },
                 body: JSON.stringify({
                     intent: 'testcase_generation',
-                    prompt: `Custom Instruction: ${aiPrompt}\\n\\n### Problem Statement:\\n${problem.statement}`
+                    prompt: `Custom Instruction: ${aiPrompt}\\n\\n### Problem Statement:\\n${problem.statement}`,
                 }),
-                signal: streamControllerRef.current.signal
+                signal: streamControllerRef.current.signal,
             });
 
             if (!response.ok) throw new Error('Network error');
@@ -173,19 +177,19 @@ function TestcasePanel({problem, index, testcase, onRefresh}) {
             const decoder = new TextDecoder();
             let done = false;
             let currentContent = '';
-            
+
             const fieldMap = {
                 '[HIDDEN_INPUT]': 'input_data',
                 '[HIDDEN_OUTPUT]': 'expected_output',
                 '[SAMPLE_INPUT]': 'sample_input_data',
-                '[SAMPLE_OUTPUT]': 'sample_expected_output'
+                '[SAMPLE_OUTPUT]': 'sample_expected_output',
             };
 
             while (!done) {
-                const { value, done: readerDone } = await reader.read();
+                const {value, done: readerDone} = await reader.read();
                 done = readerDone;
                 if (value) {
-                    const chunkStr = decoder.decode(value, { stream: true });
+                    const chunkStr = decoder.decode(value, {stream: true});
                     const lines = chunkStr.split('\\n');
                     for (const line of lines) {
                         if (line.startsWith('data: ')) {
@@ -199,24 +203,48 @@ function TestcasePanel({problem, index, testcase, onRefresh}) {
                                 if (parsed.text) {
                                     currentContent += parsed.text;
                                     let newFormState = {};
-                                    const markerRegex = /\\[(HIDDEN_INPUT|HIDDEN_OUTPUT|SAMPLE_INPUT|SAMPLE_OUTPUT)\\]/g;
+                                    const markerRegex =
+                                        /\\[(HIDDEN_INPUT|HIDDEN_OUTPUT|SAMPLE_INPUT|SAMPLE_OUTPUT)\\]/g;
                                     let matches = [];
                                     let match;
-                                    while ((match = markerRegex.exec(currentContent)) !== null) {
-                                        matches.push({ type: `[${match[1]}]`, index: match.index });
+                                    while (
+                                        (match =
+                                            markerRegex.exec(
+                                                currentContent
+                                            )) !== null
+                                    ) {
+                                        matches.push({
+                                            type: `[${match[1]}]`,
+                                            index: match.index,
+                                        });
                                     }
-                                    
+
                                     if (matches.length > 0) {
-                                        for (let i = 0; i < matches.length; i++) {
-                                            const startIdx = matches[i].index + matches[i].type.length;
-                                            const endIdx = (i + 1 < matches.length) ? matches[i+1].index : currentContent.length;
-                                            const content = currentContent.substring(startIdx, endIdx).replace(/^\\s+/, '');
-                                            const field = fieldMap[matches[i].type];
+                                        for (
+                                            let i = 0;
+                                            i < matches.length;
+                                            i++
+                                        ) {
+                                            const startIdx =
+                                                matches[i].index +
+                                                matches[i].type.length;
+                                            const endIdx =
+                                                i + 1 < matches.length
+                                                    ? matches[i + 1].index
+                                                    : currentContent.length;
+                                            const content = currentContent
+                                                .substring(startIdx, endIdx)
+                                                .replace(/^\\s+/, '');
+                                            const field =
+                                                fieldMap[matches[i].type];
                                             if (field) {
                                                 newFormState[field] = content;
                                             }
                                         }
-                                        setForm(prev => ({ ...prev, ...newFormState }));
+                                        setForm((prev) => ({
+                                            ...prev,
+                                            ...newFormState,
+                                        }));
                                     }
                                 } else if (parsed.error) {
                                     toast.error(parsed.error);
@@ -481,29 +509,51 @@ function TestcasePanel({problem, index, testcase, onRefresh}) {
                                 <div className="flex-1 w-full max-w-lg space-y-2 bg-muted/20 p-4 rounded-xl border border-border">
                                     <div className="flex items-center gap-2 mb-1">
                                         <Sparkles className="w-4 h-4 text-primary" />
-                                        <h4 className="text-xs font-semibold uppercase tracking-wider text-foreground">AI Testcase Generator</h4>
+                                        <h4 className="text-xs font-semibold uppercase tracking-wider text-foreground">
+                                            AI Testcase Generator
+                                        </h4>
                                     </div>
                                     <Textarea
                                         rows={2}
                                         placeholder="e.g. Generate an edge case where array contains all negative numbers and n=1000..."
                                         value={aiPrompt}
-                                        onChange={(e) => setAiPrompt(e.target.value)}
+                                        onChange={(e) =>
+                                            setAiPrompt(e.target.value)
+                                        }
                                         disabled={isStreaming}
                                         className="text-xs resize-y min-h-[60px]"
                                     />
                                     <div className="flex gap-2">
                                         {!isStreaming ? (
-                                            <Button type="button" onClick={handleGenerateTestcase} size="sm" className="gap-1.5 h-8 text-xs bg-primary/10 text-primary hover:bg-primary/20 hover:text-primary border-0">
+                                            <Button
+                                                type="button"
+                                                onClick={handleGenerateTestcase}
+                                                size="sm"
+                                                className="gap-1.5 h-8 text-xs bg-primary/10 text-primary hover:bg-primary/20 hover:text-primary border-0"
+                                            >
                                                 <Sparkles className="w-3.5 h-3.5" />
                                                 Generate
                                             </Button>
                                         ) : (
-                                            <Button type="button" onClick={handleStopStream} size="sm" variant="destructive" className="gap-1.5 h-8 text-xs">
+                                            <Button
+                                                type="button"
+                                                onClick={handleStopStream}
+                                                size="sm"
+                                                variant="destructive"
+                                                className="gap-1.5 h-8 text-xs"
+                                            >
                                                 <Square className="w-3.5 h-3.5" />
                                                 Stop Generating
                                             </Button>
                                         )}
-                                        <Button type="button" onClick={handleRevertTestcase} size="sm" variant="outline" disabled={isStreaming} className="gap-1.5 h-8 text-xs">
+                                        <Button
+                                            type="button"
+                                            onClick={handleRevertTestcase}
+                                            size="sm"
+                                            variant="outline"
+                                            disabled={isStreaming}
+                                            className="gap-1.5 h-8 text-xs"
+                                        >
                                             <RotateCcw className="w-3.5 h-3.5" />
                                             Revert
                                         </Button>

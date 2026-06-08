@@ -83,9 +83,13 @@ export default function ContestProblemsTab() {
                                 }`}
                             >
                                 <td className="px-6 py-4 text-center relative">
-                                    <span className={`inline-flex items-center justify-center w-6 h-6 rounded font-bold text-sm ${
-                                        isSolved ? 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-400' : 'bg-primary/10 text-primary'
-                                    }`}>
+                                    <span
+                                        className={`inline-flex items-center justify-center w-6 h-6 rounded font-bold text-sm ${
+                                            isSolved
+                                                ? 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-400'
+                                                : 'bg-primary/10 text-primary'
+                                        }`}
+                                    >
                                         {letter}
                                     </span>
                                 </td>

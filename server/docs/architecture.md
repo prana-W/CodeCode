@@ -213,6 +213,7 @@ exit $?
 Compilation and execution are handled in two distinct container lifecycles to prevent compiler memory spikes from triggering `memory_limit_exceeded`.
 
 **Compilation Step (if applicable):**
+
 - Runs with a fixed `--memory=512m` limit.
 - If it exits with code `100` or fails, verdict is `compilation_error`.
 
@@ -291,7 +292,9 @@ The submission row now has its final state. The client can poll `GET /api/v1/sub
 The submission row now has its final state.
 
 ### Pub/Sub Notification (Socket.IO)
+
 Instead of forcing the client to poll, the worker executes:
+
 ```js
 redis.publish('socket_updates', JSON.stringify({ userId, submissionId, verdict, ... }));
 ```

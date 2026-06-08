@@ -139,34 +139,42 @@ export default function ProblemsPage() {
 
     const handleRefineStatement = async () => {
         if (!form.statement.trim()) {
-            return toast.error('Please write some draft problem statement first.');
+            return toast.error(
+                'Please write some draft problem statement first.'
+            );
         }
         if (!aiPrompt.trim()) {
-            return toast.error('Please provide a custom instruction for the AI.');
+            return toast.error(
+                'Please provide a custom instruction for the AI.'
+            );
         }
 
-        const backupKey = editingId ? `backup_statement_${editingId}` : 'backup_statement_new';
+        const backupKey = editingId
+            ? `backup_statement_${editingId}`
+            : 'backup_statement_new';
         localStorage.setItem(backupKey, form.statement);
 
         setIsStreaming(true);
-        setForm((prev) => ({ ...prev, statement: '' }));
+        setForm((prev) => ({...prev, statement: ''}));
 
         streamControllerRef.current = new AbortController();
 
         try {
             const token = localStorage.getItem('token');
-            const apiUrl = import.meta.env.VITE_SERVER_URL || 'http://localhost:8000/api/v1';
+            const apiUrl =
+                import.meta.env.VITE_SERVER_URL ||
+                'http://localhost:8000/api/v1';
             const response = await fetch(`${apiUrl}/ai/external/stream`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
+                    Authorization: `Bearer ${token}`,
                 },
                 body: JSON.stringify({
                     intent: 'problem_statement_refining',
-                    prompt: `Custom Instruction: ${aiPrompt}\n\n### Original Problem Statement:\n${localStorage.getItem(backupKey)}`
+                    prompt: `Custom Instruction: ${aiPrompt}\n\n### Original Problem Statement:\n${localStorage.getItem(backupKey)}`,
                 }),
-                signal: streamControllerRef.current.signal
+                signal: streamControllerRef.current.signal,
             });
 
             if (!response.ok) throw new Error('Network error');
@@ -177,10 +185,10 @@ export default function ProblemsPage() {
             let fullText = '';
 
             while (!done) {
-                const { value, done: readerDone } = await reader.read();
+                const {value, done: readerDone} = await reader.read();
                 done = readerDone;
                 if (value) {
-                    const chunkStr = decoder.decode(value, { stream: true });
+                    const chunkStr = decoder.decode(value, {stream: true});
                     const lines = chunkStr.split('\\n'); // Split by new lines for SSE
                     for (const line of lines) {
                         if (line.startsWith('data: ')) {
@@ -193,7 +201,10 @@ export default function ProblemsPage() {
                                 const parsed = JSON.parse(dataStr);
                                 if (parsed.text) {
                                     fullText += parsed.text;
-                                    setForm(prev => ({ ...prev, statement: fullText }));
+                                    setForm((prev) => ({
+                                        ...prev,
+                                        statement: fullText,
+                                    }));
                                 } else if (parsed.error) {
                                     toast.error(parsed.error);
                                 }
@@ -223,10 +234,12 @@ export default function ProblemsPage() {
     };
 
     const handleRevertStatement = () => {
-        const backupKey = editingId ? `backup_statement_${editingId}` : 'backup_statement_new';
+        const backupKey = editingId
+            ? `backup_statement_${editingId}`
+            : 'backup_statement_new';
         const backup = localStorage.getItem(backupKey);
         if (backup) {
-            setForm(prev => ({ ...prev, statement: backup }));
+            setForm((prev) => ({...prev, statement: backup}));
             toast.success('Problem statement reverted.');
         } else {
             toast.error('No previous version found.');
@@ -707,7 +720,7 @@ export default function ProblemsPage() {
                                 </Button>
                             </div>
                         </form>
-                        
+
                         {/* Fixed AI Refiner Widget */}
                         <div className="fixed bottom-6 left-6 z-50 flex flex-col-reverse items-start gap-3">
                             <Button
@@ -715,36 +728,62 @@ export default function ProblemsPage() {
                                 onClick={() => setShowAIPanel(!showAIPanel)}
                                 className="rounded-full shadow-lg h-12 w-12 p-0 bg-primary text-primary-foreground hover:bg-primary/90 transition-transform hover:scale-105"
                             >
-                                {showAIPanel ? <X className="w-5 h-5" /> : <Sparkles className="w-5 h-5" />}
+                                {showAIPanel ? (
+                                    <X className="w-5 h-5" />
+                                ) : (
+                                    <Sparkles className="w-5 h-5" />
+                                )}
                             </Button>
 
                             {showAIPanel && (
                                 <div className="w-80 bg-card border border-border shadow-2xl rounded-2xl p-4 animate-in slide-in-from-bottom-4 fade-in origin-bottom-left">
                                     <div className="flex items-center gap-2 mb-3">
                                         <Sparkles className="w-4 h-4 text-primary" />
-                                        <h4 className="text-sm font-semibold text-foreground">AI Refiner</h4>
+                                        <h4 className="text-sm font-semibold text-foreground">
+                                            AI Refiner
+                                        </h4>
                                     </div>
                                     <Textarea
                                         rows={3}
                                         placeholder="e.g. Make it sound like a pirate story, fix grammar, improve formatting..."
                                         value={aiPrompt}
-                                        onChange={(e) => setAiPrompt(e.target.value)}
+                                        onChange={(e) =>
+                                            setAiPrompt(e.target.value)
+                                        }
                                         disabled={isStreaming}
                                         className="text-xs resize-y min-h-[80px] mb-3"
                                     />
                                     <div className="flex gap-2">
                                         {!isStreaming ? (
-                                            <Button type="button" onClick={handleRefineStatement} size="sm" className="flex-1 gap-1.5 h-8 text-xs bg-primary/10 text-primary hover:bg-primary/20 hover:text-primary border-0">
+                                            <Button
+                                                type="button"
+                                                onClick={handleRefineStatement}
+                                                size="sm"
+                                                className="flex-1 gap-1.5 h-8 text-xs bg-primary/10 text-primary hover:bg-primary/20 hover:text-primary border-0"
+                                            >
                                                 <Sparkles className="w-3.5 h-3.5" />
                                                 Refine
                                             </Button>
                                         ) : (
-                                            <Button type="button" onClick={handleStopStream} size="sm" variant="destructive" className="flex-1 gap-1.5 h-8 text-xs">
+                                            <Button
+                                                type="button"
+                                                onClick={handleStopStream}
+                                                size="sm"
+                                                variant="destructive"
+                                                className="flex-1 gap-1.5 h-8 text-xs"
+                                            >
                                                 <Square className="w-3.5 h-3.5" />
                                                 Stop
                                             </Button>
                                         )}
-                                        <Button type="button" onClick={handleRevertStatement} size="sm" variant="outline" disabled={isStreaming} className="flex-1 gap-1.5 h-8 text-xs">
+                                        <Button
+                                            type="button"
+                                            onClick={handleRevertStatement}
+                                            size="sm"
+                                            variant="outline"
+                                            disabled={isStreaming}
+                                            className="flex-1 gap-1.5 h-8 text-xs"
+                                        >
                                             <RotateCcw className="w-3.5 h-3.5" />
                                             Revert
                                         </Button>

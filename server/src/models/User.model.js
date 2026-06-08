@@ -174,12 +174,12 @@ class User {
 
         if (allDaysAccepted) {
             const days = allDaysAccepted.split(','); // already sorted ASC
-            
+
             const toYYYYMMDD = (dateObj) => {
                 return [
                     dateObj.getFullYear(),
                     String(dateObj.getMonth() + 1).padStart(2, '0'),
-                    String(dateObj.getDate()).padStart(2, '0')
+                    String(dateObj.getDate()).padStart(2, '0'),
                 ].join('-');
             };
 
@@ -201,7 +201,9 @@ class User {
                 for (let i = days.length - 1; i >= 0; i--) {
                     const dayStr = days[i];
                     const expected = new Date();
-                    expected.setDate(expected.getDate() - 1 - streakFromYesterday);
+                    expected.setDate(
+                        expected.getDate() - 1 - streakFromYesterday
+                    );
                     if (dayStr === toYYYYMMDD(expected)) {
                         streakFromYesterday++;
                     } else {
@@ -238,7 +240,7 @@ class User {
                         ? [
                               r.day.getFullYear(),
                               String(r.day.getMonth() + 1).padStart(2, '0'),
-                              String(r.day.getDate()).padStart(2, '0')
+                              String(r.day.getDate()).padStart(2, '0'),
                           ].join('-')
                         : String(r.day),
                 total: Number(r.total),

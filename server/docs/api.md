@@ -611,7 +611,7 @@ _Note: All endpoints require authentication._
         "statusCode": 200,
         "success": true,
         "message": "Sample code executed successfully.",
-        "data": { }
+        "data": {}
     }
     ```
 
@@ -921,7 +921,7 @@ _Note: All endpoints require authentication._
         "statusCode": 200,
         "success": true,
         "message": "Rankings fetched successfully.",
-        "data": [ ]
+        "data": []
     }
     ```
 
@@ -969,7 +969,7 @@ _Note: All endpoints require authentication._
         "statusCode": 200,
         "success": true,
         "message": "AI response generated successfully.",
-        "data": { "hint": "..." }
+        "data": {"hint": "..."}
     }
     ```
 
@@ -991,7 +991,7 @@ _Note: All endpoints require authentication._
         "statusCode": 200,
         "success": true,
         "message": "External AI response generated successfully.",
-        "data": { "response": "..." }
+        "data": {"response": "..."}
     }
     ```
 
@@ -1069,7 +1069,7 @@ _Note: All endpoints require authentication._
     {
         "success": true,
         "status": "completed",
-        "data": { "output": "3\n" }
+        "data": {"output": "3\n"}
     }
     ```
 

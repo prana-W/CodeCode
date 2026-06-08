@@ -51,11 +51,14 @@ const worker = new Worker(
 
             // Publish to sockets
             if (userId) {
-                connection.publish('socket_updates', JSON.stringify({
-                    userId,
-                    event: 'custom_invocation_update',
-                    payload: val
-                }));
+                connection.publish(
+                    'socket_updates',
+                    JSON.stringify({
+                        userId,
+                        event: 'custom_invocation_update',
+                        payload: val,
+                    })
+                );
             }
         } catch (err) {
             console.error(
@@ -83,11 +86,14 @@ const worker = new Worker(
 
             // Publish to sockets
             if (userId) {
-                connection.publish('socket_updates', JSON.stringify({
-                    userId,
-                    event: 'custom_invocation_update',
-                    payload: val
-                }));
+                connection.publish(
+                    'socket_updates',
+                    JSON.stringify({
+                        userId,
+                        event: 'custom_invocation_update',
+                        payload: val,
+                    })
+                );
             }
         }
     },

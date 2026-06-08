@@ -26,7 +26,7 @@ export default function ContestSubmissionsTab() {
     const [submissions, setSubmissions] = useState([]);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
-    
+
     const [selectedSubId, setSelectedSubId] = useState(null);
     const [subDetails, setSubDetails] = useState(null);
     const [loadingDetails, setLoadingDetails] = useState(false);
@@ -36,7 +36,7 @@ export default function ContestSubmissionsTab() {
 
     const getProblemLetter = (problemId) => {
         if (!problems) return '';
-        const idx = problems.findIndex(p => p.problem_id === problemId);
+        const idx = problems.findIndex((p) => p.problem_id === problemId);
         if (idx !== -1) {
             return String.fromCharCode(65 + idx) + '.';
         }
@@ -79,28 +79,30 @@ export default function ContestSubmissionsTab() {
 
     useEffect(() => {
         if (!socket) return;
-        
+
         const handleSubmissionUpdate = (data) => {
-            setSubmissions(prev => prev.map(sub => {
-                if (sub.submission_id === data.submission_id) {
-                    return {
-                        ...sub,
-                        verdict: data.verdict,
-                        execution_time_ms: data.execution_time_ms,
-                        memory_used_kb: data.memory_used_kb
-                    };
-                }
-                return sub;
-            }));
-            
+            setSubmissions((prev) =>
+                prev.map((sub) => {
+                    if (sub.submission_id === data.submission_id) {
+                        return {
+                            ...sub,
+                            verdict: data.verdict,
+                            execution_time_ms: data.execution_time_ms,
+                            memory_used_kb: data.memory_used_kb,
+                        };
+                    }
+                    return sub;
+                })
+            );
+
             // Also update modal if it's currently open
-            setSubDetails(prev => {
+            setSubDetails((prev) => {
                 if (prev && prev.submission_id === data.submission_id) {
                     return {
                         ...prev,
                         verdict: data.verdict,
                         execution_time_ms: data.execution_time_ms,
-                        memory_used_kb: data.memory_used_kb
+                        memory_used_kb: data.memory_used_kb,
                     };
                 }
                 return prev;
@@ -180,12 +182,17 @@ export default function ContestSubmissionsTab() {
                             {submissions.map((sub) => (
                                 <tr
                                     key={sub.submission_id}
-                                    onClick={() => handleRowClick(sub.submission_id)}
+                                    onClick={() =>
+                                        handleRowClick(sub.submission_id)
+                                    }
                                     className="hover:bg-muted/30 transition-colors cursor-pointer"
                                 >
                                     <td className="px-6 py-3 font-semibold text-sm text-foreground">
-                                        <span className="mr-1.5 text-primary">{getProblemLetter(sub.problem_id)}</span>
-                                        {sub.problem_title || `Problem #${sub.problem_id}`}
+                                        <span className="mr-1.5 text-primary">
+                                            {getProblemLetter(sub.problem_id)}
+                                        </span>
+                                        {sub.problem_title ||
+                                            `Problem #${sub.problem_id}`}
                                     </td>
                                     <td className="px-6 py-3 text-xs font-mono text-muted-foreground">
                                         {formatDate(sub.submitted_at)}
@@ -217,14 +224,25 @@ export default function ContestSubmissionsTab() {
             )}
 
             {selectedSubId && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm" onClick={() => setSelectedSubId(null)}>
-                    <div className="bg-card border border-border rounded-xl shadow-2xl w-full max-w-3xl max-h-[85vh] flex flex-col overflow-hidden animate-in zoom-in-95" onClick={e => e.stopPropagation()}>
+                <div
+                    className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm"
+                    onClick={() => setSelectedSubId(null)}
+                >
+                    <div
+                        className="bg-card border border-border rounded-xl shadow-2xl w-full max-w-3xl max-h-[85vh] flex flex-col overflow-hidden animate-in zoom-in-95"
+                        onClick={(e) => e.stopPropagation()}
+                    >
                         <div className="flex items-center justify-between p-4 border-b border-border bg-muted/30">
                             <h3 className="font-semibold text-foreground flex items-center gap-2">
                                 <Code2 className="w-4 h-4 text-primary" />
-                                {subDetails?.problem_title ? `Submission for: ${subDetails.problem_title}` : `Submission #${selectedSubId}`}
+                                {subDetails?.problem_title
+                                    ? `Submission for: ${subDetails.problem_title}`
+                                    : `Submission #${selectedSubId}`}
                             </h3>
-                            <button onClick={() => setSelectedSubId(null)} className="text-muted-foreground hover:text-foreground">
+                            <button
+                                onClick={() => setSelectedSubId(null)}
+                                className="text-muted-foreground hover:text-foreground"
+                            >
                                 <X className="w-5 h-5" />
                             </button>
                         </div>
@@ -237,12 +255,18 @@ export default function ContestSubmissionsTab() {
                                 <div className="space-y-4">
                                     <div className="flex items-center gap-4 text-sm font-mono flex-wrap bg-background p-3 rounded-lg border border-border">
                                         <div>
-                                            <span className="text-muted-foreground uppercase tracking-wider text-[10px]">Verdict</span>
+                                            <span className="text-muted-foreground uppercase tracking-wider text-[10px]">
+                                                Verdict
+                                            </span>
                                             <p className="mt-1">
                                                 {(() => {
-                                                    const v = getVerdictDetails(subDetails.verdict);
+                                                    const v = getVerdictDetails(
+                                                        subDetails.verdict
+                                                    );
                                                     return (
-                                                        <span className={`inline-flex px-2 py-0.5 rounded text-xs font-semibold ${v.colorClass}`}>
+                                                        <span
+                                                            className={`inline-flex px-2 py-0.5 rounded text-xs font-semibold ${v.colorClass}`}
+                                                        >
                                                             {v.label}
                                                         </span>
                                                     );
@@ -250,40 +274,77 @@ export default function ContestSubmissionsTab() {
                                             </p>
                                         </div>
                                         <div>
-                                            <span className="text-muted-foreground uppercase tracking-wider text-[10px]">Language</span>
-                                            <p className="mt-1 font-semibold">{subDetails.language === 'cpp' ? 'C++' : subDetails.language}</p>
+                                            <span className="text-muted-foreground uppercase tracking-wider text-[10px]">
+                                                Language
+                                            </span>
+                                            <p className="mt-1 font-semibold">
+                                                {subDetails.language === 'cpp'
+                                                    ? 'C++'
+                                                    : subDetails.language}
+                                            </p>
                                         </div>
                                         <div>
-                                            <span className="text-muted-foreground uppercase tracking-wider text-[10px]">Time</span>
-                                            <p className="mt-1 font-semibold">{subDetails.execution_time_ms != null ? `${subDetails.execution_time_ms} ms` : '-'}</p>
+                                            <span className="text-muted-foreground uppercase tracking-wider text-[10px]">
+                                                Time
+                                            </span>
+                                            <p className="mt-1 font-semibold">
+                                                {subDetails.execution_time_ms !=
+                                                null
+                                                    ? `${subDetails.execution_time_ms} ms`
+                                                    : '-'}
+                                            </p>
                                         </div>
                                         <div>
-                                            <span className="text-muted-foreground uppercase tracking-wider text-[10px]">Memory</span>
-                                            <p className="mt-1 font-semibold">{subDetails.memory_used_kb != null ? `${subDetails.memory_used_kb} KB` : '-'}</p>
+                                            <span className="text-muted-foreground uppercase tracking-wider text-[10px]">
+                                                Memory
+                                            </span>
+                                            <p className="mt-1 font-semibold">
+                                                {subDetails.memory_used_kb !=
+                                                null
+                                                    ? `${subDetails.memory_used_kb} KB`
+                                                    : '-'}
+                                            </p>
                                         </div>
                                     </div>
                                     <div>
-                                        <span className="text-muted-foreground uppercase tracking-wider text-[10px] mb-2 block">Source Code</span>
+                                        <span className="text-muted-foreground uppercase tracking-wider text-[10px] mb-2 block">
+                                            Source Code
+                                        </span>
                                         <div className="border border-border rounded-lg overflow-hidden h-[50vh]">
                                             <Editor
                                                 height="100%"
-                                                language={subDetails.language === 'c' || subDetails.language === 'cpp' ? 'cpp' : subDetails.language === 'python' ? 'python' : subDetails.language === 'java' ? 'java' : 'javascript'}
+                                                language={
+                                                    subDetails.language ===
+                                                        'c' ||
+                                                    subDetails.language ===
+                                                        'cpp'
+                                                        ? 'cpp'
+                                                        : subDetails.language ===
+                                                            'python'
+                                                          ? 'python'
+                                                          : subDetails.language ===
+                                                              'java'
+                                                            ? 'java'
+                                                            : 'javascript'
+                                                }
                                                 value={subDetails.source_code}
                                                 theme="vs-dark"
                                                 options={{
                                                     readOnly: true,
-                                                    minimap: { enabled: false },
+                                                    minimap: {enabled: false},
                                                     scrollBeyondLastLine: false,
                                                     fontSize: 14,
                                                     lineNumbers: 'on',
-                                                    wordWrap: 'on'
+                                                    wordWrap: 'on',
                                                 }}
                                             />
                                         </div>
                                     </div>
                                 </div>
                             ) : (
-                                <div className="text-center py-12 text-muted-foreground text-sm">Failed to load details</div>
+                                <div className="text-center py-12 text-muted-foreground text-sm">
+                                    Failed to load details
+                                </div>
                             )}
                         </div>
                     </div>

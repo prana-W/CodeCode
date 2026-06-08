@@ -156,10 +156,19 @@ export default function ContestProblemView() {
         socket.on('submission_update', handleSubmissionUpdate);
 
         return () => {
-            socket.off('custom_invocation_update', handleCustomInvocationUpdate);
+            socket.off(
+                'custom_invocation_update',
+                handleCustomInvocationUpdate
+            );
             socket.off('submission_update', handleSubmissionUpdate);
         };
-    }, [socket, pendingInvocationId, pendingSubmissionId, problemId, setSolvedIds]);
+    }, [
+        socket,
+        pendingInvocationId,
+        pendingSubmissionId,
+        problemId,
+        setSolvedIds,
+    ]);
 
     // Anti-cheat: Track internal copy events
     useEffect(() => {
@@ -190,7 +199,7 @@ export default function ContestProblemView() {
 
     const handlePaste = (e) => {
         if (!isContestLive()) return;
-        
+
         const pastedText = e.clipboardData.getData('text');
         const storedText = localStorage.getItem('code_editor_clipboard') || '';
         // Standardize line endings for comparison just in case
@@ -447,7 +456,9 @@ export default function ContestProblemView() {
                     onCopy={(e) => {
                         if (isContestLive()) {
                             e.preventDefault();
-                            toast.error('Copying problem statements is disabled during live contests.');
+                            toast.error(
+                                'Copying problem statements is disabled during live contests.'
+                            );
                         }
                     }}
                 >

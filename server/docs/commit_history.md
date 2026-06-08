@@ -853,25 +853,32 @@ Viewed CustomInvocationPage.jsx:220-243
 Here is the exact flow of the new real-time WebSocket architecture that we just built, taking a code submission as an example:
 
 ### 1. Connection (Authentication & Rooms)
+
 When you log into the platform, the `<SocketProvider>` wrapper (in `App.jsx`) initializes a `socket.io-client` connection to the backend. The backend verifies your JWT cookie. Once verified, the backend Socket.io server assigns your specific socket connection to a "room" named strictly after your `userId`.
-*(This ensures that if you have 5 browser tabs open, all 5 tabs join the same room and stay perfectly in sync).*
+_(This ensures that if you have 5 browser tabs open, all 5 tabs join the same room and stay perfectly in sync)._
 
 ### 2. Job Queueing
-When you click **"Submit Code"** (or **"Execute"** for a custom invocation), the React frontend still makes a standard HTTP POST request. The API responds with an ID (e.g. `submission_id` or `customInvocationId`). 
+
+When you click **"Submit Code"** (or **"Execute"** for a custom invocation), the React frontend still makes a standard HTTP POST request. The API responds with an ID (e.g. `submission_id` or `customInvocationId`).
+
 - **Before**: The frontend used `setInterval` to ping the API every 3-5 seconds asking, "Is it done yet?"
 - **Now**: The frontend simply stores that ID in a state variable (e.g. `pendingSubmissionId`) and patiently waits, listening for socket events.
 
 ### 3. Worker Processing & Redis Pub/Sub
-The actual code execution happens inside isolated background processes (`judgeWorker.js` or `customInvocationWorker.js`). 
+
+The actual code execution happens inside isolated background processes (`judgeWorker.js` or `customInvocationWorker.js`).
 Once a worker finishes compiling/executing your code and generates a final verdict (e.g., "Accepted" or "Runtime Error"), it uses `ioredis` to `.publish()` a message to an internal Redis channel called `socket_updates`. It tags this message with your specific `userId`.
 
 ### 4. WebSocket Routing
+
 Your main backend server (`server/src/index.js`) is constantly subscribed to the `socket_updates` Redis channel. As soon as it hears a message from a worker, it parses the JSON. It sees your `userId` attached, and commands the Socket.io server to instantly broadcast that exact verdict payload directly to your private room: `io.to(userId).emit(...)`.
 
 ### 5. Instant UI Update
+
 Back on the frontend (e.g., in `ContestProblemView.jsx` or `CustomInvocationPage.jsx`), an active `useEffect` listener receives the socket event. It matches the incoming `submission_id` against the `pendingSubmissionId` it was waiting for. If it matches, React instantly clears the loading state, fires the toast notification, and updates the UI!
 
 ### Why is this better?
+
 - **Speed**: Verdicts arrive instantly the exact millisecond the worker finishes.
 - **Server Load**: We entirely eliminated thousands of redundant HTTP GET requests that were constantly hitting your database while users waited.
 - **Scalability**: Utilizing Redis Pub/Sub means that if you eventually run multiple Node.js instances, workers can talk to the sockets flawlessly across different servers!
@@ -881,7 +888,6 @@ Back on the frontend (e.g., in `ContestProblemView.jsx` or `CustomInvocationPage
 - I have now removed the manual polling + redis for checking live users.
 
 - I successfully:
-
     - Removed the 30-second setInterval loop in the frontend Header.jsx that was constantly pinging the backend API.
     - Modified server/src/sockets/index.js to automatically increment/decrement the unique user count based on standard connection and disconnect socket events, broadcasting the new count using io.emit('live_users_update', count).
     - Updated the backend user.controller.js to calculate whether a user is online by dynamically querying io.in(userId).fetchSockets() instead of checking Redis keys.

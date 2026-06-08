@@ -156,8 +156,6 @@ const getRankings = asyncHandler(async (req, res) => {
         );
 });
 
-
-
 const getContestHistory = asyncHandler(async (req, res) => {
     const {username} = req.params;
 

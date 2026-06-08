@@ -20,10 +20,12 @@ function initializeSocket(httpServer) {
         try {
             // Get token from auth payload or cookie string
             let token = socket.handshake.auth?.token;
-            
+
             if (!token && socket.handshake.headers.cookie) {
                 const cookies = socket.handshake.headers.cookie.split(';');
-                const tokenCookie = cookies.find((c) => c.trim().startsWith('token='));
+                const tokenCookie = cookies.find((c) =>
+                    c.trim().startsWith('token=')
+                );
                 if (tokenCookie) {
                     token = tokenCookie.split('=')[1];
                 }
@@ -60,7 +62,7 @@ function initializeSocket(httpServer) {
         socket.on('disconnect', async () => {
             if (socket.user && socket.user.userId) {
                 const userId = socket.user.userId.toString();
-                
+
                 // Check if user has any other active sockets (tabs)
                 const sockets = await io.in(userId).fetchSockets();
                 if (sockets.length === 0) {
