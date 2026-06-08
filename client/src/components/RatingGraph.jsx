@@ -8,9 +8,10 @@ import {
     Tooltip,
     ResponsiveContainer,
     ReferenceLine,
+    ReferenceArea,
     Dot,
 } from 'recharts';
-import {TrendingUp, TrendingDown, Minus, Trophy} from 'lucide-react';
+import {TrendingUp, TrendingDown, Minus, Trophy, LineChart, List} from 'lucide-react';
 import {getRankDetails, RATING_TIERS} from '@/constants/ratings';
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
@@ -105,35 +106,37 @@ function RatingTooltip({active, payload}) {
     );
 }
 
-// ─── Custom Active Dot ───────────────────────────────────────────────────────
-
-function ActiveContestDot(props) {
-    const {cx, cy, payload} = props;
+function ContestDot(props) {
+    const {cx, cy, payload, onMouseEnter, onMouseLeave} = props;
     const rank = getRankDetails(payload.final_rating);
     return (
         <circle
             cx={cx}
             cy={cy}
-            r={6}
+            r={5}
             fill={rank.hexColor}
-            stroke="white"
-            strokeWidth={2}
-            style={{filter: `drop-shadow(0 0 4px ${rank.hexColor}88)`}}
+            stroke="hsl(var(--background))"
+            strokeWidth={1.5}
+            style={{ cursor: 'pointer', pointerEvents: 'all' }}
+            onMouseEnter={(e) => onMouseEnter(e, payload, cx, cy)}
+            onMouseLeave={onMouseLeave}
         />
     );
 }
 
-function ContestDot(props) {
-    const {cx, cy, payload} = props;
+function ActiveContestDot(props) {
+    const {cx, cy, payload, onMouseLeave} = props;
     const rank = getRankDetails(payload.final_rating);
     return (
         <circle
             cx={cx}
             cy={cy}
-            r={4}
+            r={7}
             fill={rank.hexColor}
-            stroke="hsl(var(--background))"
-            strokeWidth={1.5}
+            stroke="white"
+            strokeWidth={2}
+            style={{filter: `drop-shadow(0 0 4px ${rank.hexColor}88)`, cursor: 'pointer', pointerEvents: 'all'}}
+            onMouseLeave={onMouseLeave}
         />
     );
 }
@@ -149,15 +152,31 @@ const RANGES = [
 
 export default function RatingGraph({history, loading}) {
     const [range, setRange] = useState('All');
+    const [activeTab, setActiveTab] = useState('graph');
+
+    const [xDomain, setXDomain] = useState(['dataMin', 'dataMax']);
+    const [isDragging, setIsDragging] = useState(false);
+    const [dragStartX, setDragStartX] = useState(null);
+
+    const [hoveredPoint, setHoveredPoint] = useState(null);
+    const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 });
+
+    const processedHistory = useMemo(() => {
+        if (!history?.length) return [];
+        return history.map(d => ({
+            ...d,
+            timestamp: new Date(d.contest_end_time).getTime()
+        })).sort((a, b) => a.timestamp - b.timestamp);
+    }, [history]);
 
     const filtered = useMemo(() => {
-        if (!history?.length) return [];
+        if (!processedHistory.length) return [];
         const selected = RANGES.find((r) => r.label === range);
-        if (!selected?.months) return history;
+        if (!selected?.months) return processedHistory;
         const cutoff = new Date();
         cutoff.setMonth(cutoff.getMonth() - selected.months);
-        return history.filter((d) => new Date(d.contest_end_time) >= cutoff);
-    }, [history, range]);
+        return processedHistory.filter((d) => d.timestamp >= cutoff.getTime());
+    }, [processedHistory, range]);
 
     // Compute gradient stops from rating tiers
     const gradientStops = useMemo(() => {
@@ -177,13 +196,78 @@ export default function RatingGraph({history, loading}) {
 
     // Y-axis domain with a bit of padding
     const yDomain = useMemo(() => {
-        if (!filtered.length) return ['auto', 'auto'];
-        const vals = filtered.map((d) => d.final_rating);
+        if (!processedHistory.length) return ['auto', 'auto'];
+        const vals = processedHistory.map((d) => d.final_rating);
         const mn = Math.min(...vals);
         const mx = Math.max(...vals);
         const pad = Math.max(100, Math.round((mx - mn) * 0.15));
         return [Math.max(0, mn - pad), mx + pad];
-    }, [filtered]);
+    }, [processedHistory]);
+
+    // Handle range switcher update to XDomain
+    const handleRangeChange = (label) => {
+        setRange(label);
+        if (!processedHistory.length) return;
+        const selected = RANGES.find((r) => r.label === label);
+        if (!selected?.months) {
+            setXDomain(['dataMin', 'dataMax']);
+            return;
+        }
+        const maxT = processedHistory[processedHistory.length - 1].timestamp;
+        const cutoff = new Date(maxT);
+        cutoff.setMonth(cutoff.getMonth() - selected.months);
+        setXDomain([cutoff.getTime(), maxT]);
+    };
+
+    // Zooming
+    const handleWheel = (e) => {
+        if (processedHistory.length === 0) return;
+        e.preventDefault(); // prevent page scroll while hovering over graph
+
+        const currentMin = xDomain[0] === 'dataMin' ? processedHistory[0].timestamp : xDomain[0];
+        const currentMax = xDomain[1] === 'dataMax' ? processedHistory[processedHistory.length - 1].timestamp : xDomain[1];
+        
+        const span = currentMax - currentMin;
+        const zoomFactor = e.deltaY > 0 ? 1.15 : 0.85; // zoom out if positive, in if negative
+        const center = (currentMin + currentMax) / 2;
+        let newSpan = span * zoomFactor;
+
+        // Limit zoom to a minimum of ~1 week and maximum of 3x total history
+        const MIN_SPAN = 7 * 24 * 60 * 60 * 1000; 
+        const MAX_SPAN = (processedHistory[processedHistory.length - 1].timestamp - processedHistory[0].timestamp) * 3 || MIN_SPAN * 4;
+        
+        if (newSpan < MIN_SPAN) newSpan = MIN_SPAN;
+        if (newSpan > MAX_SPAN) newSpan = MAX_SPAN;
+
+        setXDomain([center - newSpan / 2, center + newSpan / 2]);
+    };
+
+    // Panning
+    const handleMouseDown = (e) => {
+        setIsDragging(true);
+        setDragStartX(e.clientX);
+    };
+
+    const handleMouseMove = (e) => {
+        if (!isDragging) return;
+        const dx = e.clientX - dragStartX;
+        if (dx === 0) return;
+
+        const currentMin = xDomain[0] === 'dataMin' ? processedHistory[0].timestamp : xDomain[0];
+        const currentMax = xDomain[1] === 'dataMax' ? processedHistory[processedHistory.length - 1].timestamp : xDomain[1];
+        const span = currentMax - currentMin;
+        
+        const pixelWidth = 800; // approximate view width for scaling drag
+        const timeShift = (dx / pixelWidth) * span;
+
+        setXDomain([currentMin - timeShift, currentMax - timeShift]);
+        setDragStartX(e.clientX);
+    };
+
+    const handleMouseUp = () => {
+        setIsDragging(false);
+        setDragStartX(null);
+    };
 
     if (loading) {
         return (
@@ -195,7 +279,7 @@ export default function RatingGraph({history, loading}) {
     }
 
     return (
-        <div className="rounded-xl border border-border bg-card/50 overflow-hidden">
+        <div className="rounded-xl border border-border bg-card/50">
             {/* Header */}
             <div className="flex items-center justify-between px-6 pt-5 pb-4 border-b border-border/60">
                 <div className="flex items-center gap-2.5">
@@ -213,26 +297,57 @@ export default function RatingGraph({history, loading}) {
                     </div>
                 </div>
 
-                {/* Range switcher */}
-                <div className="flex items-center gap-0.5 bg-muted/60 rounded-lg p-1">
-                    {RANGES.map(({label}) => (
-                        <button
-                            key={label}
-                            onClick={() => setRange(label)}
-                            className={`text-xs font-semibold px-3 py-1.5 rounded-md transition-all ${
-                                range === label
-                                    ? 'bg-background text-foreground shadow-sm'
-                                    : 'text-muted-foreground hover:text-foreground'
-                            }`}
-                        >
-                            {label}
-                        </button>
-                    ))}
+                {/* Tabs */}
+                <div className="flex items-center gap-1 bg-muted/40 p-1 rounded-lg">
+                    <button
+                        onClick={() => setActiveTab('graph')}
+                        className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-semibold transition-all ${
+                            activeTab === 'graph'
+                                ? 'bg-background text-foreground shadow-sm'
+                                : 'text-muted-foreground hover:text-foreground'
+                        }`}
+                    >
+                        <LineChart className="w-3.5 h-3.5" /> Graph
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('history')}
+                        className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-semibold transition-all ${
+                            activeTab === 'history'
+                                ? 'bg-background text-foreground shadow-sm'
+                                : 'text-muted-foreground hover:text-foreground'
+                        }`}
+                    >
+                        <List className="w-3.5 h-3.5" /> History
+                    </button>
                 </div>
             </div>
 
-            {/* Graph */}
-            <div className="px-4 pt-4 pb-6">
+            {/* Content Area */}
+            {activeTab === 'graph' ? (
+                <div 
+                    className="px-4 pt-4 pb-6 relative h-[320px]"
+                    onWheel={handleWheel}
+                    onMouseDown={handleMouseDown}
+                    onMouseMove={handleMouseMove}
+                    onMouseUp={handleMouseUp}
+                    onMouseLeave={handleMouseUp}
+                >
+                    {/* Range switcher for Graph only */}
+                    <div className="absolute top-4 right-6 flex items-center gap-0.5 bg-muted/60 rounded-lg p-1 z-10">
+                        {RANGES.map(({label}) => (
+                            <button
+                                key={label}
+                                onClick={() => handleRangeChange(label)}
+                                className={`text-[10px] font-semibold px-2.5 py-1 rounded-md transition-all ${
+                                    range === label
+                                        ? 'bg-background text-foreground shadow-sm'
+                                        : 'text-muted-foreground hover:text-foreground'
+                                }`}
+                            >
+                                {label}
+                            </button>
+                        ))}
+                    </div>
                 {filtered.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-16 gap-3">
                         <Trophy className="w-10 h-10 text-muted-foreground/30" />
@@ -243,9 +358,10 @@ export default function RatingGraph({history, loading}) {
                         </p>
                     </div>
                 ) : (
-                    <ResponsiveContainer width="100%" height={280}>
+                    <>
+                    <ResponsiveContainer width="100%" height="100%">
                         <AreaChart
-                            data={filtered}
+                            data={processedHistory}
                             margin={{top: 10, right: 16, left: 0, bottom: 0}}
                         >
                             <defs>
@@ -285,10 +401,27 @@ export default function RatingGraph({history, loading}) {
 
                             <CartesianGrid
                                 strokeDasharray="3 3"
-                                stroke="hsl(var(--border))"
-                                strokeOpacity={0.5}
+                                stroke="var(--border)"
+                                strokeOpacity={0.3}
                                 vertical={false}
                             />
+
+                            {/* Background Color Bands for Rating Tiers */}
+                            {RATING_TIERS.map((tier, i) => {
+                                const prevMax = i === 0 ? 0 : RATING_TIERS[i - 1].max;
+                                const [lo, hi] = yDomain;
+                                if (prevMax >= hi || tier.max <= lo) return null;
+                                return (
+                                    <ReferenceArea
+                                        key={tier.title}
+                                        y1={Math.max(lo, prevMax)}
+                                        y2={tier.max === Infinity ? hi : Math.min(hi, tier.max)}
+                                        fill={tier.hexColor}
+                                        fillOpacity={0.06}
+                                        strokeOpacity={0}
+                                    />
+                                );
+                            })}
 
                             {/* Rating tier reference lines */}
                             {RATING_TIERS.slice(0, -1).map((tier) => {
@@ -315,36 +448,34 @@ export default function RatingGraph({history, loading}) {
                             })}
 
                             <XAxis
-                                dataKey="contest_end_time"
+                                dataKey="timestamp"
+                                type="number"
+                                domain={xDomain}
                                 tickFormatter={fmtShortDate}
                                 tick={{
                                     fontSize: 11,
-                                    fill: 'hsl(var(--muted-foreground))',
+                                    fill: 'currentColor',
+                                    className: 'text-muted-foreground'
                                 }}
                                 axisLine={false}
                                 tickLine={false}
                                 dy={6}
+                                scale="time"
                             />
 
                             <YAxis
                                 domain={yDomain}
                                 tick={{
                                     fontSize: 11,
-                                    fill: 'hsl(var(--muted-foreground))',
+                                    fill: 'currentColor',
+                                    className: 'text-muted-foreground'
                                 }}
                                 axisLine={false}
                                 tickLine={false}
                                 width={42}
                             />
 
-                            <Tooltip
-                                content={<RatingTooltip />}
-                                cursor={{
-                                    stroke: 'hsl(var(--border))',
-                                    strokeWidth: 1,
-                                    strokeDasharray: '4 4',
-                                }}
-                            />
+                            <Tooltip content={() => null} cursor={false} />
 
                             <Area
                                 type="monotone"
@@ -352,39 +483,58 @@ export default function RatingGraph({history, loading}) {
                                 stroke="url(#lineGradient)"
                                 strokeWidth={2.5}
                                 fill="url(#ratingGradient)"
-                                dot={<ContestDot />}
-                                activeDot={<ActiveContestDot />}
-                                isAnimationActive={true}
-                                animationDuration={600}
+                                dot={<ContestDot 
+                                    onMouseEnter={(e, payload, cx, cy) => {
+                                        setHoveredPoint(payload);
+                                        setTooltipPos({x: cx, y: cy});
+                                    }} 
+                                    onMouseLeave={() => setHoveredPoint(null)} 
+                                />}
+                                activeDot={false}
+                                isAnimationActive={false}
                             />
                         </AreaChart>
                     </ResponsiveContainer>
+                    
+                    {/* Custom Overlay Tooltip */}
+                    {hoveredPoint && (
+                        <div 
+                            className="absolute pointer-events-none z-[100] transition-all duration-100 ease-out"
+                            style={{
+                                left: tooltipPos.x,
+                                top: tooltipPos.y,
+                                transform: 'translate(-50%, -115%)'
+                            }}
+                        >
+                            <RatingTooltip active={true} payload={[{payload: hoveredPoint}]} />
+                        </div>
+                    )}
+                    </>
                 )}
             </div>
-
-            {/* Contest list below */}
-            {filtered.length > 0 && (
+            ) : (
+                /* Contest list below */
                 <div className="border-t border-border/60">
-                    <div className="max-h-52 overflow-y-auto">
+                    <div className="w-full h-[320px] overflow-y-auto">
                         <table className="w-full text-xs">
-                            <thead className="sticky top-0 bg-muted/60 backdrop-blur-sm">
+                            <thead className="bg-muted/30 sticky top-0 backdrop-blur-sm z-10">
                                 <tr>
-                                    <th className="px-4 py-2.5 text-left font-semibold text-muted-foreground uppercase tracking-wider">
+                                    <th className="px-6 py-3 text-left font-bold text-muted-foreground uppercase tracking-wider">
                                         Contest
                                     </th>
-                                    <th className="px-4 py-2.5 text-center font-semibold text-muted-foreground uppercase tracking-wider">
+                                    <th className="px-6 py-3 text-center font-bold text-muted-foreground uppercase tracking-wider">
                                         Rank
                                     </th>
-                                    <th className="px-4 py-2.5 text-center font-semibold text-muted-foreground uppercase tracking-wider">
+                                    <th className="px-6 py-3 text-center font-bold text-muted-foreground uppercase tracking-wider">
                                         Change
                                     </th>
-                                    <th className="px-4 py-2.5 text-center font-semibold text-muted-foreground uppercase tracking-wider">
+                                    <th className="px-6 py-3 text-center font-bold text-muted-foreground uppercase tracking-wider">
                                         Rating
                                     </th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {[...filtered].reverse().map((d, i) => {
+                                {[...history].reverse().map((d, i) => {
                                     const rank = getRankDetails(d.final_rating);
                                     const delta = d.delta ?? 0;
                                     const isPos = delta > 0;
@@ -392,26 +542,26 @@ export default function RatingGraph({history, loading}) {
                                     return (
                                         <tr
                                             key={d.registration_id ?? i}
-                                            className="border-b border-border/30 hover:bg-muted/30 transition-colors"
+                                            className="border-b border-border/40 hover:bg-muted/30 transition-colors"
                                         >
-                                            <td className="px-4 py-2.5">
-                                                <div className="font-medium text-foreground truncate max-w-[220px]">
+                                            <td className="px-6 py-4">
+                                                <div className="font-semibold text-sm text-foreground mb-0.5">
                                                     {d.contest_title}
                                                 </div>
-                                                <div className="text-muted-foreground/70 mt-0.5">
-                                                    {fmtDate(
-                                                        d.contest_end_time
-                                                    )}
+                                                <div className="text-muted-foreground flex items-center gap-2">
+                                                    <span>{fmtDate(d.contest_end_time)}</span>
+                                                    <span className="w-1 h-1 rounded-full bg-border"></span>
+                                                    <span>Div. {d.division}</span>
                                                 </div>
                                             </td>
-                                            <td className="px-4 py-2.5 text-center font-semibold text-foreground">
+                                            <td className="px-6 py-4 text-center font-bold text-foreground text-sm">
                                                 {d.final_rank != null
                                                     ? `#${d.final_rank}`
                                                     : '—'}
                                             </td>
-                                            <td className="px-4 py-2.5 text-center">
+                                            <td className="px-6 py-4 text-center">
                                                 <span
-                                                    className={`font-bold ${
+                                                    className={`font-bold text-sm ${
                                                         isZero
                                                             ? 'text-muted-foreground'
                                                             : isPos
@@ -423,9 +573,9 @@ export default function RatingGraph({history, loading}) {
                                                     {delta}
                                                 </span>
                                             </td>
-                                            <td className="px-4 py-2.5 text-center">
+                                            <td className="px-6 py-4 text-center">
                                                 <span
-                                                    className={`font-extrabold ${rank.colorClass}`}
+                                                    className={`font-extrabold text-sm ${rank.colorClass}`}
                                                 >
                                                     {d.final_rating}
                                                 </span>
@@ -433,6 +583,13 @@ export default function RatingGraph({history, loading}) {
                                         </tr>
                                     );
                                 })}
+                                {history.length === 0 && (
+                                    <tr>
+                                        <td colSpan={4} className="px-6 py-12 text-center text-muted-foreground">
+                                            No rated contests participated yet.
+                                        </td>
+                                    </tr>
+                                )}
                             </tbody>
                         </table>
                     </div>
