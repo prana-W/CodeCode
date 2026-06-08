@@ -78,7 +78,7 @@ export default function HelpPanel({contest}) {
         setLoadingAi(true);
 
         try {
-            const res = await api.post('/ai/ask', {prompt: text});
+            const res = await api.post('/ai/deco', {prompt: text});
             const replyText =
                 res.data?.data?.hint || "Sorry, I couldn't generate a hint.";
             setMessages((prev) => [
@@ -169,7 +169,7 @@ export function HelpContent({contest}) {
         setLoadingAi(true);
 
         try {
-            const res = await api.post('/ai/ask', {prompt: text});
+            const res = await api.post('/ai/deco', {prompt: text});
             const replyText =
                 res.data?.data?.hint || "Sorry, I couldn't generate a hint.";
             setMessages((prev) => [

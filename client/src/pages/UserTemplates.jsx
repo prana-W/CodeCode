@@ -12,11 +12,23 @@ import {
     CardTitle,
 } from '@/components/ui/card';
 import {Badge} from '@/components/ui/badge';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 export default function UserTemplates() {
     const [templates, setTemplates] = useState([]);
     const [loading, setLoading] = useState(true);
     const [hasOngoing, setHasOngoing] = useState(false);
+    const [templateToDelete, setTemplateToDelete] = useState(null);
+    const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
     const navigate = useNavigate();
 
     const fetchTemplates = async () => {
@@ -59,17 +71,24 @@ export default function UserTemplates() {
         }
     };
 
-    const handleDelete = async (id) => {
-        if (!window.confirm('Are you sure you want to delete this template?'))
-            return;
+    const handleDeleteClick = (id) => {
+        setTemplateToDelete(id);
+        setIsDeleteDialogOpen(true);
+    };
+
+    const handleDeleteConfirm = async () => {
+        if (!templateToDelete) return;
         try {
-            await api.delete(`/user-templates/${id}`);
+            await api.delete(`/user-templates/${templateToDelete}`);
             toast.success('Template deleted successfully.');
-            setTemplates(templates.filter((t) => t.template_id !== id));
+            setTemplates(templates.filter((t) => t.template_id !== templateToDelete));
         } catch (error) {
             toast.error(
                 error.response?.data?.message || 'Failed to delete template.'
             );
+        } finally {
+            setIsDeleteDialogOpen(false);
+            setTemplateToDelete(null);
         }
     };
 
@@ -193,7 +212,7 @@ export default function UserTemplates() {
                                             size="icon"
                                             className="h-8 w-8 text-muted-foreground hover:text-red-500"
                                             onClick={() =>
-                                                handleDelete(
+                                                handleDeleteClick(
                                                     template.template_id
                                                 )
                                             }
@@ -231,6 +250,34 @@ export default function UserTemplates() {
                     ))}
                 </div>
             )}
+
+            <AlertDialog
+                open={isDeleteDialogOpen}
+                onOpenChange={setIsDeleteDialogOpen}
+            >
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Delete Template</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Are you sure you want to delete this template? This
+                            action cannot be undone.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel
+                            onClick={() => {
+                                setIsDeleteDialogOpen(false);
+                                setTemplateToDelete(null);
+                            }}
+                        >
+                            Cancel
+                        </AlertDialogCancel>
+                        <AlertDialogAction onClick={handleDeleteConfirm}>
+                            Continue
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
     );
 }

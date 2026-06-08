@@ -14,10 +14,14 @@ import {
     Hash,
     BookOpen,
     X,
+    Sparkles,
+    Square,
+    RotateCcw,
 } from 'lucide-react';
 import {Button} from '@/components/ui/button';
 import {Input} from '@/components/ui/input';
 import {Label} from '@/components/ui/label';
+import {Textarea} from '@/components/ui/textarea';
 import MDEditor from '@uiw/react-md-editor';
 import api from '@/lib/axios';
 import {
@@ -127,6 +131,107 @@ export default function ProblemsPage() {
     const [submitting, setSubmitting] = useState(false);
     const [deletingId, setDeletingId] = useState(null);
     const [showForm, setShowForm] = useState(false);
+
+    const [showAIPanel, setShowAIPanel] = useState(false);
+    const [aiPrompt, setAiPrompt] = useState('');
+    const [isStreaming, setIsStreaming] = useState(false);
+    const streamControllerRef = useRef(null);
+
+    const handleRefineStatement = async () => {
+        if (!form.statement.trim()) {
+            return toast.error('Please write some draft problem statement first.');
+        }
+        if (!aiPrompt.trim()) {
+            return toast.error('Please provide a custom instruction for the AI.');
+        }
+
+        const backupKey = editingId ? `backup_statement_${editingId}` : 'backup_statement_new';
+        localStorage.setItem(backupKey, form.statement);
+
+        setIsStreaming(true);
+        setForm((prev) => ({ ...prev, statement: '' }));
+
+        streamControllerRef.current = new AbortController();
+
+        try {
+            const token = localStorage.getItem('token');
+            const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000/api/v1';
+            const response = await fetch(`${apiUrl}/ai/external/stream`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    intent: 'problem_statement_refining',
+                    prompt: `Custom Instruction: ${aiPrompt}\n\n### Original Problem Statement:\n${localStorage.getItem(backupKey)}`
+                }),
+                signal: streamControllerRef.current.signal
+            });
+
+            if (!response.ok) throw new Error('Network error');
+
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
+            let done = false;
+            let fullText = '';
+
+            while (!done) {
+                const { value, done: readerDone } = await reader.read();
+                done = readerDone;
+                if (value) {
+                    const chunkStr = decoder.decode(value, { stream: true });
+                    const lines = chunkStr.split('\\n'); // Split by new lines for SSE
+                    for (const line of lines) {
+                        if (line.startsWith('data: ')) {
+                            const dataStr = line.slice(6);
+                            if (dataStr === '[DONE]') {
+                                done = true;
+                                break;
+                            }
+                            try {
+                                const parsed = JSON.parse(dataStr);
+                                if (parsed.text) {
+                                    fullText += parsed.text;
+                                    setForm(prev => ({ ...prev, statement: fullText }));
+                                } else if (parsed.error) {
+                                    toast.error(parsed.error);
+                                }
+                            } catch (e) {
+                                // ignore parse error for partial chunks
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (err) {
+            if (err.name === 'AbortError') {
+                toast.success('AI refinement stopped.');
+            } else {
+                toast.error('Failed to stream AI response.');
+            }
+        } finally {
+            setIsStreaming(false);
+            streamControllerRef.current = null;
+        }
+    };
+
+    const handleStopStream = () => {
+        if (streamControllerRef.current) {
+            streamControllerRef.current.abort();
+        }
+    };
+
+    const handleRevertStatement = () => {
+        const backupKey = editingId ? `backup_statement_${editingId}` : 'backup_statement_new';
+        const backup = localStorage.getItem(backupKey);
+        if (backup) {
+            setForm(prev => ({ ...prev, statement: backup }));
+            toast.success('Problem statement reverted.');
+        } else {
+            toast.error('No previous version found.');
+        }
+    };
 
     useEffect(() => {
         const fetch = async () => {
@@ -575,11 +680,12 @@ export default function ProblemsPage() {
                                 </div>
                             </section>
 
-                            <div className="flex justify-end gap-3 pt-4 border-t border-border">
+                            <div className="flex justify-end gap-3 pt-6 border-t border-border shrink-0">
                                 <Button
                                     type="button"
                                     variant="outline"
                                     onClick={resetForm}
+                                    disabled={isStreaming}
                                     className="text-xs font-semibold uppercase tracking-wider"
                                 >
                                     Cancel
@@ -587,7 +693,7 @@ export default function ProblemsPage() {
                                 <Button
                                     id="prob-submit"
                                     type="submit"
-                                    disabled={submitting}
+                                    disabled={submitting || isStreaming}
                                     className="gap-2 text-xs font-semibold uppercase tracking-wider"
                                 >
                                     <Save className="w-4 h-4" />
@@ -601,6 +707,51 @@ export default function ProblemsPage() {
                                 </Button>
                             </div>
                         </form>
+                        
+                        {/* Fixed AI Refiner Widget */}
+                        <div className="fixed bottom-6 left-6 z-50 flex flex-col-reverse items-start gap-3">
+                            <Button
+                                type="button"
+                                onClick={() => setShowAIPanel(!showAIPanel)}
+                                className="rounded-full shadow-lg h-12 w-12 p-0 bg-primary text-primary-foreground hover:bg-primary/90 transition-transform hover:scale-105"
+                            >
+                                {showAIPanel ? <X className="w-5 h-5" /> : <Sparkles className="w-5 h-5" />}
+                            </Button>
+
+                            {showAIPanel && (
+                                <div className="w-80 bg-card border border-border shadow-2xl rounded-2xl p-4 animate-in slide-in-from-bottom-4 fade-in origin-bottom-left">
+                                    <div className="flex items-center gap-2 mb-3">
+                                        <Sparkles className="w-4 h-4 text-primary" />
+                                        <h4 className="text-sm font-semibold text-foreground">AI Refiner</h4>
+                                    </div>
+                                    <Textarea
+                                        rows={3}
+                                        placeholder="e.g. Make it sound like a pirate story, fix grammar, improve formatting..."
+                                        value={aiPrompt}
+                                        onChange={(e) => setAiPrompt(e.target.value)}
+                                        disabled={isStreaming}
+                                        className="text-xs resize-y min-h-[80px] mb-3"
+                                    />
+                                    <div className="flex gap-2">
+                                        {!isStreaming ? (
+                                            <Button type="button" onClick={handleRefineStatement} size="sm" className="flex-1 gap-1.5 h-8 text-xs bg-primary/10 text-primary hover:bg-primary/20 hover:text-primary border-0">
+                                                <Sparkles className="w-3.5 h-3.5" />
+                                                Refine
+                                            </Button>
+                                        ) : (
+                                            <Button type="button" onClick={handleStopStream} size="sm" variant="destructive" className="flex-1 gap-1.5 h-8 text-xs">
+                                                <Square className="w-3.5 h-3.5" />
+                                                Stop
+                                            </Button>
+                                        )}
+                                        <Button type="button" onClick={handleRevertStatement} size="sm" variant="outline" disabled={isStreaming} className="flex-1 gap-1.5 h-8 text-xs">
+                                            <RotateCcw className="w-3.5 h-3.5" />
+                                            Revert
+                                        </Button>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
                     </div>
                 )}
 
