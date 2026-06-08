@@ -214,10 +214,15 @@ export default function ContestEditPage() {
             <div className="border-b border-border bg-card/50">
                 <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8">
                     <nav className="flex items-center mb-4 font-mono text-xs">
-                        <Link to="/design-contest" className="breadcrumb-link text-muted-foreground hover:text-foreground">
+                        <Link
+                            to="/design-contest"
+                            className="breadcrumb-link text-muted-foreground hover:text-foreground"
+                        >
                             My Contests
                         </Link>
-                        <span className="breadcrumb-sep mx-2 text-muted-foreground/50">›</span>
+                        <span className="breadcrumb-sep mx-2 text-muted-foreground/50">
+                            ›
+                        </span>
                         <span className="text-foreground font-medium">
                             {isNew
                                 ? 'New Contest'
@@ -478,17 +483,30 @@ export default function ContestEditPage() {
                 </div>
             </div>
 
-            <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+            <AlertDialog
+                open={showDeleteDialog}
+                onOpenChange={setShowDeleteDialog}
+            >
                 <AlertDialogContent>
                     <AlertDialogHeader>
                         <AlertDialogTitle>Delete Contest</AlertDialogTitle>
                         <AlertDialogDescription>
-                            Are you sure you want to delete "{contestData?.title || form.title}"? This action cannot be undone and will permanently delete this contest, its problems, test cases, and registrations.
+                            Are you sure you want to delete "
+                            {contestData?.title || form.title}"? This action
+                            cannot be undone and will permanently delete this
+                            contest, its problems, test cases, and
+                            registrations.
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                        <AlertDialogCancel onClick={() => setShowDeleteDialog(false)}>Cancel</AlertDialogCancel>
-                        <AlertDialogAction onClick={handleDeleteConfirm}>Delete</AlertDialogAction>
+                        <AlertDialogCancel
+                            onClick={() => setShowDeleteDialog(false)}
+                        >
+                            Cancel
+                        </AlertDialogCancel>
+                        <AlertDialogAction onClick={handleDeleteConfirm}>
+                            Delete
+                        </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>

@@ -1,4 +1,10 @@
-import {Outlet, NavLink, useParams, useNavigate, useLocation} from 'react-router-dom';
+import {
+    Outlet,
+    NavLink,
+    useParams,
+    useNavigate,
+    useLocation,
+} from 'react-router-dom';
 import {useState, useEffect} from 'react';
 import {
     Trophy,
@@ -28,7 +34,7 @@ export default function ContestParticipationLayout() {
                 const [contestRes, problemsRes, solvedRes] = await Promise.all([
                     api.get(`/contests/${id}`),
                     api.get(`/problems?contest_id=${id}`),
-                    api.get(`/submissions/solved?contest_id=${id}`)
+                    api.get(`/submissions/solved?contest_id=${id}`),
                 ]);
                 setContest(contestRes.data.data);
                 setProblems(problemsRes.data.data || []);
@@ -78,7 +84,9 @@ export default function ContestParticipationLayout() {
     if (isProblemView) {
         return (
             <div className="flex-1 flex flex-col w-full bg-background min-h-0">
-                <Outlet context={{contest, problems, solvedIds, setSolvedIds}} />
+                <Outlet
+                    context={{contest, problems, solvedIds, setSolvedIds}}
+                />
             </div>
         );
     }
@@ -135,9 +143,10 @@ export default function ContestParticipationLayout() {
             </div>
 
             <main className="flex-1 w-full mx-auto max-w-6xl px-4 sm:px-6 py-6 flex flex-col">
-                <Outlet context={{contest, problems, solvedIds, setSolvedIds}} />
+                <Outlet
+                    context={{contest, problems, solvedIds, setSolvedIds}}
+                />
             </main>
-            <HelpPanel contest={contest} />
         </div>
     );
 }

@@ -286,17 +286,24 @@ export default function ProblemsPage() {
             <div className="border-b border-border bg-card/50">
                 <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8">
                     <nav className="flex items-center mb-4 font-mono text-xs">
-                        <Link to="/design-contest" className="breadcrumb-link text-muted-foreground hover:text-foreground">
+                        <Link
+                            to="/design-contest"
+                            className="breadcrumb-link text-muted-foreground hover:text-foreground"
+                        >
                             My Contests
                         </Link>
-                        <span className="breadcrumb-sep mx-2 text-muted-foreground/50">›</span>
+                        <span className="breadcrumb-sep mx-2 text-muted-foreground/50">
+                            ›
+                        </span>
                         <Link
                             to={`/design-contest/contest/${contestId}`}
                             className="breadcrumb-link text-muted-foreground hover:text-foreground"
                         >
                             {contestTitle}
                         </Link>
-                        <span className="breadcrumb-sep mx-2 text-muted-foreground/50">›</span>
+                        <span className="breadcrumb-sep mx-2 text-muted-foreground/50">
+                            ›
+                        </span>
                         <span className="text-foreground font-medium">
                             Problems
                         </span>
@@ -337,7 +344,10 @@ export default function ProblemsPage() {
                         <p className="text-sm text-muted-foreground mb-4">
                             No problems yet. Create your first one!
                         </p>
-                        <Button onClick={handleCreateNew} className="gap-2 text-xs font-semibold uppercase tracking-wider">
+                        <Button
+                            onClick={handleCreateNew}
+                            className="gap-2 text-xs font-semibold uppercase tracking-wider"
+                        >
                             <Plus className="w-4 h-4" />
                             Create Problem
                         </Button>
@@ -617,17 +627,29 @@ export default function ProblemsPage() {
                 </div>
             </div>
 
-            <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
+            <AlertDialog
+                open={!!deleteTarget}
+                onOpenChange={(open) => !open && setDeleteTarget(null)}
+            >
                 <AlertDialogContent>
                     <AlertDialogHeader>
                         <AlertDialogTitle>Delete Problem</AlertDialogTitle>
                         <AlertDialogDescription>
-                            Are you sure you want to delete "{deleteTarget?.title}"? This action cannot be undone and will delete all associated test cases and submissions.
+                            Are you sure you want to delete "
+                            {deleteTarget?.title}"? This action cannot be undone
+                            and will delete all associated test cases and
+                            submissions.
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                        <AlertDialogCancel onClick={() => setDeleteTarget(null)}>Cancel</AlertDialogCancel>
-                        <AlertDialogAction onClick={handleDeleteConfirm}>Delete</AlertDialogAction>
+                        <AlertDialogCancel
+                            onClick={() => setDeleteTarget(null)}
+                        >
+                            Cancel
+                        </AlertDialogCancel>
+                        <AlertDialogAction onClick={handleDeleteConfirm}>
+                            Delete
+                        </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>

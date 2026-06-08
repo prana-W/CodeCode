@@ -149,14 +149,19 @@ export default function ContestLeaderboardTab() {
                                     </td>
                                     {showDelta && (
                                         <td className="px-4 py-3 text-center border-r border-border font-mono font-bold">
-                                            <span className={
-                                                !user.delta || user.delta === 0 
-                                                    ? 'text-muted-foreground' 
-                                                    : user.delta > 0 
-                                                        ? 'text-emerald-500' 
-                                                        : 'text-red-500'
-                                            }>
-                                                {user.delta > 0 ? `+${user.delta}` : (user.delta || 0)}
+                                            <span
+                                                className={
+                                                    !user.delta ||
+                                                    user.delta === 0
+                                                        ? 'text-muted-foreground'
+                                                        : user.delta > 0
+                                                          ? 'text-emerald-500'
+                                                          : 'text-red-500'
+                                                }
+                                            >
+                                                {user.delta > 0
+                                                    ? `+${user.delta}`
+                                                    : user.delta || 0}
                                             </span>
                                         </td>
                                     )}

@@ -212,17 +212,28 @@ function ContestCard({contest, onDelete}) {
                 )}
             </div>
 
-            <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+            <AlertDialog
+                open={showDeleteDialog}
+                onOpenChange={setShowDeleteDialog}
+            >
                 <AlertDialogContent onClick={(e) => e.stopPropagation()}>
                     <AlertDialogHeader>
                         <AlertDialogTitle>Delete Contest</AlertDialogTitle>
                         <AlertDialogDescription>
-                            Are you sure you want to delete "{contest.title}"? This action cannot be undone and will delete all associated problems and data.
+                            Are you sure you want to delete "{contest.title}"?
+                            This action cannot be undone and will delete all
+                            associated problems and data.
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                        <AlertDialogCancel onClick={() => setShowDeleteDialog(false)}>Cancel</AlertDialogCancel>
-                        <AlertDialogAction onClick={handleDeleteConfirm}>Delete</AlertDialogAction>
+                        <AlertDialogCancel
+                            onClick={() => setShowDeleteDialog(false)}
+                        >
+                            Cancel
+                        </AlertDialogCancel>
+                        <AlertDialogAction onClick={handleDeleteConfirm}>
+                            Delete
+                        </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>

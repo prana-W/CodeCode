@@ -1,11 +1,15 @@
 import db from '../db/db.js';
 import ContestRegistration from '../models/ContestRegistration.model.js';
-import { ApiError, ApiResponse, asyncHandler } from '../utility/index.js';
+import {ApiError, ApiResponse, asyncHandler} from '../utility/index.js';
 import statusCode from '../constants/statusCode.js';
 
 export const getOngoingContestStatus = asyncHandler(async (req, res) => {
     const hasOngoing = await ContestRegistration.hasOngoingContest(req.userId);
-    res.status(statusCode.OK).json(new ApiResponse(statusCode.OK, 'Ongoing contest status retrieved.', { hasOngoing }));
+    res.status(statusCode.OK).json(
+        new ApiResponse(statusCode.OK, 'Ongoing contest status retrieved.', {
+            hasOngoing,
+        })
+    );
 });
 
 export const getTemplates = asyncHandler(async (req, res) => {
@@ -14,12 +18,18 @@ export const getTemplates = asyncHandler(async (req, res) => {
         'SELECT * FROM user_templates WHERE user_id = ? ORDER BY template_id DESC',
         [userId]
     );
-    res.status(statusCode.OK).json(new ApiResponse(statusCode.OK, 'Templates retrieved successfully.', templates));
+    res.status(statusCode.OK).json(
+        new ApiResponse(
+            statusCode.OK,
+            'Templates retrieved successfully.',
+            templates
+        )
+    );
 });
 
 export const getTemplateById = asyncHandler(async (req, res) => {
     const userId = req.userId;
-    const { id } = req.params;
+    const {id} = req.params;
     const [templates] = await db.query(
         'SELECT * FROM user_templates WHERE template_id = ? AND user_id = ?',
         [id, userId]
@@ -29,20 +39,32 @@ export const getTemplateById = asyncHandler(async (req, res) => {
         throw new ApiError(statusCode.NOT_FOUND, 'Template not found.');
     }
 
-    res.status(statusCode.OK).json(new ApiResponse(statusCode.OK, 'Template retrieved successfully.', templates[0]));
+    res.status(statusCode.OK).json(
+        new ApiResponse(
+            statusCode.OK,
+            'Template retrieved successfully.',
+            templates[0]
+        )
+    );
 });
 
 export const createTemplate = asyncHandler(async (req, res) => {
     const userId = req.userId;
-    const { title, source_code, language, is_default } = req.body;
+    const {title, source_code, language, is_default} = req.body;
 
     if (!title || !source_code || !language) {
-        throw new ApiError(statusCode.BAD_REQUEST, 'Title, source code, and language are required.');
+        throw new ApiError(
+            statusCode.BAD_REQUEST,
+            'Title, source code, and language are required.'
+        );
     }
 
     const hasOngoing = await ContestRegistration.hasOngoingContest(req.userId);
     if (hasOngoing) {
-        throw new ApiError(statusCode.FORBIDDEN, 'A contest is currently ongoing. Kindly wait for it to finish before creating a template.');
+        throw new ApiError(
+            statusCode.FORBIDDEN,
+            'A contest is currently ongoing. Kindly wait for it to finish before creating a template.'
+        );
     }
 
     const connection = await db.getConnection();
@@ -63,7 +85,13 @@ export const createTemplate = asyncHandler(async (req, res) => {
         );
 
         await connection.commit();
-        res.status(statusCode.CREATED).json(new ApiResponse(statusCode.CREATED, 'Template created successfully.', { template_id: result.insertId }));
+        res.status(statusCode.CREATED).json(
+            new ApiResponse(
+                statusCode.CREATED,
+                'Template created successfully.',
+                {template_id: result.insertId}
+            )
+        );
     } catch (error) {
         await connection.rollback();
         throw error;
@@ -74,16 +102,22 @@ export const createTemplate = asyncHandler(async (req, res) => {
 
 export const updateTemplate = asyncHandler(async (req, res) => {
     const userId = req.userId;
-    const { id } = req.params;
-    const { title, source_code, language, is_default } = req.body;
+    const {id} = req.params;
+    const {title, source_code, language, is_default} = req.body;
 
     if (!title || !source_code || !language) {
-        throw new ApiError(statusCode.BAD_REQUEST, 'Title, source code, and language are required.');
+        throw new ApiError(
+            statusCode.BAD_REQUEST,
+            'Title, source code, and language are required.'
+        );
     }
 
     const hasOngoing = await ContestRegistration.hasOngoingContest(req.userId);
     if (hasOngoing) {
-        throw new ApiError(statusCode.FORBIDDEN, 'A contest is currently ongoing. Kindly wait for it to finish before updating a template.');
+        throw new ApiError(
+            statusCode.FORBIDDEN,
+            'A contest is currently ongoing. Kindly wait for it to finish before updating a template.'
+        );
     }
 
     const connection = await db.getConnection();
@@ -111,11 +145,20 @@ export const updateTemplate = asyncHandler(async (req, res) => {
 
         await connection.query(
             'UPDATE user_templates SET title = ?, source_code = ?, language = ?, is_default = ? WHERE template_id = ? AND user_id = ?',
-            [title, source_code, language, is_default !== undefined ? is_default : false, id, userId]
+            [
+                title,
+                source_code,
+                language,
+                is_default !== undefined ? is_default : false,
+                id,
+                userId,
+            ]
         );
 
         await connection.commit();
-        res.status(statusCode.OK).json(new ApiResponse(statusCode.OK, 'Template updated successfully.'));
+        res.status(statusCode.OK).json(
+            new ApiResponse(statusCode.OK, 'Template updated successfully.')
+        );
     } catch (error) {
         await connection.rollback();
         throw error;
@@ -126,7 +169,7 @@ export const updateTemplate = asyncHandler(async (req, res) => {
 
 export const deleteTemplate = asyncHandler(async (req, res) => {
     const userId = req.userId;
-    const { id } = req.params;
+    const {id} = req.params;
 
     const [result] = await db.query(
         'DELETE FROM user_templates WHERE template_id = ? AND user_id = ?',
@@ -137,16 +180,21 @@ export const deleteTemplate = asyncHandler(async (req, res) => {
         throw new ApiError(statusCode.NOT_FOUND, 'Template not found.');
     }
 
-    res.status(statusCode.OK).json(new ApiResponse(statusCode.OK, 'Template deleted successfully.'));
+    res.status(statusCode.OK).json(
+        new ApiResponse(statusCode.OK, 'Template deleted successfully.')
+    );
 });
 
 export const setDefaultTemplate = asyncHandler(async (req, res) => {
     const userId = req.userId;
-    const { id } = req.params;
+    const {id} = req.params;
 
     const hasOngoing = await ContestRegistration.hasOngoingContest(userId);
     if (hasOngoing) {
-        throw new ApiError(statusCode.FORBIDDEN, 'A contest is currently ongoing. Kindly wait for it to finish before updating a template.');
+        throw new ApiError(
+            statusCode.FORBIDDEN,
+            'A contest is currently ongoing. Kindly wait for it to finish before updating a template.'
+        );
     }
 
     const connection = await db.getConnection();
@@ -176,7 +224,12 @@ export const setDefaultTemplate = asyncHandler(async (req, res) => {
         );
 
         await connection.commit();
-        res.status(statusCode.OK).json(new ApiResponse(statusCode.OK, 'Template set as default successfully.'));
+        res.status(statusCode.OK).json(
+            new ApiResponse(
+                statusCode.OK,
+                'Template set as default successfully.'
+            )
+        );
     } catch (error) {
         await connection.rollback();
         throw error;

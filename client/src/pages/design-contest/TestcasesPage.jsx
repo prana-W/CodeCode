@@ -31,7 +31,12 @@ import {
 } from '@/components/ui/alert-dialog';
 
 const PROBLEM_LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-const EMPTY_TC = {input_data: '', expected_output: '', sample_input_data: '', sample_expected_output: ''};
+const EMPTY_TC = {
+    input_data: '',
+    expected_output: '',
+    sample_input_data: '',
+    sample_expected_output: '',
+};
 
 function TestcasePanel({problem, index, testcase, onRefresh}) {
     const [open, setOpen] = useState(!testcase);
@@ -301,7 +306,9 @@ function TestcasePanel({problem, index, testcase, onRefresh}) {
                                         className="text-xs font-semibold uppercase tracking-wider text-muted-foreground"
                                     >
                                         Sample Input Data{' '}
-                                        <span className="text-muted-foreground font-normal lowercase">(Visible to contestants)</span>
+                                        <span className="text-muted-foreground font-normal lowercase">
+                                            (Visible to contestants)
+                                        </span>
                                     </Label>
                                     <Textarea
                                         id={`tc-sample-input-${problem.problem_id}`}
@@ -311,7 +318,8 @@ function TestcasePanel({problem, index, testcase, onRefresh}) {
                                         onChange={(e) =>
                                             setForm((p) => ({
                                                 ...p,
-                                                sample_input_data: e.target.value,
+                                                sample_input_data:
+                                                    e.target.value,
                                             }))
                                         }
                                         className="resize-y font-mono text-sm bg-muted/10"
@@ -332,7 +340,8 @@ function TestcasePanel({problem, index, testcase, onRefresh}) {
                                         onChange={(e) =>
                                             setForm((p) => ({
                                                 ...p,
-                                                sample_expected_output: e.target.value,
+                                                sample_expected_output:
+                                                    e.target.value,
                                             }))
                                         }
                                         className="resize-y font-mono text-sm bg-muted/10"
@@ -374,17 +383,27 @@ function TestcasePanel({problem, index, testcase, onRefresh}) {
                 </div>
             )}
 
-            <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+            <AlertDialog
+                open={showDeleteDialog}
+                onOpenChange={setShowDeleteDialog}
+            >
                 <AlertDialogContent>
                     <AlertDialogHeader>
                         <AlertDialogTitle>Delete Testcase</AlertDialogTitle>
                         <AlertDialogDescription>
-                            Are you sure you want to delete this testcase? This action cannot be undone.
+                            Are you sure you want to delete this testcase? This
+                            action cannot be undone.
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                        <AlertDialogCancel onClick={() => setShowDeleteDialog(false)}>Cancel</AlertDialogCancel>
-                        <AlertDialogAction onClick={handleDeleteConfirm}>Delete</AlertDialogAction>
+                        <AlertDialogCancel
+                            onClick={() => setShowDeleteDialog(false)}
+                        >
+                            Cancel
+                        </AlertDialogCancel>
+                        <AlertDialogAction onClick={handleDeleteConfirm}>
+                            Delete
+                        </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
@@ -467,17 +486,24 @@ export default function TestcasesPage() {
             <div className="border-b border-border bg-card/50">
                 <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8">
                     <nav className="flex items-center mb-4 font-mono text-xs">
-                        <Link to="/design-contest" className="breadcrumb-link text-muted-foreground hover:text-foreground">
+                        <Link
+                            to="/design-contest"
+                            className="breadcrumb-link text-muted-foreground hover:text-foreground"
+                        >
                             My Contests
                         </Link>
-                        <span className="breadcrumb-sep mx-2 text-muted-foreground/50">›</span>
+                        <span className="breadcrumb-sep mx-2 text-muted-foreground/50">
+                            ›
+                        </span>
                         <Link
                             to={`/design-contest/contest/${contestId}`}
                             className="breadcrumb-link text-muted-foreground hover:text-foreground"
                         >
                             {contestTitle}
                         </Link>
-                        <span className="breadcrumb-sep mx-2 text-muted-foreground/50">›</span>
+                        <span className="breadcrumb-sep mx-2 text-muted-foreground/50">
+                            ›
+                        </span>
                         <span className="text-foreground font-medium">
                             Test Cases
                         </span>

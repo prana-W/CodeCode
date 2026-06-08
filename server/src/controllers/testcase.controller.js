@@ -18,9 +18,21 @@ const resolveOwnership = async (test_case_id, userId) => {
 };
 
 const createTestCase = asyncHandler(async (req, res) => {
-    const {problem_id, input_data, expected_output, sample_input_data, sample_expected_output} = req.body;
+    const {
+        problem_id,
+        input_data,
+        expected_output,
+        sample_input_data,
+        sample_expected_output,
+    } = req.body;
 
-    if (!problem_id || !input_data || !expected_output || !sample_input_data || !sample_expected_output) {
+    if (
+        !problem_id ||
+        !input_data ||
+        !expected_output ||
+        !sample_input_data ||
+        !sample_expected_output
+    ) {
         throw new ApiError(
             statusCode.BAD_REQUEST,
             'problem_id, input_data, expected_output, sample_input_data, and sample_expected_output are required.'
@@ -79,7 +91,12 @@ const updateTestCase = asyncHandler(async (req, res) => {
         sample_expected_output = row.sample_expected_output,
     } = req.body;
 
-    await TestCase.update(Number(id), {input_data, expected_output, sample_input_data, sample_expected_output});
+    await TestCase.update(Number(id), {
+        input_data,
+        expected_output,
+        sample_input_data,
+        sample_expected_output,
+    });
 
     const updated = await TestCase.findById(Number(id));
 

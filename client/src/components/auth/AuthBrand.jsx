@@ -1,4 +1,3 @@
-
 export default function AuthBrand() {
     return (
         <div className="hidden lg:flex lg:w-[42%] bg-zinc-950 text-zinc-100 flex-col justify-between p-12 relative overflow-hidden border-r border-zinc-800">
@@ -17,7 +16,11 @@ export default function AuthBrand() {
 
             {/* Logo */}
             <div className="relative flex items-center gap-2.5 z-10">
-                <img src="/favicon.svg" alt="CodeCode" className="w-9 h-9 object-contain" />
+                <img
+                    src="/favicon.svg"
+                    alt="CodeCode"
+                    className="w-9 h-9 object-contain"
+                />
                 <span className="text-xl font-bold tracking-tight text-foreground:dark font-serif">
                     CodeCode
                 </span>
@@ -44,23 +47,32 @@ export default function AuthBrand() {
                     </p>
                     <p className="text-zinc-400">
                         <span className="text-purple-400">int</span>{' '}
-                        <span className="text-blue-400 font-semibold">rating</span> ={' '}
-                        <span className="text-amber-500">1200</span>;
+                        <span className="text-blue-400 font-semibold">
+                            rating
+                        </span>{' '}
+                        = <span className="text-amber-500">1200</span>;
                     </p>
                     <p className="text-zinc-400">
                         <span className="text-purple-400">while</span> (
-                        <span className="text-amber-500 font-semibold">true</span>
+                        <span className="text-amber-500 font-semibold">
+                            true
+                        </span>
                         ) {'{'}
                     </p>
                     <p className="pl-5 text-zinc-400">
                         <span className="text-blue-400">solve</span>(
-                        <span className="text-emerald-400 font-medium">problem</span>
+                        <span className="text-emerald-400 font-medium">
+                            problem
+                        </span>
                         <span className="text-purple-400">++</span>);
                     </p>
                     <p className="pl-5 text-zinc-400">
                         <span className="text-blue-400">rating</span>{' '}
                         <span className="text-purple-400">+=</span>{' '}
-                        <span className="text-emerald-400 font-medium">delta</span>;
+                        <span className="text-emerald-400 font-medium">
+                            delta
+                        </span>
+                        ;
                     </p>
                     <p className="text-zinc-400">{'}'}</p>
                 </div>

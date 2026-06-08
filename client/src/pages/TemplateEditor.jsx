@@ -1,13 +1,13 @@
-import { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import {useState, useEffect} from 'react';
+import {useNavigate, useParams} from 'react-router-dom';
 import api from '@/lib/axios';
-import { toast } from 'sonner';
-import { ArrowLeft, Save, Loader2, Star, Info } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import {toast} from 'sonner';
+import {ArrowLeft, Save, Loader2, Star, Info} from 'lucide-react';
+import {Button} from '@/components/ui/button';
 import Editor from '@monaco-editor/react';
-import { useTheme } from '@/components/theme-provider';
-import { Switch } from '@/components/ui/switch';
-import { Label } from '@/components/ui/label';
+import {useTheme} from '@/components/theme-provider';
+import {Switch} from '@/components/ui/switch';
+import {Label} from '@/components/ui/label';
 
 const VALID_LANGUAGES = ['cpp', 'c', 'java', 'python', 'javascript'];
 
@@ -20,19 +20,19 @@ const LANG_LABEL = {
 };
 
 export default function TemplateEditor() {
-    const { id } = useParams();
+    const {id} = useParams();
     const navigate = useNavigate();
     const [template, setTemplate] = useState({
         title: '',
         source_code: '',
         language: 'cpp',
-        is_default: false
+        is_default: false,
     });
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [hasOngoing, setHasOngoing] = useState(false);
 
-    const { theme } = useTheme();
+    const {theme} = useTheme();
     const editorTheme = theme === 'dark' ? 'vs-dark' : 'light';
 
     useEffect(() => {
@@ -40,18 +40,22 @@ export default function TemplateEditor() {
             try {
                 const [templateRes, statusRes] = await Promise.all([
                     api.get(`/user-templates/${id}`),
-                    api.get('/user-templates/ongoing-contest-status')
+                    api.get('/user-templates/ongoing-contest-status'),
                 ]);
-                
+
                 setTemplate({
                     title: templateRes.data.data.title || 'Untitled Template',
                     source_code: templateRes.data.data.source_code,
                     language: templateRes.data.data.language,
-                    is_default: templateRes.data.data.is_default === 1 || templateRes.data.data.is_default === true
+                    is_default:
+                        templateRes.data.data.is_default === 1 ||
+                        templateRes.data.data.is_default === true,
                 });
                 setHasOngoing(statusRes.data.data.hasOngoing);
             } catch (error) {
-                toast.error(error.response?.data?.message || 'Failed to load template.');
+                toast.error(
+                    error.response?.data?.message || 'Failed to load template.'
+                );
                 navigate('/templates');
             } finally {
                 setLoading(false);
@@ -69,7 +73,9 @@ export default function TemplateEditor() {
                 navigate('/templates');
             }
         } catch (error) {
-            toast.error(error.response?.data?.message || 'Failed to save template.');
+            toast.error(
+                error.response?.data?.message || 'Failed to save template.'
+            );
         } finally {
             setSaving(false);
         }
@@ -88,14 +94,24 @@ export default function TemplateEditor() {
             {/* Header Toolbar */}
             <div className="flex items-center justify-between px-6 py-4 border-b border-border bg-card shadow-sm z-10">
                 <div className="flex items-center gap-4 flex-1">
-                    <Button variant="ghost" size="icon" onClick={() => navigate('/templates')} className="text-muted-foreground hover:text-foreground shrink-0">
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => navigate('/templates')}
+                        className="text-muted-foreground hover:text-foreground shrink-0"
+                    >
                         <ArrowLeft className="w-5 h-5" />
                     </Button>
                     <div className="flex-1 max-w-md">
                         <input
                             type="text"
                             value={template.title}
-                            onChange={(e) => setTemplate({ ...template, title: e.target.value })}
+                            onChange={(e) =>
+                                setTemplate({
+                                    ...template,
+                                    title: e.target.value,
+                                })
+                            }
                             disabled={hasOngoing}
                             className="text-lg font-bold tracking-tight text-foreground bg-transparent border-b border-transparent hover:border-border focus:border-primary focus:outline-none w-full px-1 py-0.5 transition-colors placeholder:text-muted-foreground/50 disabled:opacity-50 disabled:cursor-not-allowed"
                             placeholder="Template Title"
@@ -115,12 +131,19 @@ export default function TemplateEditor() {
                         </span>
                         <select
                             value={template.language}
-                            onChange={(e) => setTemplate({ ...template, language: e.target.value })}
+                            onChange={(e) =>
+                                setTemplate({
+                                    ...template,
+                                    language: e.target.value,
+                                })
+                            }
                             disabled={hasOngoing}
                             className="text-sm bg-secondary border border-border rounded-md px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                            {VALID_LANGUAGES.map(lang => (
-                                <option key={lang} value={lang}>{LANG_LABEL[lang]}</option>
+                            {VALID_LANGUAGES.map((lang) => (
+                                <option key={lang} value={lang}>
+                                    {LANG_LABEL[lang]}
+                                </option>
                             ))}
                         </select>
                     </div>
@@ -130,12 +153,21 @@ export default function TemplateEditor() {
                         <Switch
                             id="default-switch"
                             checked={template.is_default}
-                            onCheckedChange={(checked) => setTemplate({ ...template, is_default: checked })}
+                            onCheckedChange={(checked) =>
+                                setTemplate({...template, is_default: checked})
+                            }
                             disabled={hasOngoing}
                         />
-                        <Label htmlFor="default-switch" className="flex items-center gap-1.5 cursor-pointer">
-                            <Star className={`w-4 h-4 ${template.is_default ? 'fill-primary text-primary' : 'text-muted-foreground'}`} />
-                            <span className="text-sm font-medium">Default Template</span>
+                        <Label
+                            htmlFor="default-switch"
+                            className="flex items-center gap-1.5 cursor-pointer"
+                        >
+                            <Star
+                                className={`w-4 h-4 ${template.is_default ? 'fill-primary text-primary' : 'text-muted-foreground'}`}
+                            />
+                            <span className="text-sm font-medium">
+                                Default Template
+                            </span>
                         </Label>
                     </div>
 
@@ -147,11 +179,22 @@ export default function TemplateEditor() {
                                 <span>Contest ongoing (Read-only)</span>
                             </div>
                         )}
-                        <Button variant="outline" onClick={() => navigate('/templates')}>
+                        <Button
+                            variant="outline"
+                            onClick={() => navigate('/templates')}
+                        >
                             Exit
                         </Button>
-                        <Button onClick={() => handleSave(true)} disabled={saving || hasOngoing} className="gap-2">
-                            {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                        <Button
+                            onClick={() => handleSave(true)}
+                            disabled={saving || hasOngoing}
+                            className="gap-2"
+                        >
+                            {saving ? (
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                            ) : (
+                                <Save className="w-4 h-4" />
+                            )}
                             Save & Exit
                         </Button>
                     </div>
@@ -162,19 +205,32 @@ export default function TemplateEditor() {
             <div className="flex-1 relative">
                 <Editor
                     height="100%"
-                    language={template.language === 'cpp' ? 'cpp' : template.language === 'javascript' ? 'javascript' : template.language === 'python' ? 'python' : template.language === 'java' ? 'java' : 'c'}
+                    language={
+                        template.language === 'cpp'
+                            ? 'cpp'
+                            : template.language === 'javascript'
+                              ? 'javascript'
+                              : template.language === 'python'
+                                ? 'python'
+                                : template.language === 'java'
+                                  ? 'java'
+                                  : 'c'
+                    }
                     theme={editorTheme}
                     value={template.source_code}
-                    onChange={(val) => setTemplate({ ...template, source_code: val || '' })}
+                    onChange={(val) =>
+                        setTemplate({...template, source_code: val || ''})
+                    }
                     options={{
-                        minimap: { enabled: true },
+                        minimap: {enabled: true},
                         fontSize: 15,
                         lineNumbers: 'on',
                         scrollBeyondLastLine: false,
                         automaticLayout: true,
                         readOnly: hasOngoing,
-                        fontFamily: "'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace",
-                        padding: { top: 16 }
+                        fontFamily:
+                            "'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace",
+                        padding: {top: 16},
                     }}
                     loading={
                         <div className="flex h-full items-center justify-center text-muted-foreground font-mono text-sm">

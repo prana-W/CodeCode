@@ -40,7 +40,8 @@ function useCountUp(target, duration = 1800, start = false) {
 
 function StatCard({icon: Icon, label, value, color, delay = 0, animate}) {
     const count = useCountUp(value, 1600, animate);
-    const bgColor = color.split(' ').find((c) => c.startsWith('bg-')) || 'bg-primary';
+    const bgColor =
+        color.split(' ').find((c) => c.startsWith('bg-')) || 'bg-primary';
 
     return (
         <div

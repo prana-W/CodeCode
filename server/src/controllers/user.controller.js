@@ -172,13 +172,11 @@ const heartbeat = asyncHandler(async (req, res) => {
         onlineUsersCount += keys.length;
     } while (cursor !== '0');
 
-    return res
-        .status(statusCode.OK)
-        .json(
-            new ApiResponse(statusCode.OK, 'Heartbeat acknowledged.', {
-                onlineUsers: onlineUsersCount,
-            })
-        );
+    return res.status(statusCode.OK).json(
+        new ApiResponse(statusCode.OK, 'Heartbeat acknowledged.', {
+            onlineUsers: onlineUsersCount,
+        })
+    );
 });
 
 const getContestHistory = asyncHandler(async (req, res) => {

@@ -304,9 +304,7 @@ export default function AdminContestDetailsPage() {
                         <div
                             className={`font-semibold text-sm ${contest.isVerified ? 'text-emerald-500' : 'text-amber-500'}`}
                         >
-                            {contest.isVerified
-                                ? 'Verified'
-                                : 'Pending Review'}
+                            {contest.isVerified ? 'Verified' : 'Pending Review'}
                         </div>
                     </div>
                 </section>
@@ -348,18 +346,31 @@ export default function AdminContestDetailsPage() {
                 </section>
             </div>
 
-            <AlertDialog open={showVerifyDialog} onOpenChange={setShowVerifyDialog}>
+            <AlertDialog
+                open={showVerifyDialog}
+                onOpenChange={setShowVerifyDialog}
+            >
                 <AlertDialogContent>
                     <AlertDialogHeader>
                         <AlertDialogTitle>
-                            {contest?.isVerified ? 'Unverify Contest' : 'Verify Contest'}
+                            {contest?.isVerified
+                                ? 'Unverify Contest'
+                                : 'Verify Contest'}
                         </AlertDialogTitle>
                         <AlertDialogDescription>
-                            Are you sure you want to {contest?.isVerified ? 'unverify' : 'verify'} "{contest?.title}"? This will make the contest {contest?.isVerified ? 'hidden from' : 'visible to'} contestants.
+                            Are you sure you want to{' '}
+                            {contest?.isVerified ? 'unverify' : 'verify'} "
+                            {contest?.title}"? This will make the contest{' '}
+                            {contest?.isVerified ? 'hidden from' : 'visible to'}{' '}
+                            contestants.
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                        <AlertDialogCancel onClick={() => setShowVerifyDialog(false)}>Cancel</AlertDialogCancel>
+                        <AlertDialogCancel
+                            onClick={() => setShowVerifyDialog(false)}
+                        >
+                            Cancel
+                        </AlertDialogCancel>
                         <AlertDialogAction onClick={handleVerifyConfirm}>
                             {contest?.isVerified ? 'Unverify' : 'Verify'}
                         </AlertDialogAction>

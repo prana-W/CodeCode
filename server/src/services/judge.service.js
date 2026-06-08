@@ -248,9 +248,10 @@ export async function runJudge({
             c: 1000,
             java: 25000,
             python: 8500,
-            javascript: 22000
+            javascript: 22000,
         };
-        const memory_used_kb = baseMemory[language] + Math.floor(Math.random() * 1024);
+        const memory_used_kb =
+            baseMemory[language] + Math.floor(Math.random() * 1024);
 
         return {
             verdict,
@@ -283,7 +284,10 @@ export async function runCustomInvocationJudge({
     const sandboxRoot = path.join(process.cwd(), 'sandbox');
     await fs.mkdir(sandboxRoot, {recursive: true});
 
-    const sandboxPath = path.join(sandboxRoot, `customInvocation-${customInvocationId}`);
+    const sandboxPath = path.join(
+        sandboxRoot,
+        `customInvocation-${customInvocationId}`
+    );
     await fs.mkdir(sandboxPath, {recursive: true});
 
     try {
@@ -435,9 +439,10 @@ export async function runCustomInvocationJudge({
             c: 1000,
             java: 25000,
             python: 8500,
-            javascript: 22000
+            javascript: 22000,
         };
-        const memory_used_kb = baseMemory[language] + Math.floor(Math.random() * 1024);
+        const memory_used_kb =
+            baseMemory[language] + Math.floor(Math.random() * 1024);
 
         return {
             verdict,

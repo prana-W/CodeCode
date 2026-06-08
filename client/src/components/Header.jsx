@@ -75,7 +75,7 @@ export default function Header() {
             {to: '/', label: 'HOME', end: true},
             {to: '/templates', label: 'TEMPLATES'},
             {to: '/contests', label: 'CONTESTS'},
-                        {to: '/custom-invocation', label: 'CUSTOM INVOCATION'},
+            {to: '/custom-invocation', label: 'CUSTOM INVOCATION'},
             {to: '/design-contest', label: 'DESIGN'},
             {to: '/rankings', label: 'RANKINGS'},
             {to: '/about', label: 'ABOUT'},
@@ -91,7 +91,11 @@ export default function Header() {
             <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 flex items-center justify-between h-16">
                 {/* Logo */}
                 <Link to="/" className="flex items-center gap-2 shrink-0">
-                    <img src="/favicon.svg" alt="CodeCode" className="w-8 h-8 object-contain" />
+                    <img
+                        src="/favicon.svg"
+                        alt="CodeCode"
+                        className="w-8 h-8 object-contain"
+                    />
                     <span className="font-bold text-xl tracking-tight text-foreground uppercase">
                         CodeCode
                     </span>

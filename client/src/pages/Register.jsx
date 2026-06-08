@@ -1,15 +1,7 @@
 import {useState} from 'react';
 import {Link, useNavigate} from 'react-router-dom';
 import {toast} from 'sonner';
-import {
-    Eye,
-    EyeOff,
-    Mail,
-    Lock,
-    User,
-    AtSign,
-    Building2,
-} from 'lucide-react';
+import {Eye, EyeOff, Mail, Lock, User, AtSign, Building2} from 'lucide-react';
 import {Button} from '@/components/ui/button';
 import {Input} from '@/components/ui/input';
 import {Label} from '@/components/ui/label';
@@ -26,7 +18,13 @@ import {useAuth} from '@/context/AuthContext';
 import {INSTITUTES} from '@/constants/institutes';
 
 function getPasswordStrength(password) {
-    if (!password) return { score: 0, label: '', color: 'bg-muted', textColor: 'text-muted-foreground' };
+    if (!password)
+        return {
+            score: 0,
+            label: '',
+            color: 'bg-muted',
+            textColor: 'text-muted-foreground',
+        };
     let score = 0;
     if (password.length >= 8) score++;
     if (/[A-Z]/.test(password)) score++;
@@ -35,15 +33,19 @@ function getPasswordStrength(password) {
     if (/[^A-Za-z0-9]/.test(password)) score++;
 
     const finalScore = Math.min(score, 4);
-    
+
     const strengthMap = [
-        { label: 'Very Weak', color: 'bg-red-500', textColor: 'text-red-500' },
-        { label: 'Weak', color: 'bg-orange-500', textColor: 'text-orange-500' },
-        { label: 'Medium', color: 'bg-yellow-500', textColor: 'text-yellow-500' },
-        { label: 'Strong', color: 'bg-blue-500', textColor: 'text-blue-500' },
-        { label: 'Very Strong', color: 'bg-emerald-500', textColor: 'text-emerald-500' },
+        {label: 'Very Weak', color: 'bg-red-500', textColor: 'text-red-500'},
+        {label: 'Weak', color: 'bg-orange-500', textColor: 'text-orange-500'},
+        {label: 'Medium', color: 'bg-yellow-500', textColor: 'text-yellow-500'},
+        {label: 'Strong', color: 'bg-blue-500', textColor: 'text-blue-500'},
+        {
+            label: 'Very Strong',
+            color: 'bg-emerald-500',
+            textColor: 'text-emerald-500',
+        },
     ];
-    return { ...strengthMap[finalScore], score: finalScore };
+    return {...strengthMap[finalScore], score: finalScore};
 }
 
 export default function Register() {
@@ -120,7 +122,11 @@ export default function Register() {
             <div className="flex-1 flex items-start justify-center px-8 py-12 overflow-y-auto">
                 <div className="w-full max-w-md space-y-8">
                     <div className="flex items-center gap-2 lg:hidden">
-                        <img src="/favicon.svg" alt="CodeCode" className="w-8 h-8 object-contain" />
+                        <img
+                            src="/favicon.svg"
+                            alt="CodeCode"
+                            className="w-8 h-8 object-contain"
+                        />
                         <span className="text-lg font-bold tracking-tight text-foreground">
                             CodeCode
                         </span>
@@ -246,9 +252,7 @@ export default function Register() {
                                 <Input
                                     id="reg-password"
                                     name="password"
-                                    type={
-                                        showPassword ? 'text' : 'password'
-                                    }
+                                    type={showPassword ? 'text' : 'password'}
                                     autoComplete="new-password"
                                     placeholder="••••••••"
                                     value={form.password}
@@ -262,9 +266,7 @@ export default function Register() {
                                             ? 'Hide password'
                                             : 'Show password'
                                     }
-                                    onClick={() =>
-                                        setShowPassword((v) => !v)
-                                    }
+                                    onClick={() => setShowPassword((v) => !v)}
                                     className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
                                 >
                                     {showPassword ? (
@@ -278,15 +280,21 @@ export default function Register() {
                             {form.password && (
                                 <div className="space-y-1.5 pt-1.5 animate-in fade-in slide-in-from-top-1 duration-200">
                                     <div className="flex justify-between items-center text-[10px] font-semibold uppercase tracking-wider">
-                                        <span className="text-muted-foreground">Strength</span>
-                                        <span className={strength.textColor}>{strength.label}</span>
+                                        <span className="text-muted-foreground">
+                                            Strength
+                                        </span>
+                                        <span className={strength.textColor}>
+                                            {strength.label}
+                                        </span>
                                     </div>
                                     <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden flex gap-0.5">
                                         {Array.from({length: 5}).map((_, i) => (
                                             <div
                                                 key={i}
                                                 className={`h-full flex-1 transition-all duration-300 ${
-                                                    i <= strength.score ? strength.color : 'bg-muted/40'
+                                                    i <= strength.score
+                                                        ? strength.color
+                                                        : 'bg-muted/40'
                                                 }`}
                                             />
                                         ))}

@@ -8,7 +8,9 @@ function Layout() {
 
     return (
         <>
-            <div className={`${isProblemView ? 'h-screen overflow-hidden' : 'min-h-screen'} flex flex-col`}>
+            <div
+                className={`${isProblemView ? 'h-screen overflow-hidden' : 'min-h-screen'} flex flex-col`}
+            >
                 <Header />
                 <main className="flex-1 flex flex-col min-h-0">
                     <Outlet />

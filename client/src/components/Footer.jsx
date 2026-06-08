@@ -35,7 +35,11 @@ export default function Footer() {
                     {/* Left Section: Brand & Copyright */}
                     <div className="flex flex-col items-center md:items-start gap-2">
                         <div className="flex items-center gap-2">
-                            <img src="/favicon.svg" alt="CodeCode" className="w-8 h-8 object-contain" />
+                            <img
+                                src="/favicon.svg"
+                                alt="CodeCode"
+                                className="w-8 h-8 object-contain"
+                            />
                             <span className="text-lg font-black text-foreground tracking-tight">
                                 CodeCode
                             </span>

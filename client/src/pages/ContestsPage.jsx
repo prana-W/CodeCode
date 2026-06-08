@@ -134,7 +134,8 @@ function ContestRow({contest, regStatus, onRegister, onUnregister}) {
     const started = isContestStarted(contest);
     const showRegister = !isRegistered && canRegister(contest);
     const showUnregister = isRegistered && canUnregister(contest);
-    const showEnter = (isRegistered && started && status === 'running') || status === 'past';
+    const showEnter =
+        (isRegistered && started && status === 'running') || status === 'past';
 
     const handleRegister = async () => {
         setActing(true);

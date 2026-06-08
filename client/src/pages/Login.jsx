@@ -49,7 +49,11 @@ export default function Login() {
             <div className="flex-1 flex items-center justify-center px-8 py-12">
                 <div className="w-full max-w-md space-y-8">
                     <div className="flex items-center gap-2 lg:hidden">
-                        <img src="/favicon.svg" alt="CodeCode" className="w-8 h-8 object-contain" />
+                        <img
+                            src="/favicon.svg"
+                            alt="CodeCode"
+                            className="w-8 h-8 object-contain"
+                        />
                         <span className="text-lg font-bold tracking-tight text-foreground">
                             CodeCode
                         </span>

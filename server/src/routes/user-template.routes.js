@@ -1,5 +1,5 @@
-import { Router } from 'express';
-import { verifyToken } from '../middlewares/index.js';
+import {Router} from 'express';
+import {verifyToken} from '../middlewares/index.js';
 import {
     getTemplates,
     getTemplateById,
@@ -7,7 +7,7 @@ import {
     updateTemplate,
     deleteTemplate,
     setDefaultTemplate,
-    getOngoingContestStatus
+    getOngoingContestStatus,
 } from '../controllers/user-template.controller.js';
 
 const router = Router();
@@ -17,11 +17,10 @@ router.use(verifyToken);
 
 router.get('/ongoing-contest-status', getOngoingContestStatus);
 
-router.route('/')
-    .get(getTemplates)
-    .post(createTemplate);
+router.route('/').get(getTemplates).post(createTemplate);
 
-router.route('/:id')
+router
+    .route('/:id')
     .get(getTemplateById)
     .put(updateTemplate)
     .delete(deleteTemplate);

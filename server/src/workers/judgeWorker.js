@@ -23,7 +23,8 @@ const worker = new Worker(
         await Submission.setVerdict(submissionId, 'running');
 
         try {
-            const {verdict, execution_time_ms, memory_used_kb} = await runJudge(data);
+            const {verdict, execution_time_ms, memory_used_kb} =
+                await runJudge(data);
             await Submission.setVerdict(
                 submissionId,
                 verdict,

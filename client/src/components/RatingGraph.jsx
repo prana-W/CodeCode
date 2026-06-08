@@ -11,7 +11,14 @@ import {
     ReferenceArea,
     Dot,
 } from 'recharts';
-import {TrendingUp, TrendingDown, Minus, Trophy, LineChart, List} from 'lucide-react';
+import {
+    TrendingUp,
+    TrendingDown,
+    Minus,
+    Trophy,
+    LineChart,
+    List,
+} from 'lucide-react';
 import {getRankDetails, RATING_TIERS} from '@/constants/ratings';
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
@@ -117,7 +124,7 @@ function ContestDot(props) {
             fill={rank.hexColor}
             stroke="hsl(var(--background))"
             strokeWidth={1.5}
-            style={{ cursor: 'pointer', pointerEvents: 'all' }}
+            style={{cursor: 'pointer', pointerEvents: 'all'}}
             onMouseEnter={(e) => onMouseEnter(e, payload, cx, cy)}
             onMouseLeave={onMouseLeave}
         />
@@ -135,7 +142,11 @@ function ActiveContestDot(props) {
             fill={rank.hexColor}
             stroke="white"
             strokeWidth={2}
-            style={{filter: `drop-shadow(0 0 4px ${rank.hexColor}88)`, cursor: 'pointer', pointerEvents: 'all'}}
+            style={{
+                filter: `drop-shadow(0 0 4px ${rank.hexColor}88)`,
+                cursor: 'pointer',
+                pointerEvents: 'all',
+            }}
             onMouseLeave={onMouseLeave}
         />
     );
@@ -159,14 +170,16 @@ export default function RatingGraph({history, loading}) {
     const [dragStartX, setDragStartX] = useState(null);
 
     const [hoveredPoint, setHoveredPoint] = useState(null);
-    const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 });
+    const [tooltipPos, setTooltipPos] = useState({x: 0, y: 0});
 
     const processedHistory = useMemo(() => {
         if (!history?.length) return [];
-        return history.map(d => ({
-            ...d,
-            timestamp: new Date(d.contest_end_time).getTime()
-        })).sort((a, b) => a.timestamp - b.timestamp);
+        return history
+            .map((d) => ({
+                ...d,
+                timestamp: new Date(d.contest_end_time).getTime(),
+            }))
+            .sort((a, b) => a.timestamp - b.timestamp);
     }, [history]);
 
     const filtered = useMemo(() => {
@@ -224,18 +237,27 @@ export default function RatingGraph({history, loading}) {
         if (processedHistory.length === 0) return;
         e.preventDefault(); // prevent page scroll while hovering over graph
 
-        const currentMin = xDomain[0] === 'dataMin' ? processedHistory[0].timestamp : xDomain[0];
-        const currentMax = xDomain[1] === 'dataMax' ? processedHistory[processedHistory.length - 1].timestamp : xDomain[1];
-        
+        const currentMin =
+            xDomain[0] === 'dataMin'
+                ? processedHistory[0].timestamp
+                : xDomain[0];
+        const currentMax =
+            xDomain[1] === 'dataMax'
+                ? processedHistory[processedHistory.length - 1].timestamp
+                : xDomain[1];
+
         const span = currentMax - currentMin;
         const zoomFactor = e.deltaY > 0 ? 1.15 : 0.85; // zoom out if positive, in if negative
         const center = (currentMin + currentMax) / 2;
         let newSpan = span * zoomFactor;
 
         // Limit zoom to a minimum of ~1 week and maximum of 3x total history
-        const MIN_SPAN = 7 * 24 * 60 * 60 * 1000; 
-        const MAX_SPAN = (processedHistory[processedHistory.length - 1].timestamp - processedHistory[0].timestamp) * 3 || MIN_SPAN * 4;
-        
+        const MIN_SPAN = 7 * 24 * 60 * 60 * 1000;
+        const MAX_SPAN =
+            (processedHistory[processedHistory.length - 1].timestamp -
+                processedHistory[0].timestamp) *
+                3 || MIN_SPAN * 4;
+
         if (newSpan < MIN_SPAN) newSpan = MIN_SPAN;
         if (newSpan > MAX_SPAN) newSpan = MAX_SPAN;
 
@@ -253,10 +275,16 @@ export default function RatingGraph({history, loading}) {
         const dx = e.clientX - dragStartX;
         if (dx === 0) return;
 
-        const currentMin = xDomain[0] === 'dataMin' ? processedHistory[0].timestamp : xDomain[0];
-        const currentMax = xDomain[1] === 'dataMax' ? processedHistory[processedHistory.length - 1].timestamp : xDomain[1];
+        const currentMin =
+            xDomain[0] === 'dataMin'
+                ? processedHistory[0].timestamp
+                : xDomain[0];
+        const currentMax =
+            xDomain[1] === 'dataMax'
+                ? processedHistory[processedHistory.length - 1].timestamp
+                : xDomain[1];
         const span = currentMax - currentMin;
-        
+
         const pixelWidth = 800; // approximate view width for scaling drag
         const timeShift = (dx / pixelWidth) * span;
 
@@ -324,7 +352,7 @@ export default function RatingGraph({history, loading}) {
 
             {/* Content Area */}
             {activeTab === 'graph' ? (
-                <div 
+                <div
                     className="px-4 pt-4 pb-6 relative h-[320px]"
                     onWheel={handleWheel}
                     onMouseDown={handleMouseDown}
@@ -348,170 +376,201 @@ export default function RatingGraph({history, loading}) {
                             </button>
                         ))}
                     </div>
-                {filtered.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center py-16 gap-3">
-                        <Trophy className="w-10 h-10 text-muted-foreground/30" />
-                        <p className="text-sm text-muted-foreground">
-                            {history?.length
-                                ? 'No contests in this time range.'
-                                : 'No rated contests participated yet.'}
-                        </p>
-                    </div>
-                ) : (
-                    <>
-                    <ResponsiveContainer width="100%" height="100%">
-                        <AreaChart
-                            data={processedHistory}
-                            margin={{top: 10, right: 16, left: 0, bottom: 0}}
-                        >
-                            <defs>
-                                <linearGradient
-                                    id="ratingGradient"
-                                    x1="0"
-                                    y1="0"
-                                    x2="0"
-                                    y2="1"
-                                >
-                                    {gradientStops.map((s, i) => (
-                                        <stop
-                                            key={i}
-                                            offset={s.offset}
-                                            stopColor={s.color}
-                                            stopOpacity={0.18}
-                                        />
-                                    ))}
-                                </linearGradient>
-                                <linearGradient
-                                    id="lineGradient"
-                                    x1="0"
-                                    y1="0"
-                                    x2="0"
-                                    y2="1"
-                                >
-                                    {gradientStops.map((s, i) => (
-                                        <stop
-                                            key={i}
-                                            offset={s.offset}
-                                            stopColor={s.color}
-                                            stopOpacity={1}
-                                        />
-                                    ))}
-                                </linearGradient>
-                            </defs>
-
-                            <CartesianGrid
-                                strokeDasharray="3 3"
-                                stroke="var(--border)"
-                                strokeOpacity={0.3}
-                                vertical={false}
-                            />
-
-                            {/* Background Color Bands for Rating Tiers */}
-                            {RATING_TIERS.map((tier, i) => {
-                                const prevMax = i === 0 ? 0 : RATING_TIERS[i - 1].max;
-                                const [lo, hi] = yDomain;
-                                if (prevMax >= hi || tier.max <= lo) return null;
-                                return (
-                                    <ReferenceArea
-                                        key={tier.title}
-                                        y1={Math.max(lo, prevMax)}
-                                        y2={tier.max === Infinity ? hi : Math.min(hi, tier.max)}
-                                        fill={tier.hexColor}
-                                        fillOpacity={0.06}
-                                        strokeOpacity={0}
-                                    />
-                                );
-                            })}
-
-                            {/* Rating tier reference lines */}
-                            {RATING_TIERS.slice(0, -1).map((tier) => {
-                                const [lo, hi] = yDomain;
-                                if (tier.max <= lo || tier.max >= hi)
-                                    return null;
-                                return (
-                                    <ReferenceLine
-                                        key={tier.max}
-                                        y={tier.max}
-                                        stroke={tier.hexColor}
-                                        strokeDasharray="4 4"
-                                        strokeOpacity={0.4}
-                                        strokeWidth={1}
-                                        label={{
-                                            value: tier.title,
-                                            position: 'insideTopRight',
-                                            fontSize: 9,
-                                            fill: tier.hexColor,
-                                            opacity: 0.7,
-                                        }}
-                                    />
-                                );
-                            })}
-
-                            <XAxis
-                                dataKey="timestamp"
-                                type="number"
-                                domain={xDomain}
-                                tickFormatter={fmtShortDate}
-                                tick={{
-                                    fontSize: 11,
-                                    fill: 'currentColor',
-                                    className: 'text-muted-foreground'
-                                }}
-                                axisLine={false}
-                                tickLine={false}
-                                dy={6}
-                                scale="time"
-                            />
-
-                            <YAxis
-                                domain={yDomain}
-                                tick={{
-                                    fontSize: 11,
-                                    fill: 'currentColor',
-                                    className: 'text-muted-foreground'
-                                }}
-                                axisLine={false}
-                                tickLine={false}
-                                width={42}
-                            />
-
-                            <Tooltip content={() => null} cursor={false} />
-
-                            <Area
-                                type="monotone"
-                                dataKey="final_rating"
-                                stroke="url(#lineGradient)"
-                                strokeWidth={2.5}
-                                fill="url(#ratingGradient)"
-                                dot={<ContestDot 
-                                    onMouseEnter={(e, payload, cx, cy) => {
-                                        setHoveredPoint(payload);
-                                        setTooltipPos({x: cx, y: cy});
-                                    }} 
-                                    onMouseLeave={() => setHoveredPoint(null)} 
-                                />}
-                                activeDot={false}
-                                isAnimationActive={false}
-                            />
-                        </AreaChart>
-                    </ResponsiveContainer>
-                    
-                    {/* Custom Overlay Tooltip */}
-                    {hoveredPoint && (
-                        <div 
-                            className="absolute pointer-events-none z-[100] transition-all duration-100 ease-out"
-                            style={{
-                                left: tooltipPos.x,
-                                top: tooltipPos.y,
-                                transform: 'translate(-50%, -115%)'
-                            }}
-                        >
-                            <RatingTooltip active={true} payload={[{payload: hoveredPoint}]} />
+                    {filtered.length === 0 ? (
+                        <div className="flex flex-col items-center justify-center py-16 gap-3">
+                            <Trophy className="w-10 h-10 text-muted-foreground/30" />
+                            <p className="text-sm text-muted-foreground">
+                                {history?.length
+                                    ? 'No contests in this time range.'
+                                    : 'No rated contests participated yet.'}
+                            </p>
                         </div>
+                    ) : (
+                        <>
+                            <ResponsiveContainer width="100%" height="100%">
+                                <AreaChart
+                                    data={processedHistory}
+                                    margin={{
+                                        top: 10,
+                                        right: 16,
+                                        left: 0,
+                                        bottom: 0,
+                                    }}
+                                >
+                                    <defs>
+                                        <linearGradient
+                                            id="ratingGradient"
+                                            x1="0"
+                                            y1="0"
+                                            x2="0"
+                                            y2="1"
+                                        >
+                                            {gradientStops.map((s, i) => (
+                                                <stop
+                                                    key={i}
+                                                    offset={s.offset}
+                                                    stopColor={s.color}
+                                                    stopOpacity={0.18}
+                                                />
+                                            ))}
+                                        </linearGradient>
+                                        <linearGradient
+                                            id="lineGradient"
+                                            x1="0"
+                                            y1="0"
+                                            x2="0"
+                                            y2="1"
+                                        >
+                                            {gradientStops.map((s, i) => (
+                                                <stop
+                                                    key={i}
+                                                    offset={s.offset}
+                                                    stopColor={s.color}
+                                                    stopOpacity={1}
+                                                />
+                                            ))}
+                                        </linearGradient>
+                                    </defs>
+
+                                    <CartesianGrid
+                                        strokeDasharray="3 3"
+                                        stroke="var(--border)"
+                                        strokeOpacity={0.3}
+                                        vertical={false}
+                                    />
+
+                                    {/* Background Color Bands for Rating Tiers */}
+                                    {RATING_TIERS.map((tier, i) => {
+                                        const prevMax =
+                                            i === 0
+                                                ? 0
+                                                : RATING_TIERS[i - 1].max;
+                                        const [lo, hi] = yDomain;
+                                        if (prevMax >= hi || tier.max <= lo)
+                                            return null;
+                                        return (
+                                            <ReferenceArea
+                                                key={tier.title}
+                                                y1={Math.max(lo, prevMax)}
+                                                y2={
+                                                    tier.max === Infinity
+                                                        ? hi
+                                                        : Math.min(hi, tier.max)
+                                                }
+                                                fill={tier.hexColor}
+                                                fillOpacity={0.06}
+                                                strokeOpacity={0}
+                                            />
+                                        );
+                                    })}
+
+                                    {/* Rating tier reference lines */}
+                                    {RATING_TIERS.slice(0, -1).map((tier) => {
+                                        const [lo, hi] = yDomain;
+                                        if (tier.max <= lo || tier.max >= hi)
+                                            return null;
+                                        return (
+                                            <ReferenceLine
+                                                key={tier.max}
+                                                y={tier.max}
+                                                stroke={tier.hexColor}
+                                                strokeDasharray="4 4"
+                                                strokeOpacity={0.4}
+                                                strokeWidth={1}
+                                                label={{
+                                                    value: tier.title,
+                                                    position: 'insideTopRight',
+                                                    fontSize: 9,
+                                                    fill: tier.hexColor,
+                                                    opacity: 0.7,
+                                                }}
+                                            />
+                                        );
+                                    })}
+
+                                    <XAxis
+                                        dataKey="timestamp"
+                                        type="number"
+                                        domain={xDomain}
+                                        tickFormatter={fmtShortDate}
+                                        tick={{
+                                            fontSize: 11,
+                                            fill: 'currentColor',
+                                            className: 'text-muted-foreground',
+                                        }}
+                                        axisLine={false}
+                                        tickLine={false}
+                                        dy={6}
+                                        scale="time"
+                                    />
+
+                                    <YAxis
+                                        domain={yDomain}
+                                        tick={{
+                                            fontSize: 11,
+                                            fill: 'currentColor',
+                                            className: 'text-muted-foreground',
+                                        }}
+                                        axisLine={false}
+                                        tickLine={false}
+                                        width={42}
+                                    />
+
+                                    <Tooltip
+                                        content={() => null}
+                                        cursor={false}
+                                    />
+
+                                    <Area
+                                        type="monotone"
+                                        dataKey="final_rating"
+                                        stroke="url(#lineGradient)"
+                                        strokeWidth={2.5}
+                                        fill="url(#ratingGradient)"
+                                        dot={
+                                            <ContestDot
+                                                onMouseEnter={(
+                                                    e,
+                                                    payload,
+                                                    cx,
+                                                    cy
+                                                ) => {
+                                                    setHoveredPoint(payload);
+                                                    setTooltipPos({
+                                                        x: cx,
+                                                        y: cy,
+                                                    });
+                                                }}
+                                                onMouseLeave={() =>
+                                                    setHoveredPoint(null)
+                                                }
+                                            />
+                                        }
+                                        activeDot={false}
+                                        isAnimationActive={false}
+                                    />
+                                </AreaChart>
+                            </ResponsiveContainer>
+
+                            {/* Custom Overlay Tooltip */}
+                            {hoveredPoint && (
+                                <div
+                                    className="absolute pointer-events-none z-[100] transition-all duration-100 ease-out"
+                                    style={{
+                                        left: tooltipPos.x,
+                                        top: tooltipPos.y,
+                                        transform: 'translate(-50%, -115%)',
+                                    }}
+                                >
+                                    <RatingTooltip
+                                        active={true}
+                                        payload={[{payload: hoveredPoint}]}
+                                    />
+                                </div>
+                            )}
+                        </>
                     )}
-                    </>
-                )}
-            </div>
+                </div>
             ) : (
                 /* Contest list below */
                 <div className="border-t border-border/60">
@@ -549,9 +608,15 @@ export default function RatingGraph({history, loading}) {
                                                     {d.contest_title}
                                                 </div>
                                                 <div className="text-muted-foreground flex items-center gap-2">
-                                                    <span>{fmtDate(d.contest_end_time)}</span>
+                                                    <span>
+                                                        {fmtDate(
+                                                            d.contest_end_time
+                                                        )}
+                                                    </span>
                                                     <span className="w-1 h-1 rounded-full bg-border"></span>
-                                                    <span>Div. {d.division}</span>
+                                                    <span>
+                                                        Div. {d.division}
+                                                    </span>
                                                 </div>
                                             </td>
                                             <td className="px-6 py-4 text-center font-bold text-foreground text-sm">
@@ -585,7 +650,10 @@ export default function RatingGraph({history, loading}) {
                                 })}
                                 {history.length === 0 && (
                                     <tr>
-                                        <td colSpan={4} className="px-6 py-12 text-center text-muted-foreground">
+                                        <td
+                                            colSpan={4}
+                                            className="px-6 py-12 text-center text-muted-foreground"
+                                        >
                                             No rated contests participated yet.
                                         </td>
                                     </tr>

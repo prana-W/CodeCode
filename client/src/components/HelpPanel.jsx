@@ -1,13 +1,13 @@
-import { useState, useRef, useEffect } from 'react';
-import { HelpCircle, Send, Sparkles, BookOpen, Loader2, X } from 'lucide-react';
-import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import {useState, useRef, useEffect} from 'react';
+import {HelpCircle, Send, Sparkles, BookOpen, Loader2, X} from 'lucide-react';
+import {Card} from '@/components/ui/card';
+import {Button} from '@/components/ui/button';
+import {Input} from '@/components/ui/input';
 import api from '@/lib/axios';
-import { useTheme } from '@/components/theme-provider';
+import {useTheme} from '@/components/theme-provider';
 
-export default function HelpPanel({ contest }) {
-    const { theme } = useTheme();
+export default function HelpPanel({contest}) {
+    const {theme} = useTheme();
     const isDark =
         theme === 'dark' ||
         (theme === 'system' &&
@@ -42,7 +42,7 @@ export default function HelpPanel({ contest }) {
     // Auto-scroll AI chat
     useEffect(() => {
         if (messagesEndRef.current) {
-            messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+            messagesEndRef.current.scrollIntoView({behavior: 'smooth'});
         }
     }, [messages, isOpen]);
 
@@ -72,18 +72,18 @@ export default function HelpPanel({ contest }) {
         if (!text || loadingAi) return;
 
         // Add user message
-        const userMsg = { sender: 'user', text };
+        const userMsg = {sender: 'user', text};
         setMessages((prev) => [...prev, userMsg]);
         setAiInput('');
         setLoadingAi(true);
 
         try {
-            const res = await api.post('/ai/ask', { prompt: text });
+            const res = await api.post('/ai/ask', {prompt: text});
             const replyText =
                 res.data?.data?.hint || "Sorry, I couldn't generate a hint.";
             setMessages((prev) => [
                 ...prev,
-                { sender: 'assistant', text: replyText },
+                {sender: 'assistant', text: replyText},
             ]);
         } catch (err) {
             setMessages((prev) => [
@@ -128,11 +128,15 @@ export default function HelpPanel({ contest }) {
     );
 }
 
-export function HelpContent({ contest }) {
-    const { theme } = useTheme();
-    const isDark = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+export function HelpContent({contest}) {
+    const {theme} = useTheme();
+    const isDark =
+        theme === 'dark' ||
+        (theme === 'system' &&
+            window.matchMedia('(prefers-color-scheme: dark)').matches);
 
-    const isPastEnd = contest && new Date(contest.contest_end_time) < new Date();
+    const isPastEnd =
+        contest && new Date(contest.contest_end_time) < new Date();
     const allowAI = contest ? isPastEnd || contest.ai_assistance : false;
     const [activeTab, setActiveTab] = useState(allowAI ? 'ai' : 'wiki');
 
@@ -141,14 +145,18 @@ export function HelpContent({ contest }) {
     }, [allowAI, activeTab]);
 
     const [messages, setMessages] = useState([
-        { sender: 'assistant', text: 'Hello! I am Deco, your coding assistant. Ask me for hints or help with coding concepts!' }
+        {
+            sender: 'assistant',
+            text: 'Hello! I am Deco, your coding assistant. Ask me for hints or help with coding concepts!',
+        },
     ]);
     const [aiInput, setAiInput] = useState('');
     const [loadingAi, setLoadingAi] = useState(false);
     const messagesEndRef = useRef(null);
 
     useEffect(() => {
-        if (messagesEndRef.current) messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+        if (messagesEndRef.current)
+            messagesEndRef.current.scrollIntoView({behavior: 'smooth'});
     }, [messages]);
 
     const handleSendAi = async (e) => {
@@ -156,16 +164,26 @@ export function HelpContent({ contest }) {
         const text = aiInput.trim();
         if (!text || loadingAi) return;
 
-        setMessages(prev => [...prev, { sender: 'user', text }]);
+        setMessages((prev) => [...prev, {sender: 'user', text}]);
         setAiInput('');
         setLoadingAi(true);
 
         try {
-            const res = await api.post('/ai/ask', { prompt: text });
-            const replyText = res.data?.data?.hint || "Sorry, I couldn't generate a hint.";
-            setMessages(prev => [...prev, { sender: 'assistant', text: replyText }]);
+            const res = await api.post('/ai/ask', {prompt: text});
+            const replyText =
+                res.data?.data?.hint || "Sorry, I couldn't generate a hint.";
+            setMessages((prev) => [
+                ...prev,
+                {sender: 'assistant', text: replyText},
+            ]);
         } catch (err) {
-            setMessages(prev => [...prev, { sender: 'assistant', text: 'Error: Failed to connect to the assistant.' }]);
+            setMessages((prev) => [
+                ...prev,
+                {
+                    sender: 'assistant',
+                    text: 'Error: Failed to connect to the assistant.',
+                },
+            ]);
         } finally {
             setLoadingAi(false);
         }
@@ -178,10 +196,11 @@ export function HelpContent({ contest }) {
                 {!!allowAI && (
                     <button
                         onClick={() => setActiveTab('ai')}
-                        className={`flex-1 pt-1 pb-2 text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 border-b-2 transition-all ${activeTab === 'ai'
-                            ? 'border-primary text-primary bg-background/50'
-                            : 'border-transparent text-muted-foreground hover:text-foreground'
-                            }`}
+                        className={`flex-1 pt-1 pb-2 text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 border-b-2 transition-all ${
+                            activeTab === 'ai'
+                                ? 'border-primary text-primary bg-background/50'
+                                : 'border-transparent text-muted-foreground hover:text-foreground'
+                        }`}
                     >
                         <Sparkles className="w-3.5 h-3.5" />
                         AI Assistant
@@ -189,10 +208,11 @@ export function HelpContent({ contest }) {
                 )}
                 <button
                     onClick={() => setActiveTab('wiki')}
-                    className={`flex-1 pt-1 pb-2 text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 border-b-2 transition-all ${activeTab === 'wiki'
-                        ? 'border-primary text-primary bg-background/50'
-                        : 'border-transparent text-muted-foreground hover:text-foreground'
-                        }`}
+                    className={`flex-1 pt-1 pb-2 text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 border-b-2 transition-all ${
+                        activeTab === 'wiki'
+                            ? 'border-primary text-primary bg-background/50'
+                            : 'border-transparent text-muted-foreground hover:text-foreground'
+                    }`}
                 >
                     <BookOpen className="w-3.5 h-3.5" />
                     Wikipedia
@@ -211,10 +231,11 @@ export function HelpContent({ contest }) {
                                     className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}
                                 >
                                     <div
-                                        className={`max-w-[85%] rounded-2xl px-4 py-2.5 text-sm shadow-sm leading-relaxed ${msg.sender === 'user'
-                                            ? 'bg-primary text-primary-foreground rounded-tr-none'
-                                            : 'bg-muted/80 text-foreground rounded-tl-none border border-border'
-                                            }`}
+                                        className={`max-w-[85%] rounded-2xl px-4 py-2.5 text-sm shadow-sm leading-relaxed ${
+                                            msg.sender === 'user'
+                                                ? 'bg-primary text-primary-foreground rounded-tr-none'
+                                                : 'bg-muted/80 text-foreground rounded-tl-none border border-border'
+                                        }`}
                                     >
                                         {msg.text}
                                     </div>
@@ -224,9 +245,7 @@ export function HelpContent({ contest }) {
                                 <div className="flex justify-start">
                                     <div className="bg-muted/80 text-foreground border border-border rounded-2xl rounded-tl-none px-4 py-3 text-sm shadow-sm flex items-center gap-2">
                                         <Loader2 className="w-4 h-4 animate-spin text-primary" />
-                                        <span>
-                                            Assistant is writing...
-                                        </span>
+                                        <span>Assistant is writing...</span>
                                     </div>
                                 </div>
                             )}
@@ -239,9 +258,7 @@ export function HelpContent({ contest }) {
                         >
                             <Input
                                 value={aiInput}
-                                onChange={(e) =>
-                                    setAiInput(e.target.value)
-                                }
+                                onChange={(e) => setAiInput(e.target.value)}
                                 placeholder="Ask a question or request a hint..."
                                 disabled={loadingAi}
                                 className="flex-1 bg-background border-border"
