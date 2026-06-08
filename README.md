@@ -26,6 +26,9 @@ Unlike traditional platforms that rely on slow HTTP polling, CodeCode utilizes a
 ![Contest Arena](./assets/contest.png)
 *The Contest Arena featuring the built-in Monaco Editor and real-time Socket.io execution feedback.*
 
+![Inbuilt Docs & AI Assistant](./assets/inbuilt_deco_and_wikipedia.png)
+*Users can take help from an embedded Wikipedia during a contest, and get conceptual help from the AI assistant, such as understanding problem statements (if enabled by the contest creator).*
+
 ![Custom Invocation](./assets/custom_invocation.png)
 *Integrated code runner supporting custom inputs and instant compilation feedback.*
 
