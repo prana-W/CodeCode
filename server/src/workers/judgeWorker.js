@@ -23,11 +23,12 @@ const worker = new Worker(
         await Submission.setVerdict(submissionId, 'running');
 
         try {
-            const {verdict, execution_time_ms} = await runJudge(data);
+            const {verdict, execution_time_ms, memory_used_kb} = await runJudge(data);
             await Submission.setVerdict(
                 submissionId,
                 verdict,
-                execution_time_ms
+                execution_time_ms,
+                memory_used_kb
             );
 
             if (
@@ -43,7 +44,7 @@ const worker = new Worker(
             }
 
             console.log(
-                `Submission ${submissionId}: ${verdict} (${execution_time_ms}ms)`
+                `Submission ${submissionId}: ${verdict} (${execution_time_ms}ms, ${memory_used_kb}KB)`
             );
         } catch (err) {
             console.error(

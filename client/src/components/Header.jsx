@@ -1,6 +1,6 @@
 import {useState, useEffect} from 'react';
 import api from '@/lib/axios';
-import {Link, NavLink, useNavigate} from 'react-router-dom';
+import {Link, NavLink, useNavigate, useLocation} from 'react-router-dom';
 import {Menu, X, LogOut, Sun, Moon} from 'lucide-react';
 import {Button} from '@/components/ui/button';
 import {useAuth} from '@/context/AuthContext';
@@ -11,6 +11,7 @@ import {useTheme} from '@/components/theme-provider';
 export default function Header() {
     const {user, logout} = useAuth();
     const navigate = useNavigate();
+    const location = useLocation();
     const [mobileOpen, setMobileOpen] = useState(false);
     const [onlineCount, setOnlineCount] = useState(null);
     const {theme, setTheme} = useTheme();
@@ -82,6 +83,7 @@ export default function Header() {
     };
 
     const navLinks = getNavLinks();
+    const isProblemView = location.pathname.includes('/problem/');
 
     return (
         <header className="w-full bg-background flex flex-col mb-4">
@@ -190,7 +192,7 @@ export default function Header() {
             </div>
 
             {/* Bottom Row: Navigation Bar (Only for logged-in users) */}
-            {user && (
+            {user && !isProblemView && (
                 <div className="hidden md:block max-w-7xl mx-auto w-full px-4 sm:px-6 pb-2">
                     <nav className="flex flex-wrap items-center gap-x-6 gap-y-2 rounded-md border border-border bg-card px-6 shadow-sm overflow-hidden">
                         {navLinks.map(({to, label, end}) => (

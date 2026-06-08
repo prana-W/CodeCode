@@ -1,11 +1,11 @@
-import {Worker} from 'bullmq';
+import { Worker } from 'bullmq';
 import connection from '../config/redis.js';
-import {runCustomInvocationJudge} from '../services/judge.service.js';
+import { runCustomInvocationJudge } from '../services/judge.service.js';
 
 const worker = new Worker(
     'custom-invocation-queue',
     async (job) => {
-        const {customInvocationId, source_code, language, input_data, time_limit_ms, memory_limit_mb} = job.data;
+        const { customInvocationId, source_code, language, input_data, time_limit_ms, memory_limit_mb } = job.data;
 
         console.log(`[Worker] Started custom invocation ${customInvocationId}`);
 
@@ -28,6 +28,7 @@ const worker = new Worker(
                 verdict: result.verdict,
                 compilationError: result.compilation_error,
                 executionTimeMs: result.execution_time_ms,
+                memoryUsedKb: result.memory_used_kb,
             };
 
             // Add the output/error in redis with a TTL of 2 minutes (120 seconds)
@@ -44,12 +45,13 @@ const worker = new Worker(
                 compilationError: '',
                 error: err.message || 'Execution error',
                 executionTimeMs: 0,
+                memoryUsedKb: 0,
             };
 
             await connection.set(`custom_invocation:${customInvocationId}`, JSON.stringify(val), 'EX', 120);
         }
     },
-    {connection, concurrency: 2}
+    { connection, concurrency: 2 }
 );
 
 console.log('🚀 Custom Invocation Worker is running');

@@ -7,22 +7,9 @@ const PROBLEM_LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
 export default function ContestProblemsTab() {
     const {id} = useParams();
-    const {problems} = useOutletContext();
+    const {problems, solvedIds} = useOutletContext();
     const navigate = useNavigate();
     const [countsMap, setCountsMap] = useState({});
-    const [solvedSet, setSolvedSet] = useState(new Set());
-
-    useEffect(() => {
-        const fetchSolved = async () => {
-            try {
-                const res = await api.get(
-                    `/submissions/solved?contest_id=${id}`
-                );
-                setSolvedSet(new Set(res.data.data || []));
-            } catch (err) {}
-        };
-        fetchSolved();
-    }, [id]);
 
     useEffect(() => {
         const fetchCounts = async () => {
@@ -80,7 +67,7 @@ export default function ContestProblemsTab() {
                     {problems.map((prob, idx) => {
                         const letter = PROBLEM_LETTERS[idx] || idx + 1;
                         const submissions = countsMap[prob.problem_id] || 0;
-                        const isSolved = solvedSet.has(prob.problem_id);
+                        const isSolved = solvedIds.includes(prob.problem_id);
                         return (
                             <tr
                                 key={prob.problem_id}

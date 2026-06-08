@@ -18,18 +18,21 @@ export default function ContestParticipationLayout() {
     const location = useLocation();
     const [contest, setContest] = useState(null);
     const [problems, setProblems] = useState([]);
+    const [solvedIds, setSolvedIds] = useState([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const fetchData = async () => {
             setLoading(true);
             try {
-                const [contestRes, problemsRes] = await Promise.all([
+                const [contestRes, problemsRes, solvedRes] = await Promise.all([
                     api.get(`/contests/${id}`),
                     api.get(`/problems?contest_id=${id}`),
+                    api.get(`/submissions/solved?contest_id=${id}`)
                 ]);
                 setContest(contestRes.data.data);
                 setProblems(problemsRes.data.data || []);
+                setSolvedIds(solvedRes.data.data || []);
             } catch (err) {
                 navigate('/contests');
             } finally {
@@ -72,10 +75,18 @@ export default function ContestParticipationLayout() {
 
     const isProblemView = location.pathname.includes('/problem/');
 
+    if (isProblemView) {
+        return (
+            <div className="flex-1 flex flex-col w-full bg-background min-h-0">
+                <Outlet context={{contest, problems, solvedIds, setSolvedIds}} />
+            </div>
+        );
+    }
+
     return (
         <div className="min-h-screen bg-background flex flex-col">
             <div className="bg-card border-b border-border">
-                <div className={`${isProblemView ? 'max-w-full' : 'max-w-6xl'} mx-auto px-4 sm:px-6 py-6`}>
+                <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6">
                     <Button
                         variant="ghost"
                         size="sm"
@@ -101,7 +112,7 @@ export default function ContestParticipationLayout() {
                     </div>
                 </div>
 
-                <div className={`${isProblemView ? 'max-w-full' : 'max-w-6xl'} mx-auto px-4 sm:px-6`}>
+                <div className="max-w-6xl mx-auto px-4 sm:px-6">
                     <nav className="flex items-center gap-6 overflow-x-auto">
                         {navItems.map((item) => (
                             <NavLink
@@ -123,8 +134,8 @@ export default function ContestParticipationLayout() {
                 </div>
             </div>
 
-            <main className={`flex-1 w-full mx-auto ${isProblemView ? 'max-w-[100rem]' : 'max-w-6xl'} px-4 sm:px-6 py-6 flex flex-col`}>
-                <Outlet context={{contest, problems}} />
+            <main className="flex-1 w-full mx-auto max-w-6xl px-4 sm:px-6 py-6 flex flex-col">
+                <Outlet context={{contest, problems, solvedIds, setSolvedIds}} />
             </main>
             <HelpPanel contest={contest} />
         </div>

@@ -1,6 +1,6 @@
-import {useState, useEffect, useRef} from 'react';
-import {useParams, useNavigate, useOutletContext} from 'react-router-dom';
-import {toast} from 'sonner';
+import { useState, useEffect, useRef } from 'react';
+import { Link, useParams, useNavigate, useOutletContext } from 'react-router-dom';
+import { toast } from 'sonner';
 import {
     Code,
     Clock,
@@ -16,14 +16,15 @@ import {
     GripHorizontal,
     Code2,
     FileCode2,
-    ListChecks
+    ListChecks,
+    CheckCircle2
 } from 'lucide-react';
-import {Button} from '@/components/ui/button';
+import { Button } from '@/components/ui/button';
 import api from '@/lib/axios';
 import MDEditor from '@uiw/react-md-editor';
 import Editor from '@monaco-editor/react';
-import {useTheme} from '@/components/theme-provider';
-import {getVerdictDetails} from '@/constants/verdicts';
+import { useTheme } from '@/components/theme-provider';
+import { getVerdictDetails } from '@/constants/verdicts';
 
 const VALID_LANGUAGES = ['cpp', 'c', 'java', 'python', 'javascript'];
 const LANG_LABEL = {
@@ -35,24 +36,25 @@ const LANG_LABEL = {
 };
 
 export default function ContestProblemView() {
-    const {id, problemId} = useParams();
+    const { id, problemId } = useParams();
     const navigate = useNavigate();
-    const {contest} = useOutletContext();
+    const { contest, solvedIds, setSolvedIds } = useOutletContext();
     const [problem, setProblem] = useState(null);
     const [loading, setLoading] = useState(true);
-    
+
     // UI Split Pane states
     const [leftWidth, setLeftWidth] = useState(50);
     const [isPanelOpen, setIsPanelOpen] = useState(true);
     const [panelHeight, setPanelHeight] = useState(250);
     const [activeTab, setActiveTab] = useState('testcase'); // 'testcase' or 'result'
+    const [isResizing, setIsResizing] = useState(false);
 
     // Editor states
     const [sourceCode, setSourceCode] = useState('');
     const [language, setLanguage] = useState('cpp');
     const [templates, setTemplates] = useState([]);
     const [selectedTemplate, setSelectedTemplate] = useState('none');
-    const {theme} = useTheme();
+    const { theme } = useTheme();
     const editorTheme = theme === 'dark' ? 'vs-dark' : 'light';
     const editorRef = useRef(null);
 
@@ -73,10 +75,10 @@ export default function ContestProblemView() {
                     api.get(`/problems/${problemId}`),
                     api.get('/user-templates')
                 ]);
-                
+
                 const fetchedProblem = probRes.data.data;
                 setProblem(fetchedProblem);
-                
+
                 // Pre-populate sample input
                 if (fetchedProblem.sample_test_cases?.length > 0) {
                     setCustomInput(fetchedProblem.sample_test_cases[0].input_data || '');
@@ -136,6 +138,7 @@ export default function ContestProblemView() {
 
     const startHorizontalResizing = (e) => {
         e.preventDefault();
+        setIsResizing('horizontal');
         const handleMouseMove = (e) => {
             const newLeftWidth = (e.clientX / window.innerWidth) * 100;
             setLeftWidth(Math.max(20, Math.min(newLeftWidth, 80)));
@@ -145,6 +148,7 @@ export default function ContestProblemView() {
             document.removeEventListener('mouseup', handleMouseUp);
             document.body.style.cursor = 'default';
             document.body.style.userSelect = 'auto';
+            setIsResizing(false);
         };
         document.addEventListener('mousemove', handleMouseMove);
         document.addEventListener('mouseup', handleMouseUp);
@@ -154,6 +158,7 @@ export default function ContestProblemView() {
 
     const startVerticalResizing = (e) => {
         e.preventDefault();
+        setIsResizing('vertical');
         const startY = e.clientY;
         const startHeight = panelHeight;
         const handleMouseMove = (e) => {
@@ -165,6 +170,7 @@ export default function ContestProblemView() {
             document.removeEventListener('mouseup', handleMouseUp);
             document.body.style.cursor = 'default';
             document.body.style.userSelect = 'auto';
+            setIsResizing(false);
         };
         document.addEventListener('mousemove', handleMouseMove);
         document.addEventListener('mouseup', handleMouseUp);
@@ -215,15 +221,55 @@ export default function ContestProblemView() {
         const interval = setInterval(async () => {
             try {
                 const res = await api.get(`/custom-invocation/status/${invocationId}`);
-                if (res.data.data.status === 'completed') {
+                if (res.data.status === 'completed') {
                     clearInterval(interval);
                     setIsRunning(false);
                     setOutputData(res.data.data);
                 }
             } catch (error) {
+                if (error.response?.status === 404) {
+                    clearInterval(interval);
+                    setIsRunning(false);
+                    toast.error('Execution expired or not found');
+                }
+            }
+        }, 2000);
+    };
+
+    const pollSubmission = async (submissionId) => {
+        const interval = setInterval(async () => {
+            try {
+                const res = await api.get(`/submissions/${submissionId}`);
+                const verdict = res.data.data.verdict;
+
+                if (verdict !== 'pending' && verdict !== 'running') {
+                    clearInterval(interval);
+                    setIsSubmitting(false);
+
+                    const vDetails = getVerdictDetails(verdict);
+                    const desc = `Time: ${res.data.data.execution_time_ms}ms | Memory: ${res.data.data.memory_used_kb}KB`;
+
+                    if (verdict === 'accepted') {
+                        toast.success(vDetails.label, { description: desc });
+                    } else if (verdict === 'wrong_answer' || verdict === 'compilation_error' || verdict === 'runtime_error') {
+                        toast.error(vDetails.label, { description: desc });
+                    } else {
+                        toast.warning(vDetails.label, { description: desc });
+                    }
+
+                    if (verdict === 'accepted') {
+                        setSolvedIds(prev => {
+                            if (!prev.includes(Number(problemId))) {
+                                return [...prev, Number(problemId)];
+                            }
+                            return prev;
+                        });
+                    }
+                }
+            } catch (error) {
                 clearInterval(interval);
-                setIsRunning(false);
-                toast.error('Error fetching execution results');
+                setIsSubmitting(false);
+                toast.error('Error fetching submission verdict');
             }
         }, 3000);
     };
@@ -234,13 +280,13 @@ export default function ContestProblemView() {
         }
         setIsSubmitting(true);
         try {
-            await api.post('/submissions', {
+            const res = await api.post('/submissions', {
                 problem_id: problemId,
                 language,
                 source_code: sourceCode
             });
-            toast.success("Code submitted successfully!");
-            navigate(`/contest/${id}/submissions`);
+            const submissionId = res.data.data.submission_id;
+            pollSubmission(submissionId);
         } catch (error) {
             toast.error(error.response?.data?.message || 'Failed to submit code.');
             setIsSubmitting(false);
@@ -258,30 +304,46 @@ export default function ContestProblemView() {
     if (!problem) return null;
 
     return (
-        <div className="flex flex-col h-[calc(100vh-140px)] w-full border border-border rounded-xl overflow-hidden bg-card shadow-sm animate-in fade-in duration-500">
+        <div className="flex-1 flex flex-col w-full overflow-hidden bg-card animate-in fade-in duration-500 min-h-0 border-t border-border">
             {/* Header bar */}
             <div className="h-12 bg-muted/40 border-b border-border flex items-center px-4 justify-between shrink-0">
-                <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => navigate(`/contest/${id}/problems`)}
-                    className="gap-1.5 -ml-2 text-xs font-semibold text-muted-foreground hover:text-foreground"
-                >
-                    <ChevronLeft className="w-4 h-4" /> Back
-                </Button>
+                <div className="flex items-center">
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        className="gap-1.5 -ml-2 text-xs font-semibold text-muted-foreground hover:text-foreground"
+                        asChild
+                    >
+                        <Link to={`/contest/${id}/problems`}>
+                            <ChevronLeft className="w-4 h-4" /> Back
+                        </Link>
+                    </Button>
+                    <div className="flex items-center ml-2 border-l border-border pl-2">
+                        <Button variant="ghost" size="sm" className="text-xs font-medium text-muted-foreground hover:text-foreground" asChild>
+                            <Link to={`/contest/${id}/problems`}>Problems</Link>
+                        </Button>
+                        <Button variant="ghost" size="sm" className="text-xs font-medium text-muted-foreground hover:text-foreground" asChild>
+                            <Link to={`/contest/${id}/submissions`}>Submissions</Link>
+                        </Button>
+                        <Button variant="ghost" size="sm" className="text-xs font-medium text-muted-foreground hover:text-foreground" asChild>
+                            <Link to={`/contest/${id}/leaderboard`}>Leaderboard</Link>
+                        </Button>
+                    </div>
+                </div>
                 <div className="flex items-center gap-4 text-sm font-semibold tracking-wide">
-                    <span className="flex items-center gap-1.5 text-muted-foreground"><Clock className="w-4 h-4"/>{problem.time_limit_ms}ms</span>
-                    <span className="flex items-center gap-1.5 text-muted-foreground"><Database className="w-4 h-4"/>{problem.memory_limit_mb}MB</span>
+                    <span className="flex items-center gap-1.5 text-muted-foreground"><Clock className="w-4 h-4" />{problem.time_limit_ms}ms</span>
+                    <span className="flex items-center gap-1.5 text-muted-foreground"><Database className="w-4 h-4" />{problem.memory_limit_mb}MB</span>
                     <span className="text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded text-xs">{problem.score} pts</span>
                 </div>
             </div>
 
             {/* Split View Container */}
-            <div className="flex-1 flex overflow-hidden">
+            <div className="flex-1 flex overflow-hidden min-h-0">
                 {/* LEFT PANE: Problem Statement */}
                 <div style={{ width: `${leftWidth}%` }} className="h-full overflow-y-auto custom-scrollbar p-6">
-                    <h1 className="text-2xl font-serif font-semibold text-foreground mb-6">
+                    <h1 className="text-2xl font-serif font-semibold text-foreground mb-6 flex items-center gap-3">
                         {problem.title}
+                        {solvedIds && solvedIds.includes(Number(problemId)) && <CheckCircle2 className="w-6 h-6 text-emerald-500" />}
                     </h1>
                     <div className="prose prose-slate dark:prose-invert max-w-none prose-headings:font-bold prose-a:text-primary mb-12">
                         <MDEditor.Markdown source={problem.statement} />
@@ -297,7 +359,7 @@ export default function ContestProblemView() {
                 </div>
 
                 {/* HORIZONTAL RESIZER */}
-                <div 
+                <div
                     className="w-1.5 bg-border hover:bg-primary/50 cursor-col-resize transition-colors shrink-0 flex items-center justify-center z-10"
                     onMouseDown={startHorizontalResizing}
                 >
@@ -305,7 +367,7 @@ export default function ContestProblemView() {
                 </div>
 
                 {/* RIGHT PANE: Editor & Terminal */}
-                <div style={{ width: `${100 - leftWidth}%` }} className="h-full flex flex-col min-w-[300px]">
+                <div style={{ width: `${100 - leftWidth}%` }} className="h-full flex flex-col min-w-[300px] min-h-0">
                     {/* Editor Toolbar */}
                     <div className="h-10 border-b border-border bg-muted/20 flex items-center px-4 justify-between shrink-0">
                         <div className="flex items-center gap-3">
@@ -317,7 +379,7 @@ export default function ContestProblemView() {
                             >
                                 {VALID_LANGUAGES.map(lang => (
                                     <option key={lang} value={lang} className="bg-background">{LANG_LABEL[lang]}</option>
-                                )) }
+                                ))}
                             </select>
                         </div>
                         <div className="flex items-center gap-2">
@@ -338,7 +400,8 @@ export default function ContestProblemView() {
                     </div>
 
                     {/* Monaco Editor */}
-                    <div className="flex-1 relative bg-background" onPaste={handlePaste} onCopyCapture={(e) => {}}>
+                    <div className="flex-1 relative bg-background min-h-0" onPaste={handlePaste} onCopyCapture={(e) => { }}>
+                        {isResizing && <div className={`absolute inset-0 z-50 ${isResizing === 'horizontal' ? 'cursor-col-resize' : 'cursor-row-resize'}`} />}
                         <Editor
                             height="100%"
                             language={language === 'cpp' ? 'cpp' : language === 'javascript' ? 'javascript' : language === 'python' ? 'python' : language === 'java' ? 'java' : 'c'}
@@ -355,13 +418,13 @@ export default function ContestProblemView() {
                                 padding: { top: 12 },
                                 contextmenu: false // Disable right-click to heavily enforce internal paste only
                             }}
-                            loading={<div className="flex h-full items-center justify-center"><Loader2 className="w-5 h-5 animate-spin text-muted-foreground"/></div>}
+                            loading={<div className="flex h-full items-center justify-center"><Loader2 className="w-5 h-5 animate-spin text-muted-foreground" /></div>}
                         />
                     </div>
 
                     {/* VERTICAL RESIZER (If panel open) */}
                     {isPanelOpen && (
-                        <div 
+                        <div
                             className="h-1.5 bg-border hover:bg-primary/50 cursor-row-resize transition-colors shrink-0 flex items-center justify-center z-10"
                             onMouseDown={startVerticalResizing}
                         >
@@ -374,13 +437,13 @@ export default function ContestProblemView() {
                         {/* Console Header Tabs */}
                         <div className="h-11 flex items-center justify-between px-2 bg-muted/10 shrink-0">
                             <div className="flex items-center h-full">
-                                <button 
+                                <button
                                     onClick={() => { setIsPanelOpen(true); setActiveTab('testcase'); }}
                                     className={`px-4 h-full text-xs font-semibold uppercase tracking-wider flex items-center border-b-2 transition-colors ${isPanelOpen && activeTab === 'testcase' ? 'border-primary text-primary bg-primary/5' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
                                 >
                                     Testcase
                                 </button>
-                                <button 
+                                <button
                                     onClick={() => { setIsPanelOpen(true); setActiveTab('result'); }}
                                     className={`px-4 h-full text-xs font-semibold uppercase tracking-wider flex items-center border-b-2 transition-colors ${isPanelOpen && activeTab === 'result' ? 'border-primary text-primary bg-primary/5' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
                                 >
@@ -388,7 +451,7 @@ export default function ContestProblemView() {
                                 </button>
                             </div>
                             <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground" onClick={() => setIsPanelOpen(!isPanelOpen)}>
-                                {isPanelOpen ? <ChevronDown className="w-4 h-4"/> : <ChevronUp className="w-4 h-4"/>}
+                                {isPanelOpen ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
                             </Button>
                         </div>
 
@@ -427,14 +490,17 @@ export default function ContestProblemView() {
                                                         const v = getVerdictDetails(outputData.verdict);
                                                         return <span className={`px-3 py-1 rounded-md text-sm ${v.colorClass}`}>{v.label}</span>;
                                                     })()}
-                                                    {outputData.execution_time_ms !== undefined && (
-                                                        <span className="text-sm font-mono text-muted-foreground flex items-center gap-1.5"><Clock className="w-3.5 h-3.5"/> {outputData.execution_time_ms} ms</span>
+                                                    {outputData.executionTimeMs !== undefined && (
+                                                        <span className="text-sm font-mono text-muted-foreground flex items-center gap-1.5"><Clock className="w-3.5 h-3.5" /> {outputData.executionTimeMs} ms</span>
+                                                    )}
+                                                    {outputData.memoryUsedKb !== undefined && (
+                                                        <span className="text-sm font-mono text-muted-foreground flex items-center gap-1.5"><Database className="w-3.5 h-3.5" /> {outputData.memoryUsedKb} KB</span>
                                                     )}
                                                 </div>
                                                 <div className="flex-1">
                                                     <div className="text-xs font-semibold text-muted-foreground mb-1.5 uppercase tracking-wider">Output / Error</div>
                                                     <pre className="bg-black/5 dark:bg-black/40 border border-border p-3 rounded-md text-sm font-mono text-foreground whitespace-pre-wrap min-h-[80px]">
-                                                        {outputData.error_message || outputData.stdout || "Execution completed without output."}
+                                                        {outputData.compilationError || outputData.error || outputData.output || "Execution completed without output."}
                                                     </pre>
                                                 </div>
                                             </>
@@ -444,24 +510,24 @@ export default function ContestProblemView() {
                             </div>
                         )}
                     </div>
-                    
+
                     {/* Execution Actions (Footer) */}
                     <div className="h-14 border-t border-border bg-muted/20 flex items-center justify-end px-4 gap-3 shrink-0">
-                        <Button 
-                            variant="secondary" 
-                            className="gap-2 w-32" 
+                        <Button
+                            variant="secondary"
+                            className="gap-2 w-32"
                             onClick={handleRunCode}
                             disabled={isRunning || isSubmitting}
                         >
-                            {isRunning ? <Loader2 className="w-4 h-4 animate-spin"/> : <Play className="w-4 h-4"/>}
+                            {isRunning ? <Loader2 className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4" />}
                             Run Code
                         </Button>
-                        <Button 
-                            className="gap-2 w-32 bg-emerald-600 hover:bg-emerald-700 text-white" 
+                        <Button
+                            className="gap-2 w-32 bg-emerald-600 hover:bg-emerald-700 text-white"
                             onClick={handleSubmitCode}
                             disabled={isRunning || isSubmitting}
                         >
-                            {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin"/> : <Send className="w-4 h-4"/>}
+                            {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
                             Submit
                         </Button>
                     </div>

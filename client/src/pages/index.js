@@ -14,7 +14,6 @@ import EvaluateContestsPage from './admin/EvaluateContestsPage.jsx';
 import ContestParticipationLayout from './participation/ContestParticipationLayout.jsx';
 import ContestProblemsTab from './participation/ContestProblemsTab.jsx';
 import ContestProblemView from './participation/ContestProblemView.jsx';
-import ContestSubmitTab from './participation/ContestSubmitTab.jsx';
 import ContestSubmissionsTab from './participation/ContestSubmissionsTab.jsx';
 import ContestLeaderboardTab from './participation/ContestLeaderboardTab.jsx';
 
@@ -46,7 +45,6 @@ export {
     ContestParticipationLayout,
     ContestProblemsTab,
     ContestProblemView,
-    ContestSubmitTab,
     ContestSubmissionsTab,
     ContestLeaderboardTab,
     CustomInvocationPage,
