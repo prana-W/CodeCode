@@ -66,13 +66,28 @@ export default function AboutUs() {
                         />
                         <FeatureCard
                             icon={Bot}
-                            title="AI Coding Assistant"
-                            desc="Integrated completely offline AI assistant powered by local Ollama instances to help users debug logic without writing code for them."
+                            title="AI Powered Assistance"
+                            desc="Integrated AI assistant powered by the Gemini API to provide conceptual hints, automatically generate edge-case test cases, and refine problem statements."
                         />
                         <FeatureCard
                             icon={Database}
                             title="ACID Transactions"
                             desc="Critical operations like contest evaluation and rating deltas are wrapped in strict MySQL transactions preventing partial state updates."
+                        />
+                        <FeatureCard
+                            icon={ShieldCheck}
+                            title="Advanced Anti-Cheat"
+                            desc="Integrated Monaco editor equipped with clipboard event tracking to block external code pastes, alongside automatic lock-outs for user-defined code templates during active contests."
+                        />
+                        <FeatureCard
+                            icon={Server}
+                            title="Real-Time Tracking"
+                            desc="WebSocket integration automatically tracks and broadcasts the exact number of live online users actively participating on the platform."
+                        />
+                        <FeatureCard
+                            icon={Code2}
+                            title="User Boilerplates"
+                            desc="Manage custom language templates allowing quick scaffolding when solving complex algorithms, automatically disabled during live competitions."
                         />
                     </div>
                 </div>
@@ -111,8 +126,8 @@ export default function AboutUs() {
                                         desc="Isolated compilation and process-limited execution."
                                     />
                                     <TechItem
-                                        name="Ollama"
-                                        desc="Local LLM bridging for the AI assistant feature."
+                                        name="Google Gemini API"
+                                        desc="Cloud LLM integration for intelligent contest design features."
                                     />
                                     <TechItem
                                         name="Swagger UI"

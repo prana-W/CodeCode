@@ -131,14 +131,26 @@ export default function UserProfile() {
 
                 <Card className="border-border overflow-hidden">
                     <div className="bg-muted/30 p-6 border-b border-border flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6 text-center sm:text-left">
-                        <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                            <UserIcon className="w-10 h-10 text-primary" />
+                        <div
+                            className={`w-20 h-20 rounded-full flex items-center justify-center shrink-0 ${profile.role === 'admin' ? 'bg-[#B8860B]/10 dark:bg-[#FFD700]/10 border border-[#B8860B]/20 dark:border-[#FFD700]/20 shadow-sm dark:shadow-[0_0_15px_rgba(255,215,0,0.15)]' : 'bg-primary/10'}`}
+                        >
+                            <UserIcon
+                                className={`w-10 h-10 ${profile.role === 'admin' ? 'text-[#B8860B] dark:text-[#FFD700] drop-shadow-sm dark:drop-shadow-[0_0_8px_rgba(255,215,0,0.8)]' : 'text-primary'}`}
+                            />
                         </div>
                         <div className="flex-1 space-y-1.5">
                             <div className="flex flex-col sm:flex-row sm:items-center gap-2 justify-center sm:justify-start">
-                                <h2 className="text-xl font-bold text-foreground">
+                                <h2
+                                    className={`text-xl font-bold ${profile.role === 'admin' ? 'text-[#B8860B] dark:text-[#FFD700] drop-shadow-sm dark:drop-shadow-[0_0_8px_rgba(255,215,0,0.8)]' : 'text-foreground'}`}
+                                >
                                     {profile.name}
                                 </h2>
+                                {profile.role === 'admin' && (
+                                    <span className="inline-flex items-center self-center gap-1 text-[11px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-[#B8860B]/10 dark:bg-[#FFD700]/10 text-[#B8860B] dark:text-[#FFD700] border border-[#B8860B]/30 dark:border-[#FFD700]/30 shadow-sm dark:shadow-[0_0_10px_rgba(255,215,0,0.2)]">
+                                        <Shield className="w-3 h-3" />
+                                        Administrator
+                                    </span>
+                                )}
                                 <span
                                     className={`inline-flex items-center self-center gap-1 text-[11px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-background border border-border ${rank.colorClass}`}
                                 >
@@ -146,8 +158,12 @@ export default function UserProfile() {
                                 </span>
                             </div>
                             <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2.5">
-                                <p className="text-sm text-muted-foreground flex items-center gap-1 font-medium">
-                                    <AtSign className="w-4 h-4 text-muted-foreground/60" />
+                                <p
+                                    className={`text-sm flex items-center gap-1 font-medium ${profile.role === 'admin' ? 'text-[#B8860B]/90 dark:text-[#FFD700]/90 drop-shadow-sm dark:drop-shadow-[0_0_5px_rgba(255,215,0,0.5)]' : 'text-muted-foreground'}`}
+                                >
+                                    <AtSign
+                                        className={`w-4 h-4 ${profile.role === 'admin' ? 'text-[#B8860B]/80 dark:text-[#FFD700]/80' : 'text-muted-foreground/60'}`}
+                                    />
                                     {profile.username}
                                 </p>
                                 <span
@@ -202,8 +218,8 @@ export default function UserProfile() {
                                     <span className="text-xs text-muted-foreground font-semibold">
                                         Role
                                     </span>
-                                    <span className="text-sm text-foreground flex items-center gap-2 font-medium">
-                                        <Shield className="w-4 h-4 text-muted-foreground/50" />
+                                    <span className="text-sm text-[#B8860B] dark:text-[#FFD700] drop-shadow-sm dark:drop-shadow-[0_0_8px_rgba(255,215,0,0.8)] flex items-center gap-2 font-bold">
+                                        <Shield className="w-4 h-4 text-[#B8860B]/80 dark:text-[#FFD700]/80" />
                                         <span className="capitalize">
                                             {profile.role}
                                         </span>

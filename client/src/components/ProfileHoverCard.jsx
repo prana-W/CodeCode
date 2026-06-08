@@ -38,6 +38,10 @@ export default function ProfileHoverCard({user}) {
     // We get the color based on the actual fetched profile rating if available, else standard color
     const rank = getRankDetails(profile?.rating);
 
+    const isAdmin = profile ? profile.role === 'admin' : user.role === 'admin';
+    const adminGoldenClass =
+        'text-[#B8860B] dark:text-[#FFD700] drop-shadow-sm dark:drop-shadow-[0_0_8px_rgba(255,215,0,0.8)]';
+
     return (
         <HoverCard
             open={open}
@@ -48,7 +52,7 @@ export default function ProfileHoverCard({user}) {
             <HoverCardTrigger asChild>
                 <Link
                     to={`/user-profile/${user.username}`}
-                    className={`font-medium transition-colors hover:underline underline-offset-4 ${profile ? rank.colorClass : 'text-foreground'}`}
+                    className={`font-medium transition-colors hover:underline underline-offset-4 ${isAdmin ? adminGoldenClass : profile ? rank.colorClass : 'text-foreground'}`}
                 >
                     {displayName}
                 </Link>
@@ -68,7 +72,7 @@ export default function ProfileHoverCard({user}) {
                                 </div>
                                 <div className="flex flex-col">
                                     <h4
-                                        className={`text-lg font-bold leading-none mb-1 ${rank.colorClass}`}
+                                        className={`text-lg font-bold leading-none mb-1 ${isAdmin ? adminGoldenClass : rank.colorClass}`}
                                     >
                                         {profile.name}
                                     </h4>
@@ -93,11 +97,20 @@ export default function ProfileHoverCard({user}) {
                                                 : 'offline'}
                                         </span>
                                     </div>
-                                    <span
-                                        className={`text-xs font-semibold uppercase tracking-wider mt-1.5 ${rank.colorClass}`}
-                                    >
-                                        {rank.title}
-                                    </span>
+                                    <div className="flex items-center gap-2 mt-1.5">
+                                        {isAdmin && (
+                                            <span
+                                                className={`text-xs font-semibold uppercase tracking-wider ${adminGoldenClass}`}
+                                            >
+                                                Administrator
+                                            </span>
+                                        )}
+                                        <span
+                                            className={`text-xs font-semibold uppercase tracking-wider ${rank.colorClass}`}
+                                        >
+                                            {rank.title}
+                                        </span>
+                                    </div>
                                 </div>
                             </div>
                         </div>

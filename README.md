@@ -3,8 +3,8 @@
 ![Home Page](./assets/home.png)
 *A sleek, high-performance competitive programming platform built for algorithmic contests and continuous learning.*
 
-[![Watch Demo Video Here](https://img.youtube.com/vi/YOUR_VIDEO_ID/0.jpg)](https://youtube.com/watch?v=YOUR_VIDEO_ID)
-*(Replace YOUR_VIDEO_ID with the actual YouTube link once recorded)*
+[![Watch Demo Video Here]()
+*(Will be added soon!)*
 
 ---
 
@@ -19,7 +19,7 @@ Unlike traditional platforms that rely on slow HTTP polling, CodeCode utilizes a
 - **Online Judge**: Isolated, network-disabled Docker containers safely evaluate C, C++, Java, Python, and JavaScript code. Compilation and execution are decoupled to prevent memory limit bugs.
 - **Anti-Cheat & Inbuilt IDE**: An integrated Monaco editor with strict anti-cheat measures. During live contests, copying the problem statement is disabled, and the editor tracks internal clipboard events to strictly block any external code pastes. Users can manage their own language templates, which are locked during active contests.
 - **Elo Rating System**: Post-contest, the platform automatically recalculates participant ratings using a zero-sum, transaction-safe Elo algorithm.
-- **AI Coding Assistant**: Powered by a local Ollama instance, users can ask a rate-limited AI mentor for conceptual hints and problem explanations (strictly barred from generating actual code).
+- **AI Coding Assistant & Contest Design**: Powered by the Google Gemini API, users can ask an AI mentor for conceptual hints (strictly barred from generating actual code). For authors, the AI automatically refines problem statements and generates edge-case test cases during contest creation.
 - **User Analytics**: Detailed profile pages featuring rating trajectory graphs and GitHub-style submission heatmaps.
 - **Real-Time Tracking**: Websockets automatically track and broadcast the exact number of live online users on the platform.
 
@@ -45,7 +45,7 @@ CodeCode is built as a highly decoupled Monorepo, split into a React Frontend an
 - **Job Queue**: BullMQ + Redis (ioredis) for asynchronous code execution queues.
 - **Real-Time**: Socket.IO + Redis Pub/Sub integration.
 - **Execution Engine**: Docker (`child_process.execFile` interacting with `gcc`, `python`, `node`, `openjdk` images)
-- **AI Integration**: Ollama (Local LLM)
+- **AI Integration**: Google Gemini API (Cloud LLM)
 - **Security**: JWT (`httpOnly` cookies), `bcrypt`, `express-rate-limit`
 
 ---

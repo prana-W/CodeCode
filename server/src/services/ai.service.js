@@ -109,6 +109,7 @@ export const generateExternalStream = async (userPrompt, intent, res) => {
             contents: userPrompt,
             config: {
                 systemInstruction: systemPrompt,
+                maxOutputTokens: 600,
             },
         });
 
