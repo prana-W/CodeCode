@@ -1021,15 +1021,6 @@ const swaggerDefinition = {
                 },
             },
         },
-        '/users/heartbeat': {
-            post: {
-                tags: ['Users'],
-                summary: 'User heartbeat for online status',
-                responses: {
-                    200: {description: 'Heartbeat acknowledged'},
-                },
-            },
-        },
         '/users/rankings': {
             get: {
                 tags: ['Users'],

@@ -52,10 +52,22 @@ A high-performance, production-grade backend for a competitive programming platf
 - Contest **divisions** (1–5) and time windows are validated at the DB constraint level (`CHECK` constraint), not just application level.
 - Registration is open for **30 minutes after the contest starts** and then automatically locked.
 
+### Code Editor & User Templates
+
+- **Inbuilt Code Editor**: External pasting is blocked. Users must select a template and write code internally.
+- **User Templates**: Users can create, edit, and set default boilerplate code per language. Templates are locked from editing during an active contest to prevent pasting pre-written solutions.
+- **Custom Invocations**: Users can run code against their own custom input. Handled by a dedicated BullMQ queue (`customInvocationWorker`) which pipes stdin to the execution container.
+
+### Advanced Analytics
+
+- **Activity Heatmap**: Submissions are aggregated daily over the current year to render a GitHub-style contribution graph.
+- **Rating Graph**: Leverages historical `contest_registrations` data to plot a participant's Elo rating trajectory over time.
+
 ### Online Judge
 
 - Supports **5 languages**: C, C++, Java, Python, JavaScript.
-- Each submission runs inside a Docker container with:
+- **Decoupled Compilation & Execution**: Compilation runs in a fixed 512MB container, while execution runs in a separate container strictly bound by the problem's memory limit. This prevents language-heavy compilers (like C++ `#include <bits/stdc++.h>`) from artificially causing Memory Limit Exceeded errors.
+- Each code execution runs inside a Docker container with:
     - `--network=none` — zero internet access.
     - `--memory` / `--memory-swap` hard caps — OOM kills map to `memory_limit_exceeded`.
     - `--cpus=1` — predictable single-core execution.
@@ -65,11 +77,12 @@ A high-performance, production-grade backend for a competitive programming platf
 - Sandbox directories are always cleaned up in a `finally` block, even if the judge crashes.
 - **`concurrency: 2`** in the BullMQ worker — two submissions can be evaluated in parallel without blocking the HTTP server at all.
 
-### Asynchronous Queue (BullMQ + Redis)
+### Asynchronous Queue & Real-Time WebSockets (Pub/Sub)
 
-- Submission creation returns `201 Created` **instantly** — the client never waits for judge execution.
+- Submission and custom invocation creation return `201 Created` / `200 OK` **instantly** — the client never waits for execution.
+- **Zero Polling**: WebSockets (Socket.IO) completely replace HTTP polling. When a background worker finishes evaluating code, it publishes the verdict to a Redis `socket_updates` channel. The main API server subscribes to this channel and emits the payload directly to the specific user's private socket room.
 - Redis persists the job queue across server restarts; no submission is ever silently dropped.
-- The judge worker runs as a completely **separate process** (`nodemon -r dotenv/config src/workers/judgeWorker.js`) — a crashing worker cannot take down the API server.
+- Workers run as completely **separate processes** (e.g., `judgeWorker.js` and `customInvocationWorker.js`) — a crashing worker cannot take down the API server.
 
 ### Contest Standings & Leaderboard
 
@@ -104,7 +117,8 @@ After a contest ends, ratings are updated using a multi-step algorithm:
 ### Live Online Users Tracking
 
 - Tracks active sessions using Redis-backed transient keys with a **45-second TTL**.
-- Periodic heartbeats sent by the client every **30 seconds** refresh the user's active status.
+- Periodic heartbeats sent by the client refresh the user's active status.
+- Manual polling for live user counts has been removed in favor of real-time architectural improvements.
 - Uses a fast, non-blocking Redis `SCAN` to compute the total count of active sessions.
 - Injects a real-time `isOnline` status flag into user profiles and profile hover cards.
 

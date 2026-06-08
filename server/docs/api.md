@@ -592,6 +592,29 @@ _Note: All endpoints require authentication._
 - **Error Cases**:
     - `400` — `contest_id` missing
 
+### 0c. Run Against Sample Testcases
+
+- **Method**: `POST`
+- **Route**: `/run-sample`
+- **Access**: Authenticated users.
+- **Request Body**:
+    ```json
+    {
+        "problem_id": 1,
+        "language": "cpp",
+        "source_code": "#include <iostream> ..."
+    }
+    ```
+- **Success Response (200 OK)**:
+    ```json
+    {
+        "statusCode": 200,
+        "success": true,
+        "message": "Sample code executed successfully.",
+        "data": { }
+    }
+    ```
+
 ### 1. Create Submission
 
 - **Method**: `POST`
@@ -887,18 +910,53 @@ _Note: All endpoints require authentication._
     }
     ```
 
+### 5. Get User Rankings
+
+- **Method**: `GET`
+- **Route**: `/rankings?institute=MIT&sortBy=rating`
+- **Access**: Authenticated users.
+- **Success Response (200 OK)**:
+    ```json
+    {
+        "statusCode": 200,
+        "success": true,
+        "message": "Rankings fetched successfully.",
+        "data": [ ]
+    }
+    ```
+
+### 6. Get User by Username
+
+- **Method**: `GET`
+- **Route**: `/username/:username`
+- **Access**: Authenticated users.
+- **Success Response (200 OK)**: User profile data.
+
+### 7. Get Contest History
+
+- **Method**: `GET`
+- **Route**: `/username/:username/contest-history`
+- **Access**: Authenticated users.
+- **Success Response (200 OK)**: List of user's past contests.
+
+### 8. Get Activity Stats (Heatmap)
+
+- **Method**: `GET`
+- **Route**: `/username/:username/activity-stats?year=2026`
+- **Access**: Authenticated users.
+- **Success Response (200 OK)**: Map of date strings to submission counts.
+
 ---
 
 ## AI Endpoints (`/api/v1/ai`)
 
 _Note: All endpoints require authentication._
 
-### 1. Ask AI Assistant
+### 1. Ask Deco Assistant (Local AI)
 
 - **Method**: `POST`
-- **Route**: `/ask`
+- **Route**: `/deco`
 - **Access**: Authenticated users. Limited to 5 requests per 10 minutes.
-- **Description**: Asks the local AI assistant a question. The assistant is configured as a coding mentor to provide hints and definitions, but never code.
 - **Request Body**:
     ```json
     {
@@ -906,19 +964,172 @@ _Note: All endpoints require authentication._
     }
     ```
 - **Success Response (200 OK)**:
-
     ```json
     {
         "statusCode": 200,
         "success": true,
         "message": "AI response generated successfully.",
+        "data": { "hint": "..." }
+    }
+    ```
+
+### 2. Ask External Assistant (Gemini)
+
+- **Method**: `POST`
+- **Route**: `/external`
+- **Access**: Authenticated users. Limited to 5 requests per 10 minutes.
+- **Request Body**:
+    ```json
+    {
+        "prompt": "Fix this code.",
+        "intent": "problem_statement_refining"
+    }
+    ```
+- **Success Response (200 OK)**:
+    ```json
+    {
+        "statusCode": 200,
+        "success": true,
+        "message": "External AI response generated successfully.",
+        "data": { "response": "..." }
+    }
+    ```
+
+### 3. Ask External Assistant Stream (Gemini)
+
+- **Method**: `POST`
+- **Route**: `/external/stream`
+- **Access**: Authenticated users. Limited to 5 requests per 10 minutes.
+- **Request Body**:
+    ```json
+    {
+        "prompt": "Give testcases for this problem.",
+        "intent": "testcase_generation"
+    }
+    ```
+- **Success Response (200 OK)**: SSE Stream of events.
+
+---
+
+## Statistics Endpoints (`/api/v1/statistics`)
+
+### 1. Get Platform Statistics
+
+- **Method**: `GET`
+- **Route**: `/`
+- **Access**: Public.
+- **Success Response (200 OK)**:
+    ```json
+    {
+        "statusCode": 200,
+        "success": true,
+        "message": "Statistics fetched successfully",
         "data": {
-            "hint": "To find the longest palindromic substring, you can use the 'expand around center' approach. This involves iterating through the string and expanding outward from each character (and between each pair of characters) to check for palindromes. By keeping track of the longest palindrome found during these expansions, you can identify the final answer."
+            "totalUsers": 100,
+            "totalContests": 10,
+            "totalProblems": 50,
+            "totalSubmissions": 1000,
+            "upcomingContests": []
         }
     }
     ```
 
-- **Error Cases**:
-    - `400` — Prompt is required and must be a non-empty string.
-    - `429` — You have reached your AI assistant limit.
-    - `500` — Failed to communicate with the AI assistant (Ollama offline).
+---
+
+## Custom Invocation Endpoints (`/api/v1/custom-invocation`)
+
+_Note: All endpoints require authentication._
+
+### 1. Run Custom Invocation
+
+- **Method**: `POST`
+- **Route**: `/`
+- **Request Body**:
+    ```json
+    {
+        "source_code": "...",
+        "language": "cpp",
+        "input_data": "1 2"
+    }
+    ```
+- **Success Response (200 OK)**:
+    ```json
+    {
+        "success": true,
+        "customInvocationId": "uuid-..."
+    }
+    ```
+
+### 2. Get Custom Invocation Status
+
+- **Method**: `GET`
+- **Route**: `/status/:customInvocationId`
+- **Success Response (200 OK)**:
+    ```json
+    {
+        "success": true,
+        "status": "completed",
+        "data": { "output": "3\n" }
+    }
+    ```
+
+---
+
+## User Templates Endpoints (`/api/v1/user-templates`)
+
+_Note: All endpoints require authentication._
+
+### 1. Get Templates
+
+- **Method**: `GET`
+- **Route**: `/`
+
+### 2. Create Template
+
+- **Method**: `POST`
+- **Route**: `/`
+- **Request Body**:
+    ```json
+    {
+        "title": "Fast I/O C++",
+        "source_code": "...",
+        "language": "cpp",
+        "is_default": true
+    }
+    ```
+
+### 3. Get Template by ID
+
+- **Method**: `GET`
+- **Route**: `/:id`
+
+### 4. Update Template
+
+- **Method**: `PUT`
+- **Route**: `/:id`
+
+### 5. Delete Template
+
+- **Method**: `DELETE`
+- **Route**: `/:id`
+
+### 6. Set Default Template
+
+- **Method**: `PUT`
+- **Route**: `/:id/default`
+
+### 7. Get Ongoing Contest Status
+
+- **Method**: `GET`
+- **Route**: `/ongoing-contest-status`
+- **Success Response (200 OK)**:
+    ```json
+    {
+        "statusCode": 200,
+        "success": true,
+        "message": "Ongoing contest status retrieved.",
+        "data": {
+            "hasOngoing": false
+        }
+    }
+    ```

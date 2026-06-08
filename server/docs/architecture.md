@@ -59,10 +59,14 @@ server/
 │   │   └── ContestStanding.model.js # getLeaderboard — ranked standings by final_score
 │   │
 │   ├── queues/
-│   │   └── submissionQueue.js       # BullMQ Queue("submission-queue") — jobs are added here
+│   │   ├── submissionQueue.js
+│   │   └── customInvocationQueue.js       # BullMQ Queue("submission-queue") — jobs are added here
 │   │
 │   ├── routes/
 │   │   ├── auth.routes.js
+│   │   ├── statistics.routes.js
+│   │   ├── custom-invocation.routes.js
+│   │   ├── user-template.routes.js
 │   │   ├── contest.routes.js        # Includes register, leaderboard, finalize endpoints
 │   │   ├── problem.routes.js
 │   │   ├── testcase.routes.js
@@ -90,7 +94,8 @@ server/
 │   │   └── asyncHandler.js          # Wraps async controllers, forwards errors to next()
 │   │
 │   └── workers/
-│       └── judgeWorker.js           # BullMQ Worker — processes jobs from submission-queue
+│       ├── judgeWorker.js
+│       └── customInvocationWorker.js           # BullMQ Worker — processes jobs from submission-queue
 ```
 
 ---
@@ -203,18 +208,25 @@ timeout 2 python3 /code/main.py < /code/input.txt
 exit $?
 ```
 
-### Step 3 — `docker run`
+### Step 3 — `docker run` (Decoupled Compilation & Execution)
 
-Uses Node.js `child_process.execFile` (promisified) to run:
+Compilation and execution are handled in two distinct container lifecycles to prevent compiler memory spikes from triggering `memory_limit_exceeded`.
+
+**Compilation Step (if applicable):**
+- Runs with a fixed `--memory=512m` limit.
+- If it exits with code `100` or fails, verdict is `compilation_error`.
+
+**Execution Step:**
+Uses Node.js `child_process.execFile` (promisified) to run the compiled binary or interpreted script:
 
 ```bash
 docker run --rm \
   --name judge-<submission_id> \
   --network=none \            # No internet access
-  --memory=256m \             # Hard memory cap
-  --memory-swap=256m \        # No swap (total = memory cap only)
+  --memory=<problem_memory_limit>m \  # Strict problem memory cap
+  --memory-swap=<problem_memory_limit>m \
   --cpus=1 \                  # 1 CPU core
-  -v .../sandbox/submission-<id>:/code \  # Mount sandbox dir into container as /code
+  -v .../sandbox/submission-<id>:/code \  # Mount sandbox dir
   gcc:latest \                # Language-specific image
   sh /code/run.sh             # Run the generated script
 ```
@@ -276,9 +288,29 @@ WHERE submission_id = ?
 
 The submission row now has its final state. The client can poll `GET /api/v1/submissions/:id` to read the result.
 
+The submission row now has its final state.
+
+### Pub/Sub Notification (Socket.IO)
+Instead of forcing the client to poll, the worker executes:
+```js
+redis.publish('socket_updates', JSON.stringify({ userId, submissionId, verdict, ... }));
+```
+
 ---
 
-## Phase 6 — Contest Finalization (Cron + Admin Trigger)
+## Phase 6 — Real-Time WebSocket Architecture (Redis Pub/Sub)
+
+To eliminate manual HTTP polling for verdicts and custom invocations, the platform uses a unified real-time architecture:
+
+1. **Connection**: The client connects via `socket.io-client`. The server authenticates the JWT and places the socket connection into a room named strictly after the `userId`.
+2. **Worker Publishing**: Once a background worker (`judgeWorker` or `customInvocationWorker`) finishes execution, it publishes the final payload to the `socket_updates` Redis channel.
+3. **Server Subscription**: The main Node.js server (`index.js`) listens on the `socket_updates` channel. When a message arrives, it inspects the `userId`.
+4. **Broadcasting**: The server emits the event specifically to the user's room (`io.to(userId).emit(...)`).
+5. **UI Update**: The frontend receives the event and instantly updates the submission list or custom invocation output without a single redundant HTTP request.
+
+---
+
+## Phase 7 — Contest Finalization (Cron + Admin Trigger)
 
 After a contest ends, ratings are calculated via an **Elo-like delta system**.
 
@@ -445,11 +477,19 @@ Judge Service (src/services/judge.service.js)
     │
     ▼
 judgeWorker.js
-    └── Submission.setVerdict(verdict, ms)  ← UPDATE MySQL
+    ├── Submission.setVerdict(verdict, ms)  ← UPDATE MySQL
+    └── redis.publish('socket_updates')     ← Notify Main Server via Pub/Sub
 
 MySQL submissions table
     └── verdict = 'accepted' | 'wrong_answer' | 'time_limit_exceeded' |
                  'memory_limit_exceeded' | 'compilation_error' | 'runtime_error'
+
+Main Server (src/index.js)
+    ├── Subscribed to 'socket_updates' Redis channel
+    └── io.to(userId).emit('submission_update')
+
+Client (Frontend)
+    └── Receives socket event and instantly updates UI
 
 ─────────────────────────────────────────────────────
 
