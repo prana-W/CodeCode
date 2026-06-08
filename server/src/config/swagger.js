@@ -924,6 +924,30 @@ const swaggerDefinition = {
                 },
             },
         },
+        '/submissions/run-sample': {
+            post: {
+                tags: ['Submissions'],
+                summary: 'Run code against sample test cases',
+                requestBody: {
+                    required: true,
+                    content: {
+                        'application/json': {
+                            schema: {
+                                type: 'object',
+                                properties: {
+                                    problem_id: {type: 'integer'},
+                                    language: {type: 'string'},
+                                    source_code: {type: 'string'},
+                                },
+                            },
+                        },
+                    },
+                },
+                responses: {
+                    200: {description: 'Executed successfully'},
+                },
+            },
+        },
 
         // ── USERS ─────────────────────────────────────────────────────────────
         '/users/{id}': {
@@ -997,15 +1021,99 @@ const swaggerDefinition = {
                 },
             },
         },
+        '/users/heartbeat': {
+            post: {
+                tags: ['Users'],
+                summary: 'User heartbeat for online status',
+                responses: {
+                    200: {description: 'Heartbeat acknowledged'},
+                },
+            },
+        },
+        '/users/rankings': {
+            get: {
+                tags: ['Users'],
+                summary: 'Get user rankings',
+                parameters: [
+                    {
+                        in: 'query',
+                        name: 'institute',
+                        schema: {type: 'string'},
+                    },
+                    {
+                        in: 'query',
+                        name: 'sortBy',
+                        schema: {type: 'string'},
+                    },
+                ],
+                responses: {
+                    200: {description: 'Rankings fetched'},
+                },
+            },
+        },
+        '/users/username/{username}': {
+            get: {
+                tags: ['Users'],
+                summary: 'Get user profile by username',
+                parameters: [
+                    {
+                        in: 'path',
+                        name: 'username',
+                        required: true,
+                        schema: {type: 'string'},
+                    },
+                ],
+                responses: {
+                    200: {description: 'User details'},
+                    404: {description: 'User not found'},
+                },
+            },
+        },
+        '/users/username/{username}/contest-history': {
+            get: {
+                tags: ['Users'],
+                summary: 'Get user contest history',
+                parameters: [
+                    {
+                        in: 'path',
+                        name: 'username',
+                        required: true,
+                        schema: {type: 'string'},
+                    },
+                ],
+                responses: {
+                    200: {description: 'Contest history'},
+                },
+            },
+        },
+        '/users/username/{username}/activity-stats': {
+            get: {
+                tags: ['Users'],
+                summary: 'Get user activity stats (heatmap)',
+                parameters: [
+                    {
+                        in: 'path',
+                        name: 'username',
+                        required: true,
+                        schema: {type: 'string'},
+                    },
+                    {
+                        in: 'query',
+                        name: 'year',
+                        schema: {type: 'integer'},
+                    },
+                ],
+                responses: {
+                    200: {description: 'Activity stats'},
+                },
+            },
+        },
 
         // ── AI ────────────────────────────────────────────────────────────────
-        '/ai/ask': {
+        '/ai/deco': {
             post: {
                 tags: ['AI'],
-                summary: 'Ask the AI coding mentor',
-                description:
-                    'Rate-limited to 5 requests per 10 minutes. The assistant provides hints and ' +
-                    'definitions, but never actual code.',
+                summary: 'Ask the local AI coding mentor (Deco)',
                 requestBody: {
                     required: true,
                     content: {
@@ -1013,22 +1121,212 @@ const swaggerDefinition = {
                             schema: {
                                 type: 'object',
                                 required: ['prompt'],
-                                properties: {
-                                    prompt: {
-                                        type: 'string',
-                                        example:
-                                            'How do I find the longest palindromic substring?',
-                                    },
-                                },
+                                properties: { prompt: { type: 'string' } },
                             },
                         },
                     },
                 },
                 responses: {
                     200: {description: 'AI hint generated'},
-                    400: {description: 'Prompt is required'},
-                    429: {description: 'Rate limit exceeded'},
-                    500: {description: 'AI service offline (Ollama)'},
+                },
+            },
+        },
+        '/ai/external': {
+            post: {
+                tags: ['AI'],
+                summary: 'Ask the external AI assistant (Gemini)',
+                requestBody: {
+                    required: true,
+                    content: {
+                        'application/json': {
+                            schema: {
+                                type: 'object',
+                                required: ['prompt', 'intent'],
+                                properties: { prompt: { type: 'string' }, intent: { type: 'string' } },
+                            },
+                        },
+                    },
+                },
+                responses: {
+                    200: {description: 'AI response generated'},
+                },
+            },
+        },
+        '/ai/external/stream': {
+            post: {
+                tags: ['AI'],
+                summary: 'Stream from the external AI assistant (Gemini)',
+                requestBody: {
+                    required: true,
+                    content: {
+                        'application/json': {
+                            schema: {
+                                type: 'object',
+                                required: ['prompt', 'intent'],
+                                properties: { prompt: { type: 'string' }, intent: { type: 'string' } },
+                            },
+                        },
+                    },
+                },
+                responses: {
+                    200: {description: 'SSE Stream'},
+                },
+            },
+        },
+
+        // ── STATISTICS ────────────────────────────────────────────────────────
+        '/statistics': {
+            get: {
+                tags: ['Statistics'],
+                summary: 'Get platform statistics',
+                responses: {
+                    200: {description: 'Statistics fetched'},
+                },
+            },
+        },
+
+        // ── CUSTOM INVOCATION ─────────────────────────────────────────────────
+        '/custom-invocation': {
+            post: {
+                tags: ['Custom Invocation'],
+                summary: 'Run custom code invocation',
+                requestBody: {
+                    required: true,
+                    content: {
+                        'application/json': {
+                            schema: {
+                                type: 'object',
+                                properties: {
+                                    source_code: { type: 'string' },
+                                    language: { type: 'string' },
+                                    input_data: { type: 'string' },
+                                },
+                            },
+                        },
+                    },
+                },
+                responses: {
+                    200: {description: 'Invocation queued'},
+                },
+            },
+        },
+        '/custom-invocation/status/{customInvocationId}': {
+            get: {
+                tags: ['Custom Invocation'],
+                summary: 'Get custom invocation status',
+                parameters: [
+                    {
+                        in: 'path',
+                        name: 'customInvocationId',
+                        required: true,
+                        schema: {type: 'string'},
+                    },
+                ],
+                responses: {
+                    200: {description: 'Invocation status'},
+                },
+            },
+        },
+
+        // ── USER TEMPLATES ────────────────────────────────────────────────────
+        '/user-templates/ongoing-contest-status': {
+            get: {
+                tags: ['User Templates'],
+                summary: 'Check if user has an ongoing contest',
+                responses: {
+                    200: {description: 'Ongoing contest status'},
+                },
+            },
+        },
+        '/user-templates': {
+            get: {
+                tags: ['User Templates'],
+                summary: 'Get user templates',
+                responses: {
+                    200: {description: 'User templates fetched'},
+                },
+            },
+            post: {
+                tags: ['User Templates'],
+                summary: 'Create a user template',
+                requestBody: {
+                    required: true,
+                    content: {
+                        'application/json': {
+                            schema: {
+                                type: 'object',
+                                properties: {
+                                    title: { type: 'string' },
+                                    source_code: { type: 'string' },
+                                    language: { type: 'string' },
+                                    is_default: { type: 'boolean' },
+                                },
+                            },
+                        },
+                    },
+                },
+                responses: {
+                    201: {description: 'Template created'},
+                },
+            },
+        },
+        '/user-templates/{id}': {
+            get: {
+                tags: ['User Templates'],
+                summary: 'Get template by ID',
+                parameters: [
+                    { in: 'path', name: 'id', required: true, schema: { type: 'integer' } },
+                ],
+                responses: {
+                    200: {description: 'Template details'},
+                },
+            },
+            put: {
+                tags: ['User Templates'],
+                summary: 'Update template',
+                parameters: [
+                    { in: 'path', name: 'id', required: true, schema: { type: 'integer' } },
+                ],
+                requestBody: {
+                    required: true,
+                    content: {
+                        'application/json': {
+                            schema: {
+                                type: 'object',
+                                properties: {
+                                    title: { type: 'string' },
+                                    source_code: { type: 'string' },
+                                    language: { type: 'string' },
+                                    is_default: { type: 'boolean' },
+                                },
+                            },
+                        },
+                    },
+                },
+                responses: {
+                    200: {description: 'Template updated'},
+                },
+            },
+            delete: {
+                tags: ['User Templates'],
+                summary: 'Delete template',
+                parameters: [
+                    { in: 'path', name: 'id', required: true, schema: { type: 'integer' } },
+                ],
+                responses: {
+                    200: {description: 'Template deleted'},
+                },
+            },
+        },
+        '/user-templates/{id}/default': {
+            put: {
+                tags: ['User Templates'],
+                summary: 'Set template as default',
+                parameters: [
+                    { in: 'path', name: 'id', required: true, schema: { type: 'integer' } },
+                ],
+                responses: {
+                    200: {description: 'Template set as default'},
                 },
             },
         },

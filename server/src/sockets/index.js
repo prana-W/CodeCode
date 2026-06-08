@@ -1,6 +1,11 @@
 import {Server} from 'socket.io';
 import jwt from 'jsonwebtoken';
 
+let ioInstance;
+const activeUsers = new Set();
+
+export const getIO = () => ioInstance;
+
 function initializeSocket(httpServer) {
     const io = new Server(httpServer, {
         cors: {
@@ -39,14 +44,34 @@ function initializeSocket(httpServer) {
     io.on('connection', (socket) => {
         // Automatically join a room for this specific user
         if (socket.user && socket.user.userId) {
-            socket.join(socket.user.userId.toString());
+            const userId = socket.user.userId.toString();
+            socket.join(userId);
+
+            // Add to active users and broadcast
+            if (!activeUsers.has(userId)) {
+                activeUsers.add(userId);
+                io.emit('live_users_update', activeUsers.size);
+            }
+
+            // Send initial count to this newly connected tab
+            socket.emit('live_users_update', activeUsers.size);
         }
 
-        socket.on('disconnect', () => {
-            // Socket.io automatically handles room leaving on disconnect
+        socket.on('disconnect', async () => {
+            if (socket.user && socket.user.userId) {
+                const userId = socket.user.userId.toString();
+                
+                // Check if user has any other active sockets (tabs)
+                const sockets = await io.in(userId).fetchSockets();
+                if (sockets.length === 0) {
+                    activeUsers.delete(userId);
+                    io.emit('live_users_update', activeUsers.size);
+                }
+            }
         });
     });
 
+    ioInstance = io;
     return io;
 }
 

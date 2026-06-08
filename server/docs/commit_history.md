@@ -875,3 +875,14 @@ Back on the frontend (e.g., in `ContestProblemView.jsx` or `CustomInvocationPage
 - **Speed**: Verdicts arrive instantly the exact millisecond the worker finishes.
 - **Server Load**: We entirely eliminated thousands of redundant HTTP GET requests that were constantly hitting your database while users waited.
 - **Scalability**: Utilizing Redis Pub/Sub means that if you eventually run multiple Node.js instances, workers can talk to the sockets flawlessly across different servers!
+
+## Commit - Later 10
+
+- I have now removed the manual polling + redis for checking live users.
+
+- I successfully:
+
+    - Removed the 30-second setInterval loop in the frontend Header.jsx that was constantly pinging the backend API.
+    - Modified server/src/sockets/index.js to automatically increment/decrement the unique user count based on standard connection and disconnect socket events, broadcasting the new count using io.emit('live_users_update', count).
+    - Updated the backend user.controller.js to calculate whether a user is online by dynamically querying io.in(userId).fetchSockets() instead of checking Redis keys.
+    - Removed the /users/heartbeat API endpoint entirely!

@@ -7,6 +7,7 @@ import {useAuth} from '@/context/AuthContext';
 import {toast} from 'sonner';
 import ProfileHoverCard from './ProfileHoverCard';
 import {useTheme} from '@/components/theme-provider';
+import {useSocket} from '@/context/SocketContext';
 
 export default function Header() {
     const {user, logout} = useAuth();
@@ -14,6 +15,7 @@ export default function Header() {
     const location = useLocation();
     const [mobileOpen, setMobileOpen] = useState(false);
     const [onlineCount, setOnlineCount] = useState(null);
+    const {socket} = useSocket();
     const {theme, setTheme} = useTheme();
     const isDark = theme === 'dark';
 
@@ -22,30 +24,21 @@ export default function Header() {
     };
 
     useEffect(() => {
-        if (!user) {
+        if (!user || !socket) {
             setOnlineCount(null);
             return;
         }
 
-        const sendHeartbeat = async () => {
-            try {
-                const response = await api.post('/users/heartbeat');
-                if (response.data && response.data.data) {
-                    setOnlineCount(response.data.data.onlineUsers);
-                }
-            } catch (error) {
-                console.error('Error sending heartbeat:', error);
-            }
+        const handleLiveUsersUpdate = (count) => {
+            setOnlineCount(count);
         };
 
-        // Send heartbeat immediately on mount/login
-        sendHeartbeat();
+        socket.on('live_users_update', handleLiveUsersUpdate);
 
-        // Send heartbeat every 30 seconds
-        const interval = setInterval(sendHeartbeat, 30000);
-
-        return () => clearInterval(interval);
-    }, [user]);
+        return () => {
+            socket.off('live_users_update', handleLiveUsersUpdate);
+        };
+    }, [user, socket]);
 
     const handleLogout = async () => {
         try {
