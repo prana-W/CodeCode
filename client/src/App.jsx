@@ -22,6 +22,8 @@ import {
     UserProfileEdit,
     RankingsPage,
     CustomInvocationPage,
+    UserTemplates,
+    TemplateEditor,
 } from './pages/index.js';
 
 import ErrorBoundary from './components/ErrorBoundary.jsx';
@@ -86,6 +88,22 @@ const router = createBrowserRouter([
                 element: (
                     <ProtectedRoute>
                         <CustomInvocationPage />
+                    </ProtectedRoute>
+                ),
+            },
+            {
+                path: 'templates',
+                element: (
+                    <ProtectedRoute>
+                        <UserTemplates />
+                    </ProtectedRoute>
+                ),
+            },
+            {
+                path: 'templates/:id',
+                element: (
+                    <ProtectedRoute>
+                        <TemplateEditor />
                     </ProtectedRoute>
                 ),
             },

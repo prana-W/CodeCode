@@ -23,6 +23,8 @@ import UserProfile from './UserProfile.jsx';
 import UserProfileEdit from './UserProfileEdit.jsx';
 import RankingsPage from './RankingsPage.jsx';
 import CustomInvocationPage from './CustomInvocationPage.jsx';
+import UserTemplates from './UserTemplates.jsx';
+import TemplateEditor from './TemplateEditor.jsx';
 
 export {
     Home,
@@ -48,4 +50,6 @@ export {
     ContestSubmissionsTab,
     ContestLeaderboardTab,
     CustomInvocationPage,
+    UserTemplates,
+    TemplateEditor,
 };

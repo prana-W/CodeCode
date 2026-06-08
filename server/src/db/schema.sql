@@ -85,7 +85,8 @@ CREATE TABLE test_cases (
     input_data LONGTEXT NOT NULL,
     expected_output LONGTEXT NOT NULL,
     
-    is_sample BOOLEAN DEFAULT FALSE,
+    sample_input_data LONGTEXT NOT NULL,
+    sample_expected_output LONGTEXT NOT NULL,
 
     FOREIGN KEY (problem_id)
         REFERENCES problems(problem_id)
@@ -188,4 +189,15 @@ CREATE TABLE IF NOT EXISTS contest_registrations (
     FOREIGN KEY (user_id)
         REFERENCES users(id)
         ON DELETE CASCADE
+);
+
+CREATE TABLE user_templates (
+    template_id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    user_id INT NOT NULL,
+    source_code LONGTEXT NOT NULL,
+    language VARCHAR(50) NOT NULL,
+    is_default BOOLEAN NOT NULL DEFAULT FALSE,
+
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
