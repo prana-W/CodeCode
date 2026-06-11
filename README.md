@@ -23,6 +23,9 @@ Unlike traditional platforms that rely on slow HTTP polling, CodeCode utilizes a
 - **User Analytics**: Detailed profile pages featuring rating trajectory graphs and GitHub-style submission heatmaps.
 - **Real-Time Tracking**: Websockets automatically track and broadcast the exact number of live online users on the platform.
 
+![DB Diagram](./assets/eerd.png)
+*Database Schema Diagram*
+
 ![Contest Arena](./assets/contest.png)
 *The Contest Arena featuring the built-in Monaco Editor and real-time Socket.io execution feedback.*
 
