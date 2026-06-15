@@ -24,22 +24,32 @@ Unlike traditional platforms that rely on slow HTTP polling, CodeCode utilizes a
 - **Real-Time Tracking**: Websockets automatically track and broadcast the exact number of live online users on the platform.
 
 ![DB Diagram](./assets/eerd.png)
+
 *Database Schema Diagram*
 
 ![Contest Arena](./assets/contest.png)
+
 *The Contest Arena featuring the built-in Monaco Editor and real-time Socket.io execution feedback.*
 
 ![Inbuilt Docs & AI Assistant](./assets/inbuilt_deco_and_wikipedia.png)
+
 *Users can take help from an embedded Wikipedia during a contest, and get conceptual help from the AI assistant, such as understanding problem statements (if enabled by the contest creator).*
 
 ![Custom Invocation](./assets/custom_invocation.png)
+
 *Integrated code runner supporting custom inputs and instant compilation feedback.*
 
 ![Problem Design & AI Refiner](./assets/problem_statement_design_and%20_ai_refiner.png)
+
 *Contest creation editor with automated problem statement refinement and testcase generation powered by AI.*
 
 ![Contest Leaderboard](./assets/leaderboard.png)
+
 *Real-time contest standings and live leaderboard to track participant performance and submissions.*
+
+![Analytics Dashboard](./assets/analytics.png)
+
+*User profile featuring activity heatmaps and Elo rating graphs.*
 
 ---
 
@@ -107,9 +117,6 @@ cd client
 The platform should now be accessible at `http://localhost:5173`.
 
 ---
-
-![Analytics Dashboard](./assets/analytics.png)
-*User profile featuring activity heatmaps and Elo rating graphs.*
 
 ## 🔮 Future Expected Features
 
