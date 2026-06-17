@@ -45,8 +45,8 @@ const worker = new Worker(
     {
         connection,
         concurrency: 10,
-        removeOnComplete: { count: 0 },
-        removeOnFail: { count: 0 },
+        removeOnComplete: { count: 5 },
+        removeOnFail: { count: 5 },
     }
 );
 

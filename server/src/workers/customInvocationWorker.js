@@ -102,7 +102,7 @@ const worker = new Worker(
             throw err; 
         }
     },
-    {connection, concurrency: 4, removeOnComplete: {count: 0}, removeOnFail: {count: 0}}
+    {connection, concurrency: 4, removeOnComplete: {count: 5}, removeOnFail: {count: 5}}
 );
 
 worker.on('completed', job => {
