@@ -102,11 +102,11 @@ const worker = new Worker(
 );
 
 worker.on('completed', job => {
-    console.log(`✅ [JudgeWorker] Job ${job.id} completed successfully`);
+    console.log(`✅ [SubmissionWorker] Job ${job.id} completed successfully`);
 });
 
 worker.on('failed', (job, err) => {
-    console.error(`❌ [JudgeWorker] Job ${job?.id} failed with error: ${err.message}`);
+    console.error(`❌ [SubmissionWorker] Job ${job?.id} failed with error: ${err.message}`);
 });
 
-console.log('🚀 Judge Worker is running and listening to submission-queue...');
+console.log('🚀 Submission Worker is running and listening to submission-queue...');

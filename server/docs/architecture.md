@@ -95,7 +95,7 @@ server/
 │   │   └── asyncHandler.js          # Wraps async controllers, forwards errors to next()
 │   │
 │   └── workers/
-│       ├── judgeWorker.js
+│       ├── submissionWorker.js
 │       └── customInvocationWorker.js           # BullMQ Worker — processes jobs from submission-queue
 ```
 
@@ -115,7 +115,7 @@ server/
 
 > Socket.IO (`src/sockets/`) is scaffolded but the `initializeSocket` call is not yet wired in `index.js`. It will be attached to the `httpServer` when real-time features are activated.
 
-### Process 2 — Judge Worker (`src/workers/judgeWorker.js`)
+### Process 2 — Submission Worker (`src/workers/submissionWorker.js`)
 
 1. Connects to Redis using the shared `ioredis` instance (`src/config/redis.js`).
 2. Creates a `BullMQ Worker` subscribed to `"submission-queue"` with `concurrency: 2`.
@@ -150,9 +150,9 @@ Body: { problem_id, language, source_code }
 
 ---
 
-## Phase 3 — Judge Worker Picks Up the Job
+## Phase 3 — Submission Worker Picks Up the Job
 
-`src/workers/judgeWorker.js` — BullMQ calls the processor function with the job.
+`src/workers/submissionWorker.js` — BullMQ calls the processor function with the job.
 
 ```
 job.data = { submissionId: 42 }
@@ -274,7 +274,7 @@ The `finally` block always runs `fs.rm(sandboxPath, { recursive: true, force: tr
 
 ## Phase 5 — Verdict Written to DB
 
-Back in `judgeWorker.js`:
+Back in `submissionWorker.js`:
 
 ```js
 await Submission.setVerdict(submissionId, verdict, execution_time_ms);
@@ -307,7 +307,7 @@ redis.publish('socket_updates', JSON.stringify({ userId, submissionId, verdict, 
 To eliminate manual HTTP polling for verdicts and custom invocations, the platform uses a unified real-time architecture:
 
 1. **Connection**: The client connects via `socket.io-client`. The server authenticates the JWT and places the socket connection into a room named strictly after the `userId`.
-2. **Worker Publishing**: Once a background worker (`judgeWorker` or `customInvocationWorker`) finishes execution, it publishes the final payload to the `socket_updates` Redis channel.
+2. **Worker Publishing**: Once a background worker (`submissionWorker` or `customInvocationWorker`) finishes execution, it publishes the final payload to the `socket_updates` Redis channel.
 3. **Server Subscription**: The main Node.js server (`index.js`) listens on the `socket_updates` channel. When a message arrives, it inspects the `userId`.
 4. **Broadcasting**: The server emits the event specifically to the user's room (`io.to(userId).emit(...)`).
 5. **UI Update**: The frontend receives the event and instantly updates the submission list or custom invocation output without a single redundant HTTP request.
@@ -520,7 +520,7 @@ Redis Queue (BullMQ "submission-queue")
     │
     │  Job: { submissionId }
     ▼
-Judge Worker (src/workers/judgeWorker.js)  ← runs in separate process
+Submission Worker (src/workers/submissionWorker.js)  ← runs in separate process
     │
     ├── Submission.findForJudge()           ← MySQL 3-table JOIN
     ├── Submission.setVerdict('running')    ← UPDATE MySQL
@@ -537,7 +537,7 @@ Judge Service (src/services/judge.service.js)
     └── Cleanup temp dir
     │
     ▼
-judgeWorker.js
+submissionWorker.js
     ├── Submission.setVerdict(verdict, ms)  ← UPDATE MySQL
     └── redis.publish('socket_updates')     ← Notify Main Server via Pub/Sub
 
@@ -585,7 +585,7 @@ Cron (every 5 min, runs inside API server process)
 | `swagger-jsdoc`               | Generates OpenAPI spec from JSDoc comments + inline definition               |
 | `swagger-ui-express`          | Serves interactive Swagger UI at `/` and `/api-docs`                         |
 | `socket.io`                   | WebSocket layer for future real-time features (scaffolded)                   |
-| `concurrently`                | Runs API server and judge worker as two parallel `nodemon` processes in dev  |
+| `concurrently`                | Runs API server and submission worker as two parallel `nodemon` processes in dev  |
 | `morgan`                      | HTTP request logger                                                          |
 | `dotenv`                      | Loads `.env` into `process.env`                                              |
 | `cors`                        | Configures allowed origins from `CORS_ORIGIN` env variable                   |

@@ -147,7 +147,7 @@ Integrated Redis and BullMQ to create an asynchronous queue-based submission pro
 - BullMQ has three components:
     - **Producer:** On each submission, the `submission_id` is enqueued as a job into the `submission-queue` using `submissionQueue.add()`.
     - **Storage:** Redis holds the queue state — pending jobs, active jobs, completed jobs, and failed jobs — all in memory.
-    - **Worker:** `judgeWorker.js` runs concurrently alongside `index.js` as a separate process. It continuously polls Redis for new jobs and, when one arrives, picks it up and sends it to the Online Judge for evaluation.
+    - **Worker:** `submissionWorker.js` runs concurrently alongside `index.js` as a separate process. It continuously polls Redis for new jobs and, when one arrives, picks it up and sends it to the Online Judge for evaluation.
 - The worker processes one job at a time by default (`concurrency: 1`), ensuring the judge is not flooded. This can be adjusted via the `concurrency` option. Later I made the concurreny to 2, to reduce the waiting time of the incoming submission in the queue, as two workers can work simultaneously on two different tasks, reducing the wait time.
 - Once a job is evaluated, the verdict is written back to the `submissions` table and the worker picks up the next job.
 
@@ -168,7 +168,7 @@ Added the Online Judge logic — code is executed inside isolated Docker contain
     7. The verdict is determined by the process exit code (e.g., exit 1 → runtime error, timeout → TLE).
     8. Execution start time is recorded before the container runs and subtracted from the end time to compute `execution_time_ms`.
     9. The temp directory is cleaned up after each run.
-- The `judgeWorker.js` now calls `runJudge()` with all the submission data, gets the verdict back, and updates the submission record.
+- The `submissionWorker.js` now calls `runJudge()` with all the submission data, gets the verdict back, and updates the submission record.
 
 ---
 
@@ -866,7 +866,7 @@ When you click **"Submit Code"** (or **"Execute"** for a custom invocation), the
 
 ### 3. Worker Processing & Redis Pub/Sub
 
-The actual code execution happens inside isolated background processes (`judgeWorker.js` or `customInvocationWorker.js`).
+The actual code execution happens inside isolated background processes (`submissionWorker.js` or `customInvocationWorker.js`).
 Once a worker finishes compiling/executing your code and generates a final verdict (e.g., "Accepted" or "Runtime Error"), it uses `ioredis` to `.publish()` a message to an internal Redis channel called `socket_updates`. It tags this message with your specific `userId`.
 
 ### 4. WebSocket Routing
@@ -970,3 +970,8 @@ call POST /auth/refresh
 
 - Also added retries to submission and custom invocation queues with some retry limit and exponential backoff, with initial time. This applies when the jobs fails inside the worker i.e. an error is thrown by the worker
     - If we add attempts: 4 and initialDelay: 3000, so it will attempt 1 time and then retry 3 times with delay of 3s, 6s and 12s respectively if job is failed
+
+
+## Commit - Later 14
+
+- I am now using PM2 (process manager) to manage all the various processes like web server, and all the three workers (submission, custom invocation and email) and 

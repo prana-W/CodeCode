@@ -8,8 +8,11 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "concurrently \"nodemon -r dotenv/config src/index.js\" \"nodemon -r dotenv/config src/workers/judgeWorker.js\" \"nodemon -r dotenv/config src/workers/customInvocationWorker.js\" \"nodemon -r dotenv/config src/workers/emailWorker.js\"",
-    "start": "concurrently \"node -r dotenv/config src/index.js\" \"node -r dotenv/config src/workers/judgeWorker.js\" \"node -r dotenv/config src/workers/customInvocationWorker.js\" \"node -r dotenv/config src/workers/emailWorker.js\"",
+    "dev": "pm2 start ecosystem.config.cjs --watch",
+    "start": "pm2 start ecosystem.config.cjs",
+    "stop": "pm2 stop ecosystem.config.cjs",
+    "delete": "pm2 delete ecosystem.config.cjs",
+    "logs": "pm2 logs",
     "format": "prettier --write ."
   },
   "dependencies": {
@@ -28,13 +31,13 @@
     "ngrok": "^5.0.0-beta.2",
     "node-cron": "^4.2.1",
     "nodemailer": "^9.0.1",
+    "pm2": "^7.0.1",
     "prettier": "^3.8.3",
     "socket.io": "^4.8.3",
     "swagger-jsdoc": "^6.3.0",
     "swagger-ui-express": "^5.0.1"
   },
   "devDependencies": {
-    "concurrently": "^10.0.3",
     "nodemon": "^3.1.14"
   }
 }

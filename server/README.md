@@ -32,7 +32,7 @@ A high-performance, production-grade backend for a competitive programming platf
 | **API docs**         | swagger-jsdoc + swagger-ui-express | Full OpenAPI 3.0 spec served interactively at runtime — no separate doc deployment needed                                             |
 | **AI assistant**     | Ollama (local LLM)                 | Runs entirely on-device — zero API cost, zero data sent to a third party; model and URL are configurable via env                      |
 | **Real-time**        | Socket.IO                          | Scaffolded for future live contest features (standings push, notifications); JWT-authenticated at the socket handshake level          |
-| **Dev tooling**      | concurrently + nodemon             | Runs the API server and judge worker as two parallel hot-reloading processes with a single `npm run dev`                              |
+| **Dev tooling**      | concurrently + nodemon             | Runs the API server and submission worker as two parallel hot-reloading processes with a single `npm run dev`                              |
 | **Code style**       | Prettier                           | Enforced formatting across the entire codebase                                                                                        |
 
 ---
@@ -82,7 +82,7 @@ A high-performance, production-grade backend for a competitive programming platf
 - Submission and custom invocation creation return `201 Created` / `200 OK` **instantly** — the client never waits for execution.
 - **Zero Polling**: WebSockets (Socket.IO) completely replace HTTP polling. When a background worker finishes evaluating code, it publishes the verdict to a Redis `socket_updates` channel. The main API server subscribes to this channel and emits the payload directly to the specific user's private socket room.
 - Redis persists the job queue across server restarts; no submission is ever silently dropped.
-- Workers run as completely **separate processes** (e.g., `judgeWorker.js` and `customInvocationWorker.js`) — a crashing worker cannot take down the API server.
+- Workers run as completely **separate processes** (e.g., `submissionWorker.js` and `customInvocationWorker.js`) — a crashing worker cannot take down the API server.
 
 ### Contest Standings & Leaderboard
 
@@ -188,7 +188,7 @@ MySQL's query planner handles these JOINs with indexed foreign keys, making mult
 The HTTP response time for `POST /submissions` is **< 5ms** — it inserts one DB row and enqueues one Redis job, then returns. The client never waits for Docker to spin up, compile, or execute code. This means:
 
 - The API server stays responsive regardless of how many submissions are in-flight.
-- The judge worker can be scaled horizontally by simply increasing `concurrency` or running multiple worker processes.
+- The submission worker can be scaled horizontally by simply increasing `concurrency` or running multiple worker processes.
 
 ### Atomic Transactions for Rating Updates
 
@@ -272,7 +272,7 @@ Contest leaderboards and submission history are read far more often than they ar
 | `morgan`                 | ^1.10.1       | HTTP request logger (dev format)                                             |
 | `dotenv`                 | ^17.4.2       | Loads `.env` into `process.env`                                              |
 | `ngrok`                  | ^5.0.0-beta.2 | Dev tunnel for exposing the local server publicly (commented out by default) |
-| `concurrently`           | ^10.0.3       | Runs API server + judge worker as two parallel processes                     |
+| `concurrently`           | ^10.0.3       | Runs API server + submission worker as two parallel processes                     |
 | `nodemon`                | ^3.1.14       | Hot-reloads both processes on file changes during development                |
 | `prettier`               | ^3.8.3        | Enforces consistent code style across the entire codebase                    |
 | `child_process` (stdlib) | —             | `execFile` to spawn `docker run` for each submission                         |
@@ -356,7 +356,7 @@ server/
 │   ├── services/           # judge.service.js, contest.service.js (delta), ai.service.js
 │   ├── sockets/            # Socket.IO init, auth middleware (scaffolded)
 │   ├── utility/            # ApiError, ApiResponse, asyncHandler
-│   └── workers/            # BullMQ judge worker (consumer)
+│   └── workers/            # BullMQ submission worker (consumer)
 ├── docs/
 │   ├── architecture.md     # Full architecture reference
 │   ├── api.md              # Full API reference
