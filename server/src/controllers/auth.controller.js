@@ -1,6 +1,5 @@
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import crypto from 'crypto';
 import User from '../models/User.model.js';
 import {ApiError, ApiResponse, asyncHandler} from '../utility/index.js';
 import statusCode from '../constants/statusCode.js';
@@ -19,32 +18,38 @@ const generateAccessToken = (user) =>
     jwt.sign(
         {userId: user.id, username: user.username, role: user.role},
         process.env.JWT_ACCESS_SECRET,
-        {expiresIn: '5m'}
+        {expiresIn: process.env.JWT_ACCESS_EXPIRES_IN || '5m'}
     );
 
 /**
- * Creates a cryptographically random opaque refresh token (7 days).
- * Stored as a hash in the DB; the raw value is sent to the client.
+ * Signs a long-lived refresh token (7 days).
+ * Verified using JWT_REFRESH_SECRET — separate from the access token secret.
+ * Storing a JWT in the DB allows cryptographic validation (signature + expiry)
+ * BEFORE the DB lookup, which serves as the rotation guard.
  */
-const generateRefreshToken = () => crypto.randomBytes(64).toString('hex');
+const generateRefreshToken = (user) =>
+    jwt.sign(
+        {userId: user.id},
+        process.env.JWT_REFRESH_SECRET,
+        {expiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '7d'}
+    );
 
 /**
  * Helper — issue both tokens, persist the refresh token, set both cookies.
  */
 const issueTokens = async (res, user) => {
-    const accessToken = generateAccessToken(user);
-    const refreshToken = generateRefreshToken();
+    const accessToken  = generateAccessToken(user);
+    const refreshToken = generateRefreshToken(user);
 
     // Persist the new refresh token in DB (replaces any existing one — rotation)
     await User.setRefreshToken(user.id, refreshToken);
 
-    res.cookie('accessToken', accessToken, accessTokenCookieOptions);
+    res.cookie('accessToken',  accessToken,  accessTokenCookieOptions);
     res.cookie('refreshToken', refreshToken, refreshTokenCookieOptions);
 
     return {accessToken, refreshToken};
 };
 
-// ─── Controllers ─────────────────────────────────────────────────────────────
 
 const register = asyncHandler(async (req, res) => {
     const {username, name, institute, email, password} = req.body;
@@ -155,9 +160,12 @@ const logout = asyncHandler(async (req, res) => {
 /**
  * POST /auth/refresh
  *
- * Validates the refresh token cookie against the DB.
- * On success, issues a brand-new access token AND rotates the refresh token
- * (old one is replaced in DB — prevents replay attacks).
+ * Two-layer validation:
+ *   1. JWT verification (signature + expiry) — catches tampered/forged tokens
+ *      without touching the DB at all.
+ *   2. DB lookup — confirms the token hasn't been rotated out (replay protection).
+ *
+ * On success, issues a new access token AND rotates the refresh token.
  */
 const refresh = asyncHandler(async (req, res) => {
     const incomingRefreshToken = req.cookies?.refreshToken;
@@ -169,21 +177,58 @@ const refresh = asyncHandler(async (req, res) => {
         );
     }
 
-    // Look up user by the raw refresh token stored in DB
+    // ── Layer 1: Cryptographic validation ────────────────────────────────────
+    // Verify signature and expiry using JWT_REFRESH_SECRET.
+    // If the token was forged, tampered with, or simply expired, this throws
+    // before we ever hit the database.
+    let decoded;
+    try {
+        decoded = jwt.verify(incomingRefreshToken, process.env.JWT_REFRESH_SECRET);
+    } catch (error) {
+        // Clear stale cookies on any JWT error
+        res.clearCookie('accessToken', accessTokenCookieOptions);
+        res.clearCookie('refreshToken', refreshTokenCookieOptions);
+
+        if (error.name === 'TokenExpiredError') {
+            throw new ApiError(
+                statusCode.UNAUTHORIZED,
+                'Refresh token has expired. Please log in again.'
+            );
+        }
+        throw new ApiError(
+            statusCode.UNAUTHORIZED,
+            'Invalid refresh token. Please log in again.'
+        );
+    }
+
+    // ── Layer 2: DB rotation check ───────────────────────────────────────────
+    // Even a cryptographically valid token is rejected if it no longer matches
+    // what's stored in the DB — meaning it has already been rotated out.
+    // This is what prevents replay attacks with stolen refresh tokens.
     const user = await User.findByRefreshToken(incomingRefreshToken);
 
     if (!user) {
-        // Token not found in DB — it was already rotated or is invalid.
-        // Clear stale cookies defensively.
+        // Token is valid JWT but not in DB — it was already rotated.
+        // This could mean a replay attack: clear cookies and force re-login.
         res.clearCookie('accessToken', accessTokenCookieOptions);
         res.clearCookie('refreshToken', refreshTokenCookieOptions);
         throw new ApiError(
             statusCode.UNAUTHORIZED,
-            'Invalid or expired refresh token. Please log in again.'
+            'Refresh token has already been used or revoked. Please log in again.'
         );
     }
 
-    // Issue a fresh access token and rotate the refresh token
+    // Extra sanity check: decoded.userId should match the DB row
+    if (decoded.userId !== user.id) {
+        res.clearCookie('accessToken', accessTokenCookieOptions);
+        res.clearCookie('refreshToken', refreshTokenCookieOptions);
+        throw new ApiError(
+            statusCode.UNAUTHORIZED,
+            'Token mismatch. Please log in again.'
+        );
+    }
+
+    // ── Issue new tokens (rotation) ──────────────────────────────────────────
     await issueTokens(res, user);
 
     return res

@@ -892,3 +892,49 @@ Back on the frontend (e.g., in `ContestProblemView.jsx` or `CustomInvocationPage
     - Modified server/src/sockets/index.js to automatically increment/decrement the unique user count based on standard connection and disconnect socket events, broadcasting the new count using io.emit('live_users_update', count).
     - Updated the backend user.controller.js to calculate whether a user is online by dynamically querying io.in(userId).fetchSockets() instead of checking Redis keys.
     - Removed the /users/heartbeat API endpoint entirely!
+
+## Commit - Later 11
+
+- Now I have updated the entire flow of authentication in both server and frontend. 
+
+- I have made access and refreshToken, both are httpOnly, which doesn't allow the browser or any js code to access the token, thus preventing various types of attacks like XSS, CSRF and so on.
+
+- We are sending it via cookies
+
+- When user logs in, it is first validated, after that both access and refresh tokens are created, refresh token is stored in the DB and both are sent to the frontend via cookies
+
+- Access token expires in 5 minutes and refresh token expires in 7 days
+
+- We have a user state in the AuthContext which is populated:
+    - When we first login by the response from the server or
+    - But when we refresh or come again in the application later, the state is reset, so in order to repopulate there is a useEffect which makes a /users/me call to the DB, which validates the accessToken and returns the user details (apart from password). While this is happening the authLoading is true, so we don't redirect the user to the login page accidently, while wait till the user state is populated or fails to do so.
+
+- When the accessToken expires mid session, the server sends a special error message about the accessToken being expired
+
+- When the above happens, we have a axios response interpretor in the frontend which sits givinng the repsonse back to client, kind off like a middleware. 
+
+Any API call → 401 "Access token has expired."
+                        ↓
+          isRefreshing? → true → queue this request, wait
+          isRefreshing? → false →
+              set isRefreshing = true
+              set originalRequest._retry = true (prevents infinite loop)
+              call POST /auth/refresh
+                        ↓
+                 ┌── success ──────────────────────────────────────────────┐
+                 │  new accessToken cookie set by server                   │
+                 │  new refreshToken cookie set (ROTATION)                 │
+                 │  notifySubscribers() — wake up all queued requests       │
+                 │  retry originalRequest → succeeds → user sees nothing   │
+                 └─────────────────────────────────────────────────────────
+- This is done so let's say we have a dashboard with 4 API calls, when access token in expired mid session, all these would send four request for new access token and this would lead to unnecessary load on the server. So, what we instead do is send only one request for new access token and then put all the the responses of the other API calls into the queue and when the accessToken is succesfully received, we use a subscriber notifier to wake up all the queued requests and send all those API request again to the server as now our accessToken is valid, without any additional load.
+
+- When even the refresh token is expired, then we would want to auto-logout the user. To do so first the server when refrehs token has expired, it removed both access and refresh token from cookies. But to take the user to login page, we would take a logout callback in the axios file as it is a module and can't directly access the authContext. Now when the AuthContext is mounted, we add the logout callback function to the authLogoutCallback. Now, when the cookies are expired and the axios gets it, it runs the authLogoutCallback(), which calls the /logout endpoint (just in case) and makes the user state in AuthContext as null
+
+- When we do logout, it also calls the forceLogOut() in auth context, which makes the /logout call and flushes the user state stored in the AuthContext
+
+- Understand axios.js in frontend to get more indepth knowledgre about these
+
+- In the server, the refresh token is first validated, then verified with the one stored in db, then both access and refresh token are genreted again,refresh token stored in DB, and both sent back to user via cookies.
+
+- Also we add the JWT expiration to both tokens which adds a entry to the JWT token, which when reaches above the expiratin limit returns false when validated
