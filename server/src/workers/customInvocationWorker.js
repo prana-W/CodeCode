@@ -95,9 +95,18 @@ const worker = new Worker(
                     })
                 );
             }
+            throw err; 
         }
     },
-    {connection, concurrency: 2}
+    {connection, concurrency: 4, removeOnComplete: {count: 0}, removeOnFail: {count: 0}}
 );
 
-console.log('🚀 Custom Invocation Worker is running');
+worker.on('completed', job => {
+    console.log(`✅ [CustomInvocationWorker] Job ${job.id} completed successfully`);
+});
+
+worker.on('failed', (job, err) => {
+    console.error(`❌ [CustomInvocationWorker] Job ${job?.id} failed with error: ${err.message}`);
+});
+
+console.log('🚀 Custom Invocation Worker is running and listening to custom-invocation-queue...');

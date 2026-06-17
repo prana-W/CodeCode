@@ -90,7 +90,18 @@ const worker = new Worker(
                     },
                 })
             );
+            throw err;
         }
     },
-    {connection, concurrency: 2}
+    {connection, concurrency: 4, removeOnComplete: {count: 0}, removeOnFail: {count: 0}}
 );
+
+worker.on('completed', job => {
+    console.log(`✅ [JudgeWorker] Job ${job.id} completed successfully`);
+});
+
+worker.on('failed', (job, err) => {
+    console.error(`❌ [JudgeWorker] Job ${job?.id} failed with error: ${err.message}`);
+});
+
+console.log('🚀 Judge Worker is running and listening to submission-queue...');

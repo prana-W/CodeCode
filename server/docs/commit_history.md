@@ -959,3 +959,14 @@ call POST /auth/refresh
 - Now user can log in normally. Also we have added rate limit to the endpoint to prevent brute force attacks
 
 - Even if the email is not registered with any user, never reveal that to the person, just say them that if the registered user exists then an email must have been sent
+
+## Commit - Later 13
+
+- A worker can pick up jobs from different queues, that's when the priority (which is applied to queues) comes into the picture, it works if jobs of different queue compete for each other within the same worker
+
+- Also I added cxoncurrency to all the workers, to hanfle multiple jobs at once, but make sure to handle submisison and custom invocation in lower numbers at once, else it will explode the RAM usage due to docker containers fomrming, for example: at the least each docker container might consume 256 MB of ram let's say, so even 4 jobs can instanlty spike the RAM to 1 GB
+
+- Also added removeOnfail and removeOnSuccess and added some count to each, so it keeps the track of those number of jobs in BullMQ and then auto deletes old entry if more entry is added, this ensures proper debugging and also avoid the RAM growing infinelty due to logs (as by default they are not deleted) 
+
+- Also added retries to submission and custom invocation queues with some retry limit and exponential backoff, with initial time. This applies when the jobs fails inside the worker i.e. an error is thrown by the worker
+    - If we add attempts: 4 and initialDelay: 3000, so it will attempt 1 time and then retry 3 times with delay of 3s, 6s and 12s respectively if job is failed
