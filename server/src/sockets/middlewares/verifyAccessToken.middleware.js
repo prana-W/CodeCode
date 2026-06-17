@@ -19,7 +19,7 @@ const verifyAccessToken = () => {
 
             const verifiedToken = jwt.verify(
                 accessToken,
-                process.env.ACCESS_TOKEN_SECRET
+                process.env.JWT_ACCESS_SECRET
             );
 
             if (!verifiedToken) {

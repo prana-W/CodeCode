@@ -18,13 +18,13 @@ function initializeSocket(httpServer) {
     // Socket Authentication Middleware
     io.use((socket, next) => {
         try {
-            // Get token from auth payload or cookie string
-            let token = socket.handshake.auth?.token;
+            // Read the accessToken from the httpOnly cookie sent in the handshake
+            let token = null;
 
-            if (!token && socket.handshake.headers.cookie) {
+            if (socket.handshake.headers.cookie) {
                 const cookies = socket.handshake.headers.cookie.split(';');
                 const tokenCookie = cookies.find((c) =>
-                    c.trim().startsWith('token=')
+                    c.trim().startsWith('accessToken=')
                 );
                 if (tokenCookie) {
                     token = tokenCookie.split('=')[1];
@@ -35,11 +35,11 @@ function initializeSocket(httpServer) {
                 return next(new Error('Authentication error: Token missing'));
             }
 
-            const verifiedToken = jwt.verify(token, process.env.JWT_SECRET);
+            const verifiedToken = jwt.verify(token, process.env.JWT_ACCESS_SECRET);
             socket.user = verifiedToken; // Attach user info to socket
             next();
         } catch (err) {
-            next(new Error('Authentication error: Invalid token'));
+            next(new Error('Authentication error: Invalid or expired token'));
         }
     });
 
