@@ -10,7 +10,8 @@ const errorHandler = () => {
             .json(
                 new ApiResponse(
                     err.statusCode || statusCode.INTERNAL_SERVER_ERROR,
-                    err.message || 'Internal Server Error'
+                    err.message || 'Internal Server Error',
+                    err?.data
                 )
             );
     };

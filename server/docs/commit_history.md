@@ -909,7 +909,11 @@ Back on the frontend (e.g., in `ContestProblemView.jsx` or `CustomInvocationPage
     - When we first login by the response from the server or
     - But when we refresh or come again in the application later, the state is reset, so in order to repopulate there is a useEffect which makes a /users/me call to the DB, which validates the accessToken and returns the user details (apart from password). While this is happening the authLoading is true, so we don't redirect the user to the login page accidently, while wait till the user state is populated or fails to do so.
 
+    - If we would have stored user state in the localStorage instead, then it could easily have been altered by anyone, that's why we store it in useState using AuthContext
+
 - When the accessToken expires mid session, the server sends a special error message about the accessToken being expired
+
+- To check if we want to make /refresh or not, we add a data to the APIResponse class and add a code to the data with 'ACCESS_TOKEN_INVALID', for every error on which we want the /refresh to work. So on access token missing, or expiration, or invalidation, we send it
 
 - When the above happens, we have a axios response interpretor in the frontend which sits givinng the repsonse back to client, kind off like a middleware. 
 

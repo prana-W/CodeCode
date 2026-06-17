@@ -173,7 +173,7 @@ const refresh = asyncHandler(async (req, res) => {
     if (!incomingRefreshToken) {
         throw new ApiError(
             statusCode.UNAUTHORIZED,
-            'Refresh token is missing.'
+            'Session Expired. Kindly login back again!'
         );
     }
 

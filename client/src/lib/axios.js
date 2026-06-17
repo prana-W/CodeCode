@@ -36,8 +36,8 @@ api.interceptors.response.use(
         const originalRequest = error.config;
 
         const isExpiredAccessToken =
-            error.response?.status === 401 &&
-            error.response?.data?.message === 'Access token has expired.' &&
+            error.response?.status == 401 &&
+            error.response?.data?.data?.code == 'ACCESS_TOKEN_INVALID' &&
             !originalRequest._retry; // prevent infinite retry loop
 
         if (isExpiredAccessToken) {
