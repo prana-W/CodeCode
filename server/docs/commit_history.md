@@ -957,3 +957,5 @@ call POST /auth/refresh
 - Server hashes the password, updates it, resets all refresh token in DB, deletes reset token in redis and confirms the user
 
 - Now user can log in normally. Also we have added rate limit to the endpoint to prevent brute force attacks
+
+- Even if the email is not registered with any user, never reveal that to the person, just say them that if the registered user exists then an email must have been sent
