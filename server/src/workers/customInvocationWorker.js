@@ -51,7 +51,7 @@ const worker = new Worker(
 
             // Publish to sockets
             if (userId) {
-                connection.publish(
+                await connection.publish(
                     'socket_updates',
                     JSON.stringify({
                         userId,
@@ -61,39 +61,43 @@ const worker = new Worker(
                 );
             }
         } catch (err) {
+            const maxAttempts = job.opts.attempts || 1;
             console.error(
-                `[Worker] Custom invocation ${customInvocationId} failed:`,
+                `[Worker] Custom invocation ${customInvocationId} failed (Attempt ${job.attemptsMade + 1}/${maxAttempts}):`,
                 err.message
             );
 
-            const val = {
-                status: 'completed',
-                customInvocationId,
-                output: '',
-                verdict: 'runtime_error',
-                compilationError: '',
-                error: err.message || 'Execution error',
-                executionTimeMs: 0,
-                memoryUsedKb: 0,
-            };
+            // If this is the last attempt, mark it as system_error
+            if (job.attemptsMade >= maxAttempts - 1) {
+                const val = {
+                    status: 'completed',
+                    customInvocationId,
+                    output: '',
+                    verdict: 'system_error',
+                    compilationError: '',
+                    error: err.message || 'Execution error',
+                    executionTimeMs: 0,
+                    memoryUsedKb: 0,
+                };
 
-            await connection.set(
-                `custom_invocation:${customInvocationId}`,
-                JSON.stringify(val),
-                'EX',
-                120
-            );
-
-            // Publish to sockets
-            if (userId) {
-                connection.publish(
-                    'socket_updates',
-                    JSON.stringify({
-                        userId,
-                        event: 'custom_invocation_update',
-                        payload: val,
-                    })
+                await connection.set(
+                    `custom_invocation:${customInvocationId}`,
+                    JSON.stringify(val),
+                    'EX',
+                    120
                 );
+
+                // Publish to sockets
+                if (userId) {
+                    await connection.publish(
+                        'socket_updates',
+                        JSON.stringify({
+                            userId,
+                            event: 'custom_invocation_update',
+                            payload: val,
+                        })
+                    );
+                }
             }
             throw err; 
         }

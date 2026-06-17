@@ -111,7 +111,8 @@ CREATE TABLE IF NOT EXISTS submissions (
         'runtime_error',
         'compilation_error',
         'time_limit_exceeded',
-        'memory_limit_exceeded'
+        'memory_limit_exceeded',
+        'system_error'
     ) NOT NULL DEFAULT 'pending',
 
     language ENUM(

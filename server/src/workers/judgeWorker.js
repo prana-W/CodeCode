@@ -17,7 +17,7 @@ const worker = new Worker(
         if (!data.input_data) {
             await Submission.setVerdict(submissionId, 'runtime_error');
             console.error(`No test case found for submission ${submissionId}.`);
-            connection.publish(
+            await connection.publish(
                 'socket_updates',
                 JSON.stringify({
                     userId: data.submitted_by,
@@ -60,7 +60,7 @@ const worker = new Worker(
             );
 
             // Publish to sockets
-            connection.publish(
+            await connection.publish(
                 'socket_updates',
                 JSON.stringify({
                     userId: data.submitted_by,
@@ -74,22 +74,27 @@ const worker = new Worker(
                 })
             );
         } catch (err) {
+            const maxAttempts = job.opts.attempts || 1;
             console.error(
-                `Judge failed for submission ${submissionId}:`,
+                `Judge failed for submission ${submissionId} (Attempt ${job.attemptsMade + 1}/${maxAttempts}):`,
                 err.message
             );
-            await Submission.setVerdict(submissionId, 'runtime_error');
-            connection.publish(
-                'socket_updates',
-                JSON.stringify({
-                    userId: data.submitted_by,
-                    event: 'submission_update',
-                    payload: {
-                        submission_id: submissionId,
-                        verdict: 'runtime_error',
-                    },
-                })
-            );
+            
+            // If this is the last attempt, mark it as system_error
+            if (job.attemptsMade >= maxAttempts - 1) {
+                await Submission.setVerdict(submissionId, 'system_error');
+                await connection.publish(
+                    'socket_updates',
+                    JSON.stringify({
+                        userId: data.submitted_by,
+                        event: 'submission_update',
+                        payload: {
+                            submission_id: submissionId,
+                            verdict: 'system_error',
+                        },
+                    })
+                );
+            }
             throw err;
         }
     },

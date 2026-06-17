@@ -5,6 +5,24 @@ import path from 'path';
 
 const execFileAsync = promisify(execFile);
 
+/**
+ * Returns true when the error is a Docker infrastructure failure
+ * (daemon not running, binary not found, permission denied) rather
+ * than a user code failure (compile error, runtime exit code, TLE).
+ * These errors should propagate so BullMQ can retry the job.
+ */
+function isDockerSystemError(err) {
+    // Non-numeric code means the process never started (ENOENT, EACCES, …)
+    if (typeof err.code !== 'number') return true;
+    const output = `${err.stderr ?? ''} ${err.stdout ?? ''} ${err.message ?? ''}`;
+    return (
+        output.includes('Cannot connect to the Docker daemon') ||
+        output.includes('Is the docker daemon running') ||
+        output.includes('docker: command not found') ||
+        output.includes('permission denied while trying to connect')
+    );
+}
+
 const DOCKER_IMAGES = {
     cpp: 'gcc:latest',
     c: 'gcc:latest',
@@ -145,6 +163,8 @@ export async function runJudge({
                     {timeout: 15000} // 15s max compilation time
                 );
             } catch (err) {
+                // Docker infra failure → re-throw so the worker marks it system_error
+                if (isDockerSystemError(err)) throw err;
                 exitCode = typeof err.code === 'number' ? err.code : 1;
                 if (exitCode === 100) {
                     try {
@@ -208,10 +228,10 @@ export async function runJudge({
 
             stdout = result.stdout;
         } catch (err) {
+            // Docker infra failure → re-throw so the worker marks it system_error
+            if (isDockerSystemError(err)) throw err;
             exitCode = typeof err.code === 'number' ? err.code : 1;
-
             stdout = err.stdout ?? '';
-
             killed = !!err.killed;
         }
 
@@ -361,6 +381,8 @@ export async function runCustomInvocationJudge({
                     {timeout: 15000} // 15s max compilation time
                 );
             } catch (err) {
+                // Docker infra failure → re-throw so the worker marks it system_error
+                if (isDockerSystemError(err)) throw err;
                 exitCode = typeof err.code === 'number' ? err.code : 1;
                 if (exitCode === 100) {
                     try {
@@ -416,6 +438,8 @@ export async function runCustomInvocationJudge({
 
             stdout = result.stdout;
         } catch (err) {
+            // Docker infra failure → re-throw so the worker marks it system_error
+            if (isDockerSystemError(err)) throw err;
             exitCode = typeof err.code === 'number' ? err.code : 1;
             stdout = err.stdout ?? '';
             killed = !!err.killed;
