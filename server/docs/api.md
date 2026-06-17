@@ -1,6 +1,19 @@
 # CodeCode API Reference
 
-Welcome to the CodeCode backend API documentation. All endpoints except public authentication routes require a valid session token (passed via an `httpOnly` cookie named `token`).
+Welcome to the CodeCode backend API documentation. All endpoints except public authentication routes require a valid session.
+
+### Authentication Model
+
+CodeCode uses a **dual-token, cookie-based authentication** system:
+
+| Cookie | Expiry | Purpose |
+| --- | --- | --- |
+| `accessToken` | 5 minutes | Short-lived JWT sent with every API request |
+| `refreshToken` | 7 days | Opaque token stored in DB; used to silently issue new access tokens |
+
+Both cookies are `httpOnly`, `secure`, and `sameSite: none`. The frontend **transparently** handles access token expiry via an Axios response interceptor — when a `401 Access token has expired.` response is received, the interceptor calls `POST /auth/refresh` in the background and retries the original request. The user never sees an authentication error unless the refresh token itself is also expired or revoked, at which point they are redirected to the login page.
+
+**Refresh Token Rotation**: Every successful call to `POST /auth/refresh` issues a _new_ refresh token and invalidates the old one. This means a stolen refresh token can only be used once before it is rotated out.
 
 ---
 
@@ -21,7 +34,7 @@ Welcome to the CodeCode backend API documentation. All endpoints except public a
         "institute": "MIT"
     }
     ```
-- **Success Response (201 Created)**:
+- **Success Response (201 Created)**: Sets `accessToken` (5 min) and `refreshToken` (7 day) cookies.
     ```json
     {
         "statusCode": 201,
@@ -53,7 +66,7 @@ Welcome to the CodeCode backend API documentation. All endpoints except public a
         "password": "strongpassword123"
     }
     ```
-- **Success Response (200 OK)**: Sets `token` cookie.
+- **Success Response (200 OK)**: Sets `accessToken` (5 min) and `refreshToken` (7 day) cookies. The `refreshToken` is also persisted to the `users` table in the database.
     ```json
     {
         "statusCode": 200,
@@ -73,12 +86,31 @@ Welcome to the CodeCode backend API documentation. All endpoints except public a
     }
     ```
 
-### 3. Logout User
+### 3. Refresh Access Token
+
+- **Method**: `POST`
+- **Route**: `/refresh`
+- **Access**: Public (requires a valid `refreshToken` cookie)
+- **Description**: Validates the `refreshToken` cookie against the value stored in the database. On success, issues a new `accessToken` AND rotates the `refreshToken` (old one is replaced in DB). This endpoint is called **automatically** by the frontend Axios interceptor — you typically never need to call it manually.
+- **Success Response (200 OK)**: Sets new `accessToken` and `refreshToken` cookies.
+    ```json
+    {
+        "statusCode": 200,
+        "success": true,
+        "message": "Token refreshed successfully."
+    }
+    ```
+- **Error cases**:
+    - `401` — `refreshToken` cookie is missing
+    - `401` — Token not found in DB (already rotated, revoked, or never issued)
+
+### 4. Logout User
 
 - **Method**: `POST`
 - **Route**: `/logout`
-- **Access**: Authenticated (Token required)
-- **Success Response (200 OK)**: Clears `token` cookie.
+- **Access**: Public (uses `refreshToken` cookie to identify session — no access token required)
+- **Description**: Nulls the `refresh_token` column in the database for the identified user, then clears both `accessToken` and `refreshToken` cookies from the browser. Works correctly even when the access token is already expired.
+- **Success Response (200 OK)**:
     ```json
     {
         "statusCode": 200,

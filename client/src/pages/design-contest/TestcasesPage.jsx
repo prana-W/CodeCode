@@ -154,7 +154,6 @@ function TestcasePanel({problem, index, testcase, onRefresh}) {
         streamControllerRef.current = new AbortController();
 
         try {
-            const token = localStorage.getItem('token');
             const apiUrl =
                 import.meta.env.VITE_SERVER_URL ||
                 'http://localhost:8000/api/v1';

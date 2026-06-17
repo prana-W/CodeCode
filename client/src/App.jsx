@@ -34,14 +34,16 @@ import {useAuth} from './context/AuthContext.jsx';
 import {SocketProvider} from './context/SocketContext.jsx';
 
 function ProtectedRoute({children}) {
-    const {user} = useAuth();
+    const {user, authLoading} = useAuth();
+    if (authLoading) return null; // wait for /me hydration before deciding
     if (!user) return <Navigate to="/login" replace />;
     return children;
 }
 
 /** Redirects non-admin users to home. */
 function AdminRoute({children}) {
-    const {user} = useAuth();
+    const {user, authLoading} = useAuth();
+    if (authLoading) return null;
     if (!user || user.role !== 'admin') return <Navigate to="/" replace />;
     return children;
 }

@@ -1,5 +1,6 @@
 import {Router} from 'express';
 import {
+    getMe,
     getUserById,
     getUserByUsername,
     getRankings,
@@ -15,6 +16,9 @@ const router = Router();
 
 // All user routes require a valid token
 router.use(verifyToken);
+
+// Current authenticated user — used by AuthContext to hydrate user state
+router.get('/me', getMe);
 
 router.get('/rankings', getRankings);
 router.get('/username/:username', getUserByUsername);

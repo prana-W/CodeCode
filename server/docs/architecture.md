@@ -15,10 +15,10 @@ server/
 │   │
 │   ├── constants/
 │   │   ├── statusCode.js            # HTTP status code constants
-│   │   └── cookieOptions.js         # JWT cookie config (httpOnly, secure, sameSite)
+│   │   └── cookieOptions.js         # Cookie options for accessToken (5 min) and refreshToken (7 days)
 │   │
 │   ├── controllers/
-│   │   ├── auth.controller.js       # register, login, logout
+│   │   ├── auth.controller.js       # register, login, logout, refresh (access+refresh token rotation)
 │   │   ├── checkHealth.controller.js# GET /api/v1 — returns server time + DB timestamp
 │   │   ├── contest.controller.js    # CRUD, verify, register, leaderboard, finalize
 │   │   ├── problem.controller.js    # CRUD + GET for problems (with time/memory limits)
@@ -38,7 +38,7 @@ server/
 │   │
 │   ├── middlewares/
 │   │   ├── index.js                 # Re-exports verifyToken, verifyAdmin, errorHandler
-│   │   ├── verifyToken.js           # Decodes JWT cookie → attaches req.userId, req.role
+│   │   ├── verifyToken.js           # Decodes accessToken cookie (JWT) → attaches req.userId, req.role
 │   │   ├── verifyAdmin.js           # Blocks non-admin requests with 403
 │   │   ├── errorHandler.js          # Global Express error handler
 │   │   └── rateLimit.middleware.js  # express-rate-limit instances (see Rate Limiting section)
@@ -46,6 +46,7 @@ server/
 │   ├── models/
 │   │   ├── User.model.js            # create, findById, findByEmail, findByUsername,
 │   │   │                            #   getAll, update, delete, updateRating (transactional)
+│   │   │                            #   setRefreshToken, findByRefreshToken, clearRefreshToken
 │   │   ├── Contest.model.js         # create, findById, findAll, update, setVerified, delete,
 │   │   │                            #   getPendingEvaluations, updateEvaluationStatus
 │   │   ├── Problem.model.js         # create, findById, findWithContest, findAllByContest,
@@ -126,7 +127,7 @@ server/
 
 ```
 POST /api/v1/submissions
-Cookie: token=<JWT>
+Cookie: accessToken=<JWT>
 Body: { problem_id, language, source_code }
 ```
 
@@ -135,7 +136,7 @@ Body: { problem_id, language, source_code }
 | Step | File                                            | What happens                                                                                              |
 | ---- | ----------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
 | 1    | `app.js`                                        | Request hits Express; `morgan` logs it; `apiLimiter` checks IP rate limit                                 |
-| 2    | `middlewares/verifyToken.js`                    | JWT from the `token` cookie is verified; `req.userId` and `req.role` attached                             |
+| 2    | `middlewares/verifyToken.js`                    | JWT from the `accessToken` cookie is verified; `req.userId` and `req.role` attached                       |
 | 3    | `routes/submission.routes.js`                   | Matched to `router.post('/', submissionLimiter, createSubmission)`                                        |
 | 4    | `controllers/submission.controller.js`          | `createSubmission` handler runs                                                                           |
 | 5    | Validation                                      | Checks `problem_id`, `language` (must be `cpp/c/java/python/javascript`), `source_code` are present       |
@@ -353,11 +354,67 @@ Guarded by `verifyAdmin`. Same `deltaCalculation()` call with the same status st
 
 ---
 
+## Authentication Flow
+
+CodeCode uses a **dual-token, httpOnly cookie** strategy:
+
+### Token Lifecycle
+
+```
+[Login / Register]
+    ↓
+  Generate accessToken (JWT, 5 min, signed with JWT_ACCESS_SECRET)
+  Generate refreshToken (random 64-byte hex, 7 days)
+    ↓
+  Store refreshToken in users.refresh_token (DB)
+  Set accessToken cookie  (httpOnly, secure, sameSite=none, maxAge=5m)
+  Set refreshToken cookie (httpOnly, secure, sameSite=none, maxAge=7d)
+
+[Every API Request]
+    ↓
+  verifyToken middleware reads accessToken cookie
+  Verifies JWT with JWT_ACCESS_SECRET
+    ↓ (valid) → req.userId, req.username, req.role attached → next()
+    ↓ (expired) → 401 "Access token has expired."
+
+[Client Axios Interceptor — on 401 "Access token has expired."]
+    ↓
+  POST /auth/refresh  (sends refreshToken cookie)
+    ↓
+  Server: find user by refreshToken in DB
+           generate new accessToken
+           generate new refreshToken (ROTATION)
+           update DB with new refreshToken
+           set both new cookies
+    ↓ (success) → retry original failed request transparently
+    ↓ (failure) → call forceLogout() → clear localStorage + cookies → redirect to /login
+
+[Logout]
+    ↓
+  POST /auth/logout  (sends refreshToken cookie — no access token needed)
+    ↓
+  Server: NULL users.refresh_token in DB
+          clearCookie accessToken
+          clearCookie refreshToken
+```
+
+### Refresh Token Rotation
+
+Every `/refresh` call issues a brand-new refresh token and replaces the old one in the DB. This means:
+- A stolen refresh token can only be used **once** before it is invalidated
+- If an attacker uses a stolen RT, the legitimate user's next request will detect a mismatch and invalidate the entire session
+
+### Why Two Separate Secrets?
+
+`JWT_ACCESS_SECRET` signs access tokens only. `JWT_REFRESH_SECRET` is available as an env var for future enhancement (e.g., signing refresh tokens as JWTs instead of opaque values). Keeping them separate ensures access tokens cannot be used as refresh tokens and vice versa.
+
+---
+
 ## AI Assistant (`src/services/ai.service.js`)
 
 ```
 POST /api/v1/ai/ask
-Cookie: token=<JWT>
+Cookie: accessToken=<JWT>
 Body: { prompt: "What is a segment tree?" }
 ```
 
@@ -373,7 +430,7 @@ Body: { prompt: "What is a segment tree?" }
 
 ```
 POST /api/v1/users/heartbeat
-Cookie: token=<JWT>
+Cookie: accessToken=<JWT>
 ```
 
 - **Authentication**: Requires a valid JWT (`verifyToken`).
@@ -387,15 +444,15 @@ Cookie: token=<JWT>
 
 All rate limiters use `express-rate-limit` with `standardHeaders: true`.
 
-| Limiter                      | Applied to                      | Window | Limit |
-| ---------------------------- | ------------------------------- | ------ | ----- |
-| `apiLimiter`                 | All `/api/*` routes             | 15 min | 100   |
-| `authLimiter`                | `POST /auth/register`, `/login` | 15 min | 10    |
-| `submissionLimiter`          | `POST /submissions`             | 1 min  | 5     |
-| `contestCreationLimiter`     | `POST /contests`                | 1 hour | 5     |
-| `contestRegistrationLimiter` | `POST /contests/register`       | 10 min | 10    |
-| `profileUpdateLimiter`       | `PATCH /users/:id`              | 15 min | 15    |
-| `aiLimiter`                  | `POST /ai/ask`                  | 5 min  | 100   |
+| Limiter                      | Applied to                                        | Window | Limit |
+| ---------------------------- | ------------------------------------------------- | ------ | ----- |
+| `apiLimiter`                 | All `/api/*` routes                               | 15 min | 100   |
+| `authLimiter`                | `POST /auth/register`, `/login`, `/refresh`       | 15 min | 10    |
+| `submissionLimiter`          | `POST /submissions`                               | 1 min  | 5     |
+| `contestCreationLimiter`     | `POST /contests`                                  | 1 hour | 5     |
+| `contestRegistrationLimiter` | `POST /contests/register`                         | 10 min | 10    |
+| `profileUpdateLimiter`       | `PATCH /users/:id`                                | 15 min | 15    |
+| `aiLimiter`                  | `POST /ai/ask`                                    | 5 min  | 100   |
 
 ---
 
@@ -425,7 +482,7 @@ Scaffolded but not yet fully activated in production startup.
 
 | Table                   | Key columns                                                                                                                                                                        |
 | ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `users`                 | `id`, `username`, `name`, `institute`, `email`, `password`, `rating`, `max_rating`, `role`, `created_at`                                                                           |
+| `users`                 | `id`, `username`, `name`, `institute`, `email`, `password`, `refresh_token`, `rating`, `max_rating`, `role`, `created_at`                                                           |
 | `contests`              | `id`, `title`, `description`, `isVerified`, `authored_by`, `contest_start_time`, `contest_end_time`, `contest_evaluation ENUM(pending,running,completed)`, `division TINYINT(1–5)` |
 | `problems`              | `problem_id`, `contest_id`, `title`, `score`, `rating`, `time_limit_ms`, `memory_limit_mb`, `statement`, `explanation`                                                             |
 | `test_cases`            | `test_case_id`, `problem_id` (UNIQUE), `input_data`, `expected_output`, `is_sample`                                                                                                |
@@ -539,17 +596,18 @@ Cron (every 5 min, runs inside API server process)
 
 ## Environment Variables (`.env`)
 
-| Key                   | Purpose                                                   |
-| --------------------- | --------------------------------------------------------- |
-| `PORT`                | HTTP server port (default `8000`)                         |
-| `MYSQL_HOST`          | MySQL host                                                |
-| `MYSQL_USER`          | MySQL user                                                |
-| `MYSQL_PASSWORD`      | MySQL password                                            |
-| `MYSQL_DB`            | Database name (`codecode_v0`)                             |
-| `JWT_SECRET`          | Secret key for signing/verifying HTTP JWT cookies         |
-| `JWT_EXPIRES_IN`      | JWT expiry (default `7d`)                                 |
-| `ACCESS_TOKEN_SECRET` | Secret key for Socket.IO access tokens                    |
-| `REDIS_PORT`          | Redis port (default `6379`)                               |
-| `CORS_ORIGIN`         | Comma-separated allowed origins                           |
-| `OLLAMA_URL`          | Base URL of the local Ollama instance                     |
-| `OLLAMA_MODEL`        | Model name to use for the AI assistant (e.g. `gemma3:4b`) |
+| Key                   | Purpose                                                        |
+| --------------------- | -------------------------------------------------------------- |
+| `PORT`                | HTTP server port (default `8000`)                              |
+| `MYSQL_HOST`          | MySQL host                                                     |
+| `MYSQL_USER`          | MySQL user                                                     |
+| `MYSQL_PASSWORD`      | MySQL password                                                 |
+| `MYSQL_DB`            | Database name (`codecode_v0`)                                  |
+| `JWT_ACCESS_SECRET`   | Secret for signing short-lived access token JWTs (5 min)       |
+| `JWT_REFRESH_SECRET`  | Secret for future refresh token JWT signing (currently opaque) |
+| `REDIS_PORT`          | Redis port (default `6379`)                                    |
+| `CORS_ORIGIN`         | Comma-separated allowed origins                                |
+| `OLLAMA_URL`          | Base URL of the local Ollama instance                          |
+| `OLLAMA_MODEL`        | Model name for the AI assistant (e.g. `gemma3:4b`)             |
+| `GEMINI_API_KEY`      | Google Gemini API key for cloud AI features                    |
+| `GEMINI_MODEL`        | Gemini model name (e.g. `gemini-1.5-flash`)                    |

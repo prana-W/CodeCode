@@ -122,6 +122,40 @@ class User {
     }
 
     /**
+     * Persists (or replaces) the refresh token for a user.
+     * Called on login, registration, and token rotation.
+     */
+    static async setRefreshToken(id, token) {
+        await pool.query(
+            'UPDATE users SET refresh_token = ? WHERE id = ?',
+            [token, id]
+        );
+    }
+
+    /**
+     * Finds a user by their raw refresh token value.
+     * Returns undefined if no match (token is invalid/already rotated).
+     */
+    static async findByRefreshToken(token) {
+        const [rows] = await pool.query(
+            'SELECT * FROM users WHERE refresh_token = ?',
+            [token]
+        );
+        return rows[0];
+    }
+
+    /**
+     * Invalidates the refresh token for a user (sets it to NULL).
+     * Called on logout.
+     */
+    static async clearRefreshToken(id) {
+        await pool.query(
+            'UPDATE users SET refresh_token = NULL WHERE id = ?',
+            [id]
+        );
+    }
+
+    /**
      * Returns all activity data needed for the profile heatmap section:
      *  - heatmap: per-day totals (for the requested year)
      *  - allTimeTotal / allTimeAccepted

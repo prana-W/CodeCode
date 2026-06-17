@@ -130,7 +130,6 @@ export default function UserProfileEdit() {
 
             const updatedUserData = {...user, ...updatedProfile};
             setUser(updatedUserData);
-            localStorage.setItem('user', JSON.stringify(updatedUserData));
 
             toast.success('Profile updated successfully!');
             navigate(`/user-profile/${user.username}`);

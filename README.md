@@ -71,7 +71,7 @@ CodeCode is built as a highly decoupled Monorepo, split into a React Frontend an
 - **Real-Time**: Socket.IO + Redis Pub/Sub integration.
 - **Execution Engine**: Docker (`child_process.execFile` interacting with `gcc`, `python`, `node`, `openjdk` images)
 - **AI Integration**: Google Gemini API (Cloud LLM)
-- **Security**: JWT (`httpOnly` cookies), `bcrypt`, `express-rate-limit`
+- **Security**: Dual-token auth — short-lived **access tokens** (5 min JWT) + long-lived **refresh tokens** (7 days, stored in DB with rotation). Both delivered as `httpOnly` cookies. Expired access tokens are silently refreshed by an Axios interceptor; expired refresh tokens force a re-login. Also uses `bcrypt` and `express-rate-limit`.
 
 ---
 

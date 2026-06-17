@@ -3,6 +3,26 @@ import ContestRegistration from '../models/ContestRegistration.model.js';
 import {ApiError, ApiResponse, asyncHandler} from '../utility/index.js';
 import statusCode from '../constants/statusCode.js';
 import {getIO} from '../sockets/index.js';
+import {
+    accessTokenCookieOptions,
+    refreshTokenCookieOptions,
+} from '../constants/cookieOptions.js';
+
+/**
+ * GET /users/me
+ * Returns the authenticated user's details from the access token.
+ * Used by AuthContext to hydrate the user state on page load/refresh.
+ */
+const getMe = asyncHandler(async (req, res) => {
+    const user = await User.findById(req.userId);
+    if (!user) {
+        throw new ApiError(statusCode.NOT_FOUND, 'User not found.');
+    }
+    const {password, refresh_token, ...safeUser} = user;
+    return res
+        .status(statusCode.OK)
+        .json(new ApiResponse(statusCode.OK, 'User fetched successfully.', safeUser));
+});
 
 const getUserById = asyncHandler(async (req, res) => {
     const {id} = req.params;
@@ -12,7 +32,7 @@ const getUserById = asyncHandler(async (req, res) => {
         throw new ApiError(statusCode.NOT_FOUND, 'User not found.');
     }
 
-    const {password, ...userDetails} = user;
+    const {password, refresh_token, ...userDetails} = user;
 
     const io = getIO();
     let isOnline = false;
@@ -40,7 +60,7 @@ const getUserByUsername = asyncHandler(async (req, res) => {
         throw new ApiError(statusCode.NOT_FOUND, 'User not found.');
     }
 
-    const {password, ...userDetails} = user;
+    const {password, refresh_token, ...userDetails} = user;
 
     const io = getIO();
     let isOnline = false;
@@ -133,11 +153,10 @@ const deleteUser = asyncHandler(async (req, res) => {
 
     await User.delete(Number(id));
 
-    // Optional: We can clear cookies here if the user deleted their own account.
-    res.clearCookie('token');
-
     return res
         .status(statusCode.OK)
+        .clearCookie('accessToken', accessTokenCookieOptions)
+        .clearCookie('refreshToken', refreshTokenCookieOptions)
         .json(new ApiResponse(statusCode.OK, 'User deleted successfully.'));
 });
 
@@ -200,6 +219,7 @@ const getActivityStats = asyncHandler(async (req, res) => {
 });
 
 export {
+    getMe,
     getUserById,
     getUserByUsername,
     getRankings,

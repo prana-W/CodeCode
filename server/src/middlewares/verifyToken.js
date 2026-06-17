@@ -4,18 +4,18 @@ import jwt from 'jsonwebtoken';
 
 const verifyToken = (req, res, next) => {
     try {
-        const token = req?.cookies?.token;
+        const token = req?.cookies?.accessToken;
 
         if (!token || token === 'null') {
-            throw new ApiError(statusCode.UNAUTHORIZED, 'Token is missing!');
+            throw new ApiError(statusCode.UNAUTHORIZED, 'Access token is missing!');
         }
 
-        const verifiedToken = jwt.verify(token, process.env.JWT_SECRET);
+        const verifiedToken = jwt.verify(token, process.env.JWT_ACCESS_SECRET);
 
         if (!verifiedToken) {
             throw new ApiError(
                 statusCode.UNAUTHORIZED,
-                'Token validation error!'
+                'Access token validation error!'
             );
         }
 
@@ -26,15 +26,16 @@ const verifyToken = (req, res, next) => {
 
         next();
     } catch (error) {
-        // Handle jwt-specific errors with clearer messages
+        // Return a distinct message so the client interceptor can identify
+        // an expired access token and silently call /refresh.
         if (error.name === 'TokenExpiredError') {
             return next(
-                new ApiError(statusCode.UNAUTHORIZED, 'Token has expired.')
+                new ApiError(statusCode.UNAUTHORIZED, 'Access token has expired.')
             );
         }
         if (error.name === 'JsonWebTokenError') {
             return next(
-                new ApiError(statusCode.UNAUTHORIZED, 'Invalid token.')
+                new ApiError(statusCode.UNAUTHORIZED, 'Invalid access token.')
             );
         }
         next(

@@ -30,7 +30,54 @@ A lightning-fast, highly interactive single-page application (SPA) built for com
 
 ---
 
-## 📦 Packages & Tech Stack
+## 🔐 Authentication Flow
+
+The app uses a **dual-token, cookie-based authentication** strategy. No tokens or user data are stored in `localStorage`.
+
+### Tokens
+
+| Cookie | Lifetime | What it does |
+| --- | --- | --- |
+| `accessToken` | 5 minutes | Short-lived JWT; verified by every protected API route |
+| `refreshToken` | 7 days | Opaque random token stored in the DB; used to silently issue new access tokens |
+
+Both cookies are `httpOnly`, `secure`, and `sameSite: none` — JavaScript cannot read them, eliminating XSS token theft.
+
+### Lifecycle
+
+```
+[Page load / refresh]
+  AuthContext mounts → GET /users/me (cookie sent automatically)
+    ✓ valid accessToken  → user state hydrated, authLoading = false
+    ✗ expired accessToken → Axios interceptor calls POST /auth/refresh first,
+                             retries /users/me → user state hydrated
+    ✗ no session at all  → user = null → redirect to /login
+
+[Every API request]
+  accessToken cookie attached automatically by the browser
+    ✓ valid  → request succeeds
+    ✗ expired (401 "Access token has expired.") →
+        Axios interceptor fires:
+          1. Queues any other concurrent requests
+          2. Calls POST /auth/refresh (sends refreshToken cookie)
+          3a. Success → new accessToken + rotated refreshToken set in cookies
+                       → original request retried transparently (user sees nothing)
+          3b. Failure → forceLogout() called → user state cleared → redirect to /login
+
+[Logout]
+  POST /auth/logout → server nulls refresh_token in DB, clears both cookies
+  setUser(null) → React state cleared, user redirected to /login
+```
+
+### Key files
+
+| File | Responsibility |
+| --- | --- |
+| `context/AuthContext.jsx` | Holds `user` state; hydrates from `GET /users/me` on mount; exposes `login`, `logout`, `authLoading` |
+| `lib/axios.js` | Axios instance with a response interceptor for silent token refresh and forced logout |
+| `App.jsx` | `ProtectedRoute` / `AdminRoute` wait for `authLoading` before redirecting |
+
+
 
 | Package                    | Role                 | Why it's used                                                                                                    |
 | :------------------------- | :------------------- | :--------------------------------------------------------------------------------------------------------------- |
@@ -41,7 +88,7 @@ A lightning-fast, highly interactive single-page application (SPA) built for com
 | **`socket.io-client`**     | Real-time events     | Listens to backend Pub/Sub events for instant submission verdicts and live user counts without HTTP polling.     |
 | **`recharts`**             | Data visualization   | Renders the complex SVG charts for Elo rating graphs and activity heatmaps.                                      |
 | **`@uiw/react-md-editor`** | Markdown rendering   | Safely and beautifully renders problem statements, AI hint outputs, and explanations.                            |
-| **`axios`**                | HTTP Client          | Configured with `withCredentials: true` to automatically pass the secure, `httpOnly` JWT cookies to the backend. |
+| **`axios`**                | HTTP Client          | Configured with `withCredentials: true` to send `httpOnly` JWT cookies automatically. A response interceptor silently refreshes the `accessToken` on 401 and retries the original request. |
 | **`sonner`**               | Toast notifications  | Beautiful, swipeable, and highly customizable toast alerts for async actions.                                    |
 | **`react-router-dom`**     | Routing              | Client-side routing with nested layouts and route protection.                                                    |
 | **`lucide-react`**         | Iconography          | Clean, consistent SVG icons utilized throughout the platform.                                                    |

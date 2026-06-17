@@ -10,6 +10,8 @@ CREATE TABLE IF NOT EXISTS users (
 
     email VARCHAR(255) NOT NULL UNIQUE,
     password VARCHAR(255) NOT NULL,
+    
+    refresh_token VARCHAR(255) NULL,
 
     rating INT DEFAULT 0,
     max_rating INT DEFAULT 0,

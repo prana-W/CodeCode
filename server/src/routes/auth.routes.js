@@ -1,6 +1,5 @@
 import {Router} from 'express';
-import {register, login, logout} from '../controllers/auth.controller.js';
-import {verifyToken} from '../middlewares/index.js';
+import {register, login, logout, refresh} from '../controllers/auth.controller.js';
 import {authLimiter} from '../middlewares/rateLimit.middleware.js';
 
 const router = Router();
@@ -9,7 +8,11 @@ const router = Router();
 router.post('/register', authLimiter, register);
 router.post('/login', authLimiter, login);
 
-// Protected route — user must be logged in to log out
-router.post('/logout', verifyToken, logout);
+// Refresh — uses the refresh token cookie; no access token required
+router.post('/refresh', authLimiter, refresh);
+
+// Logout — identifies the session via the refresh token cookie; no access token required
+// (access token may already be expired when the user clicks logout)
+router.post('/logout', logout);
 
 export default router;
