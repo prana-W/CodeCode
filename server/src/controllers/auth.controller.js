@@ -28,28 +28,25 @@ const generateAccessToken = (user) =>
  * BEFORE the DB lookup, which serves as the rotation guard.
  */
 const generateRefreshToken = (user) =>
-    jwt.sign(
-        {userId: user.id},
-        process.env.JWT_REFRESH_SECRET,
-        {expiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '7d'}
-    );
+    jwt.sign({userId: user.id}, process.env.JWT_REFRESH_SECRET, {
+        expiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '7d',
+    });
 
 /**
  * Helper — issue both tokens, persist the refresh token, set both cookies.
  */
 const issueTokens = async (res, user) => {
-    const accessToken  = generateAccessToken(user);
+    const accessToken = generateAccessToken(user);
     const refreshToken = generateRefreshToken(user);
 
     // Persist the new refresh token in DB (replaces any existing one — rotation)
     await User.setRefreshToken(user.id, refreshToken);
 
-    res.cookie('accessToken',  accessToken,  accessTokenCookieOptions);
+    res.cookie('accessToken', accessToken, accessTokenCookieOptions);
     res.cookie('refreshToken', refreshToken, refreshTokenCookieOptions);
 
     return {accessToken, refreshToken};
 };
-
 
 const register = asyncHandler(async (req, res) => {
     const {username, name, institute, email, password} = req.body;
@@ -68,10 +65,7 @@ const register = asyncHandler(async (req, res) => {
 
     const existingByEmail = await User.findByEmail(email);
     if (existingByEmail) {
-        throw new ApiError(
-            statusCode.CONFLICT,
-            'Email is already registered.'
-        );
+        throw new ApiError(statusCode.CONFLICT, 'Email is already registered.');
     }
 
     const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
@@ -183,7 +177,10 @@ const refresh = asyncHandler(async (req, res) => {
     // before we ever hit the database.
     let decoded;
     try {
-        decoded = jwt.verify(incomingRefreshToken, process.env.JWT_REFRESH_SECRET);
+        decoded = jwt.verify(
+            incomingRefreshToken,
+            process.env.JWT_REFRESH_SECRET
+        );
     } catch (error) {
         // Clear stale cookies on any JWT error
         res.clearCookie('accessToken', accessTokenCookieOptions);

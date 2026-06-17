@@ -1,11 +1,10 @@
 const baseCookieOptions = {
-    httpOnly: true, // this prevents browser from reading cookie via js 
+    httpOnly: true, // this prevents browser from reading cookie via js
 
     // Both are coupled together to send cookies to different origin (as our client and server is in different domains)
     secure: true,
     sameSite: 'none',
 };
-
 
 const accessTokenCookieOptions = {
     ...baseCookieOptions,

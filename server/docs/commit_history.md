@@ -895,7 +895,7 @@ Back on the frontend (e.g., in `ContestProblemView.jsx` or `CustomInvocationPage
 
 ## Commit - Later 11
 
-- Now I have updated the entire flow of authentication in both server and frontend. 
+- Now I have updated the entire flow of authentication in both server and frontend.
 
 - I have made access and refreshToken, both are httpOnly, which doesn't allow the browser or any js code to access the token, thus preventing various types of attacks like XSS, CSRF and so on.
 
@@ -915,22 +915,23 @@ Back on the frontend (e.g., in `ContestProblemView.jsx` or `CustomInvocationPage
 
 - To check if we want to make /refresh or not, we add a data to the APIResponse class and add a code to the data with 'ACCESS_TOKEN_INVALID', for every error on which we want the /refresh to work. So on access token missing, or expiration, or invalidation, we send it
 
-- When the above happens, we have a axios response interpretor in the frontend which sits givinng the repsonse back to client, kind off like a middleware. 
+- When the above happens, we have a axios response interpretor in the frontend which sits givinng the repsonse back to client, kind off like a middleware.
 
 Any API call → 401 "Access token has expired."
-                        ↓
-          isRefreshing? → true → queue this request, wait
-          isRefreshing? → false →
-              set isRefreshing = true
-              set originalRequest._retry = true (prevents infinite loop)
-              call POST /auth/refresh
-                        ↓
-                 ┌── success ──────────────────────────────────────────────┐
-                 │  new accessToken cookie set by server                   │
-                 │  new refreshToken cookie set (ROTATION)                 │
-                 │  notifySubscribers() — wake up all queued requests       │
-                 │  retry originalRequest → succeeds → user sees nothing   │
-                 └─────────────────────────────────────────────────────────
+↓
+isRefreshing? → true → queue this request, wait
+isRefreshing? → false →
+set isRefreshing = true
+set originalRequest.\_retry = true (prevents infinite loop)
+call POST /auth/refresh
+↓
+┌── success ──────────────────────────────────────────────┐
+│ new accessToken cookie set by server │
+│ new refreshToken cookie set (ROTATION) │
+│ notifySubscribers() — wake up all queued requests │
+│ retry originalRequest → succeeds → user sees nothing │
+└─────────────────────────────────────────────────────────
+
 - This is done so let's say we have a dashboard with 4 API calls, when access token in expired mid session, all these would send four request for new access token and this would lead to unnecessary load on the server. So, what we instead do is send only one request for new access token and then put all the the responses of the other API calls into the queue and when the accessToken is succesfully received, we use a subscriber notifier to wake up all the queued requests and send all those API request again to the server as now our accessToken is valid, without any additional load.
 
 - When even the refresh token is expired, then we would want to auto-logout the user. To do so first the server when refrehs token has expired, it removed both access and refresh token from cookies. But to take the user to login page, we would take a logout callback in the axios file as it is a module and can't directly access the authContext. Now when the AuthContext is mounted, we add the logout callback function to the authLogoutCallback. Now, when the cookies are expired and the axios gets it, it runs the authLogoutCallback(), which calls the /logout endpoint (just in case) and makes the user state in AuthContext as null

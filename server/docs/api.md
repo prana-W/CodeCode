@@ -6,10 +6,10 @@ Welcome to the CodeCode backend API documentation. All endpoints except public a
 
 CodeCode uses a **dual-token, cookie-based authentication** system:
 
-| Cookie | Expiry | Purpose |
-| --- | --- | --- |
-| `accessToken` | 5 minutes | Short-lived JWT sent with every API request |
-| `refreshToken` | 7 days | Opaque token stored in DB; used to silently issue new access tokens |
+| Cookie         | Expiry    | Purpose                                                             |
+| -------------- | --------- | ------------------------------------------------------------------- |
+| `accessToken`  | 5 minutes | Short-lived JWT sent with every API request                         |
+| `refreshToken` | 7 days    | Opaque token stored in DB; used to silently issue new access tokens |
 
 Both cookies are `httpOnly`, `secure`, and `sameSite: none`. The frontend **transparently** handles access token expiry via an Axios response interceptor — when a `401 Access token has expired.` response is received, the interceptor calls `POST /auth/refresh` in the background and retries the original request. The user never sees an authentication error unless the refresh token itself is also expired or revoked, at which point they are redirected to the login page.
 

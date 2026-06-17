@@ -21,7 +21,13 @@ const getMe = asyncHandler(async (req, res) => {
     const {password, refresh_token, ...safeUser} = user;
     return res
         .status(statusCode.OK)
-        .json(new ApiResponse(statusCode.OK, 'User fetched successfully.', safeUser));
+        .json(
+            new ApiResponse(
+                statusCode.OK,
+                'User fetched successfully.',
+                safeUser
+            )
+        );
 });
 
 const getUserById = asyncHandler(async (req, res) => {

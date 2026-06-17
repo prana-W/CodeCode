@@ -35,7 +35,10 @@ function initializeSocket(httpServer) {
                 return next(new Error('Authentication error: Token missing'));
             }
 
-            const verifiedToken = jwt.verify(token, process.env.JWT_ACCESS_SECRET);
+            const verifiedToken = jwt.verify(
+                token,
+                process.env.JWT_ACCESS_SECRET
+            );
             socket.user = verifiedToken; // Attach user info to socket
             next();
         } catch (err) {

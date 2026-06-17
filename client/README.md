@@ -36,10 +36,10 @@ The app uses a **dual-token, cookie-based authentication** strategy. No tokens o
 
 ### Tokens
 
-| Cookie | Lifetime | What it does |
-| --- | --- | --- |
-| `accessToken` | 5 minutes | Short-lived JWT; verified by every protected API route |
-| `refreshToken` | 7 days | Opaque random token stored in the DB; used to silently issue new access tokens |
+| Cookie         | Lifetime  | What it does                                                                   |
+| -------------- | --------- | ------------------------------------------------------------------------------ |
+| `accessToken`  | 5 minutes | Short-lived JWT; verified by every protected API route                         |
+| `refreshToken` | 7 days    | Opaque random token stored in the DB; used to silently issue new access tokens |
 
 Both cookies are `httpOnly`, `secure`, and `sameSite: none` — JavaScript cannot read them, eliminating XSS token theft.
 
@@ -71,27 +71,25 @@ Both cookies are `httpOnly`, `secure`, and `sameSite: none` — JavaScript canno
 
 ### Key files
 
-| File | Responsibility |
-| --- | --- |
+| File                      | Responsibility                                                                                       |
+| ------------------------- | ---------------------------------------------------------------------------------------------------- |
 | `context/AuthContext.jsx` | Holds `user` state; hydrates from `GET /users/me` on mount; exposes `login`, `logout`, `authLoading` |
-| `lib/axios.js` | Axios instance with a response interceptor for silent token refresh and forced logout |
-| `App.jsx` | `ProtectedRoute` / `AdminRoute` wait for `authLoading` before redirecting |
+| `lib/axios.js`            | Axios instance with a response interceptor for silent token refresh and forced logout                |
+| `App.jsx`                 | `ProtectedRoute` / `AdminRoute` wait for `authLoading` before redirecting                            |
 
-
-
-| Package                    | Role                 | Why it's used                                                                                                    |
-| :------------------------- | :------------------- | :--------------------------------------------------------------------------------------------------------------- |
-| **`react` + `vite`**       | Core framework       | Lightning-fast HMR and optimized production builds.                                                              |
-| **`tailwindcss`**          | Styling engine       | Utility-first CSS for rapid, responsive, and consistent UI design.                                               |
-| **`radix-ui`**             | Component primitives | Unstyled, accessible components (Tabs, Select, Dialogs) that we style with Tailwind.                             |
-| **`@monaco-editor/react`** | Code editor          | Provides a robust, syntax-highlighted IDE experience directly in the browser.                                    |
-| **`socket.io-client`**     | Real-time events     | Listens to backend Pub/Sub events for instant submission verdicts and live user counts without HTTP polling.     |
-| **`recharts`**             | Data visualization   | Renders the complex SVG charts for Elo rating graphs and activity heatmaps.                                      |
-| **`@uiw/react-md-editor`** | Markdown rendering   | Safely and beautifully renders problem statements, AI hint outputs, and explanations.                            |
+| Package                    | Role                 | Why it's used                                                                                                                                                                              |
+| :------------------------- | :------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **`react` + `vite`**       | Core framework       | Lightning-fast HMR and optimized production builds.                                                                                                                                        |
+| **`tailwindcss`**          | Styling engine       | Utility-first CSS for rapid, responsive, and consistent UI design.                                                                                                                         |
+| **`radix-ui`**             | Component primitives | Unstyled, accessible components (Tabs, Select, Dialogs) that we style with Tailwind.                                                                                                       |
+| **`@monaco-editor/react`** | Code editor          | Provides a robust, syntax-highlighted IDE experience directly in the browser.                                                                                                              |
+| **`socket.io-client`**     | Real-time events     | Listens to backend Pub/Sub events for instant submission verdicts and live user counts without HTTP polling.                                                                               |
+| **`recharts`**             | Data visualization   | Renders the complex SVG charts for Elo rating graphs and activity heatmaps.                                                                                                                |
+| **`@uiw/react-md-editor`** | Markdown rendering   | Safely and beautifully renders problem statements, AI hint outputs, and explanations.                                                                                                      |
 | **`axios`**                | HTTP Client          | Configured with `withCredentials: true` to send `httpOnly` JWT cookies automatically. A response interceptor silently refreshes the `accessToken` on 401 and retries the original request. |
-| **`sonner`**               | Toast notifications  | Beautiful, swipeable, and highly customizable toast alerts for async actions.                                    |
-| **`react-router-dom`**     | Routing              | Client-side routing with nested layouts and route protection.                                                    |
-| **`lucide-react`**         | Iconography          | Clean, consistent SVG icons utilized throughout the platform.                                                    |
+| **`sonner`**               | Toast notifications  | Beautiful, swipeable, and highly customizable toast alerts for async actions.                                                                                                              |
+| **`react-router-dom`**     | Routing              | Client-side routing with nested layouts and route protection.                                                                                                                              |
+| **`lucide-react`**         | Iconography          | Clean, consistent SVG icons utilized throughout the platform.                                                                                                                              |
 
 ---
 

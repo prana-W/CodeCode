@@ -126,10 +126,10 @@ class User {
      * Called on login, registration, and token rotation.
      */
     static async setRefreshToken(id, token) {
-        await pool.query(
-            'UPDATE users SET refresh_token = ? WHERE id = ?',
-            [token, id]
-        );
+        await pool.query('UPDATE users SET refresh_token = ? WHERE id = ?', [
+            token,
+            id,
+        ]);
     }
 
     /**
@@ -149,10 +149,9 @@ class User {
      * Called on logout.
      */
     static async clearRefreshToken(id) {
-        await pool.query(
-            'UPDATE users SET refresh_token = NULL WHERE id = ?',
-            [id]
-        );
+        await pool.query('UPDATE users SET refresh_token = NULL WHERE id = ?', [
+            id,
+        ]);
     }
 
     /**

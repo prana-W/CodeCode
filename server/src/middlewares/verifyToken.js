@@ -7,8 +7,12 @@ const verifyToken = (req, res, next) => {
         const token = req?.cookies?.accessToken;
 
         if (!token || token === 'null') {
-            throw new ApiError(statusCode.UNAUTHORIZED, 'Access token is missing!', [],
-                {code: 'ACCESS_TOKEN_INVALID'})
+            throw new ApiError(
+                statusCode.UNAUTHORIZED,
+                'Access token is missing!',
+                [],
+                {code: 'ACCESS_TOKEN_INVALID'}
+            );
         }
 
         const verifiedToken = jwt.verify(token, process.env.JWT_ACCESS_SECRET);
@@ -33,8 +37,12 @@ const verifyToken = (req, res, next) => {
         // an expired access token and silently call /refresh.
         if (error.name === 'TokenExpiredError') {
             return next(
-                new ApiError(statusCode.UNAUTHORIZED, 'Access token has expired.', [],
-                {code: 'ACCESS_TOKEN_INVALID'})
+                new ApiError(
+                    statusCode.UNAUTHORIZED,
+                    'Access token has expired.',
+                    [],
+                    {code: 'ACCESS_TOKEN_INVALID'}
+                )
             );
         }
         if (error.name === 'JsonWebTokenError') {
@@ -45,7 +53,12 @@ const verifyToken = (req, res, next) => {
         next(
             error instanceof ApiError
                 ? error
-                : new ApiError(statusCode.UNAUTHORIZED, error?.message, error?.stack, error?.data)
+                : new ApiError(
+                      statusCode.UNAUTHORIZED,
+                      error?.message,
+                      error?.stack,
+                      error?.data
+                  )
         );
     }
 };

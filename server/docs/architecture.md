@@ -401,6 +401,7 @@ CodeCode uses a **dual-token, httpOnly cookie** strategy:
 ### Refresh Token Rotation
 
 Every `/refresh` call issues a brand-new refresh token and replaces the old one in the DB. This means:
+
 - A stolen refresh token can only be used **once** before it is invalidated
 - If an attacker uses a stolen RT, the legitimate user's next request will detect a mismatch and invalidate the entire session
 
@@ -444,15 +445,15 @@ Cookie: accessToken=<JWT>
 
 All rate limiters use `express-rate-limit` with `standardHeaders: true`.
 
-| Limiter                      | Applied to                                        | Window | Limit |
-| ---------------------------- | ------------------------------------------------- | ------ | ----- |
-| `apiLimiter`                 | All `/api/*` routes                               | 15 min | 100   |
-| `authLimiter`                | `POST /auth/register`, `/login`, `/refresh`       | 15 min | 10    |
-| `submissionLimiter`          | `POST /submissions`                               | 1 min  | 5     |
-| `contestCreationLimiter`     | `POST /contests`                                  | 1 hour | 5     |
-| `contestRegistrationLimiter` | `POST /contests/register`                         | 10 min | 10    |
-| `profileUpdateLimiter`       | `PATCH /users/:id`                                | 15 min | 15    |
-| `aiLimiter`                  | `POST /ai/ask`                                    | 5 min  | 100   |
+| Limiter                      | Applied to                                  | Window | Limit |
+| ---------------------------- | ------------------------------------------- | ------ | ----- |
+| `apiLimiter`                 | All `/api/*` routes                         | 15 min | 100   |
+| `authLimiter`                | `POST /auth/register`, `/login`, `/refresh` | 15 min | 10    |
+| `submissionLimiter`          | `POST /submissions`                         | 1 min  | 5     |
+| `contestCreationLimiter`     | `POST /contests`                            | 1 hour | 5     |
+| `contestRegistrationLimiter` | `POST /contests/register`                   | 10 min | 10    |
+| `profileUpdateLimiter`       | `PATCH /users/:id`                          | 15 min | 15    |
+| `aiLimiter`                  | `POST /ai/ask`                              | 5 min  | 100   |
 
 ---
 
@@ -482,7 +483,7 @@ Scaffolded but not yet fully activated in production startup.
 
 | Table                   | Key columns                                                                                                                                                                        |
 | ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `users`                 | `id`, `username`, `name`, `institute`, `email`, `password`, `refresh_token`, `rating`, `max_rating`, `role`, `created_at`                                                           |
+| `users`                 | `id`, `username`, `name`, `institute`, `email`, `password`, `refresh_token`, `rating`, `max_rating`, `role`, `created_at`                                                          |
 | `contests`              | `id`, `title`, `description`, `isVerified`, `authored_by`, `contest_start_time`, `contest_end_time`, `contest_evaluation ENUM(pending,running,completed)`, `division TINYINT(1–5)` |
 | `problems`              | `problem_id`, `contest_id`, `title`, `score`, `rating`, `time_limit_ms`, `memory_limit_mb`, `statement`, `explanation`                                                             |
 | `test_cases`            | `test_case_id`, `problem_id` (UNIQUE), `input_data`, `expected_output`, `is_sample`                                                                                                |
@@ -596,18 +597,18 @@ Cron (every 5 min, runs inside API server process)
 
 ## Environment Variables (`.env`)
 
-| Key                   | Purpose                                                        |
-| --------------------- | -------------------------------------------------------------- |
-| `PORT`                | HTTP server port (default `8000`)                              |
-| `MYSQL_HOST`          | MySQL host                                                     |
-| `MYSQL_USER`          | MySQL user                                                     |
-| `MYSQL_PASSWORD`      | MySQL password                                                 |
-| `MYSQL_DB`            | Database name (`codecode_v0`)                                  |
-| `JWT_ACCESS_SECRET`   | Secret for signing short-lived access token JWTs (5 min)       |
-| `JWT_REFRESH_SECRET`  | Secret for future refresh token JWT signing (currently opaque) |
-| `REDIS_PORT`          | Redis port (default `6379`)                                    |
-| `CORS_ORIGIN`         | Comma-separated allowed origins                                |
-| `OLLAMA_URL`          | Base URL of the local Ollama instance                          |
-| `OLLAMA_MODEL`        | Model name for the AI assistant (e.g. `gemma3:4b`)             |
-| `GEMINI_API_KEY`      | Google Gemini API key for cloud AI features                    |
-| `GEMINI_MODEL`        | Gemini model name (e.g. `gemini-1.5-flash`)                    |
+| Key                  | Purpose                                                        |
+| -------------------- | -------------------------------------------------------------- |
+| `PORT`               | HTTP server port (default `8000`)                              |
+| `MYSQL_HOST`         | MySQL host                                                     |
+| `MYSQL_USER`         | MySQL user                                                     |
+| `MYSQL_PASSWORD`     | MySQL password                                                 |
+| `MYSQL_DB`           | Database name (`codecode_v0`)                                  |
+| `JWT_ACCESS_SECRET`  | Secret for signing short-lived access token JWTs (5 min)       |
+| `JWT_REFRESH_SECRET` | Secret for future refresh token JWT signing (currently opaque) |
+| `REDIS_PORT`         | Redis port (default `6379`)                                    |
+| `CORS_ORIGIN`        | Comma-separated allowed origins                                |
+| `OLLAMA_URL`         | Base URL of the local Ollama instance                          |
+| `OLLAMA_MODEL`       | Model name for the AI assistant (e.g. `gemma3:4b`)             |
+| `GEMINI_API_KEY`     | Google Gemini API key for cloud AI features                    |
+| `GEMINI_MODEL`       | Gemini model name (e.g. `gemini-1.5-flash`)                    |
