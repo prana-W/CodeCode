@@ -119,6 +119,48 @@ Both cookies are `httpOnly`, `secure`, and `sameSite: none`. The frontend **tran
     }
     ```
 
+### 5. Forgot Password
+
+- **Method**: `POST`
+- **Route**: `/forgot-password`
+- **Access**: Public
+- **Request Body**:
+    ```json
+    {
+        "email": "alex@example.com"
+    }
+    ```
+- **Success Response (200 OK)**:
+    ```json
+    {
+        "statusCode": 200,
+        "success": true,
+        "message": "If that email is registered, a password reset link has been sent."
+    }
+    ```
+
+### 6. Reset Password
+
+- **Method**: `POST`
+- **Route**: `/reset-password`
+- **Access**: Public
+- **Request Body**:
+    ```json
+    {
+        "userId": 1,
+        "token": "hex_token_string",
+        "newPassword": "newstrongpassword123"
+    }
+    ```
+- **Success Response (200 OK)**: Clears `accessToken` and `refreshToken` cookies, requiring the user to login again.
+    ```json
+    {
+        "statusCode": 200,
+        "success": true,
+        "message": "Password reset successfully. Please log in with your new password."
+    }
+    ```
+
 ---
 
 ## Contest Endpoints (`/api/v1/contests`)
@@ -841,6 +883,32 @@ _Note: All endpoints require authentication. Admins and contest creators do not 
 ## User Endpoints (`/api/v1/users`)
 
 _Note: All endpoints require authentication._
+
+### 0. Get Current User (Me)
+
+- **Method**: `GET`
+- **Route**: `/me`
+- **Access**: Authenticated users.
+- **Description**: Returns the authenticated user's details based on the session token. Used by the frontend to hydrate user state.
+- **Success Response (200 OK)**:
+    ```json
+    {
+        "statusCode": 200,
+        "success": true,
+        "message": "User fetched successfully.",
+        "data": {
+            "id": 1,
+            "username": "coder_x",
+            "name": "Alex Mercer",
+            "institute": "MIT",
+            "email": "alex@example.com",
+            "rating": 0,
+            "max_rating": 0,
+            "role": "user",
+            "created_at": "2026-06-02T09:00:00.000Z"
+        }
+    }
+    ```
 
 ### 1. View User Details
 

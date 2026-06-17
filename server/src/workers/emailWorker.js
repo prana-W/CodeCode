@@ -1,4 +1,4 @@
-import { Worker } from 'bullmq';
+import {Worker} from 'bullmq';
 import nodemailer from 'nodemailer';
 import connection from '../config/redis.js';
 
@@ -13,7 +13,7 @@ const transporter = nodemailer.createTransport({
 const worker = new Worker(
     'email-queue',
     async (job) => {
-        const { to, subject, html } = job.data;
+        const {to, subject, html} = job.data;
 
         if (!to || !subject || !html) {
             console.error(
@@ -45,17 +45,19 @@ const worker = new Worker(
     {
         connection,
         concurrency: 10,
-        removeOnComplete: { count: 5 },
-        removeOnFail: { count: 5 },
+        removeOnComplete: {count: 5},
+        removeOnFail: {count: 5},
     }
 );
 
-worker.on('completed', job => {
+worker.on('completed', (job) => {
     console.log(`✅ [EmailWorker] Job ${job.id} completed successfully`);
 });
 
 worker.on('failed', (job, err) => {
-    console.error(`❌ [EmailWorker] Job ${job?.id} failed with error: ${err.message}`);
+    console.error(
+        `❌ [EmailWorker] Job ${job?.id} failed with error: ${err.message}`
+    );
 });
 
 console.log('🚀 Email Worker is running and listening to email-queue...');

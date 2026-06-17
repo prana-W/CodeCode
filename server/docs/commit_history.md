@@ -948,7 +948,7 @@ call POST /auth/refresh
 
 - I have now added a forgot password during login and reset password inside user profile functionality to the application. Both has the exaclty same flow and uses the same api endpoint
 
-- User clicks forgot password, the server received it, it uses crypto to create a  crypto.randomBytes(64).toString('hex') (128 chars) reset token, hash it using bcryptand stores it in Redis with a short TTL (5 minutes).
+- User clicks forgot password, the server received it, it uses crypto to create a crypto.randomBytes(64).toString('hex') (128 chars) reset token, hash it using bcryptand stores it in Redis with a short TTL (5 minutes).
 
 - A job is created and added to queue for sending email, which the bullMQ worker picks up and sends the user an email containing the reset link which has userId and reset token as params in the link and the base url is frontend link
 
@@ -966,12 +966,11 @@ call POST /auth/refresh
 
 - Also I added cxoncurrency to all the workers, to hanfle multiple jobs at once, but make sure to handle submisison and custom invocation in lower numbers at once, else it will explode the RAM usage due to docker containers fomrming, for example: at the least each docker container might consume 256 MB of ram let's say, so even 4 jobs can instanlty spike the RAM to 1 GB
 
-- Also added removeOnfail and removeOnSuccess and added some count to each, so it keeps the track of those number of jobs in BullMQ and then auto deletes old entry if more entry is added, this ensures proper debugging and also avoid the RAM growing infinelty due to logs (as by default they are not deleted) 
+- Also added removeOnfail and removeOnSuccess and added some count to each, so it keeps the track of those number of jobs in BullMQ and then auto deletes old entry if more entry is added, this ensures proper debugging and also avoid the RAM growing infinelty due to logs (as by default they are not deleted)
 
 - Also added retries to submission and custom invocation queues with some retry limit and exponential backoff, with initial time. This applies when the jobs fails inside the worker i.e. an error is thrown by the worker
     - If we add attempts: 4 and initialDelay: 3000, so it will attempt 1 time and then retry 3 times with delay of 3s, 6s and 12s respectively if job is failed
 
-
 ## Commit - Later 14
 
-- I am now using PM2 (process manager) to manage all the various processes like web server, and all the three workers (submission, custom invocation and email) and 
+- I am now using PM2 (process manager) to manage all the various processes like web server, and all the three workers (submission, custom invocation and email) and

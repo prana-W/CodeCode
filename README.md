@@ -96,7 +96,7 @@ cd server
   ```bash
   mysql -u root -p < src/db/schema.sql
   ```
-- Start the server (runs both the API and the background judge workers in parallel):
+- Start the server (runs the API and all background workers in parallel via PM2):
   ```bash
   npm run dev
   ```

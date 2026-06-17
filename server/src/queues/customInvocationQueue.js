@@ -9,5 +9,4 @@ const customInvocationQueue = new Queue('custom-invocation-queue', {
     },
 });
 
-
 export default customInvocationQueue;

@@ -32,7 +32,7 @@ A high-performance, production-grade backend for a competitive programming platf
 | **API docs**         | swagger-jsdoc + swagger-ui-express | Full OpenAPI 3.0 spec served interactively at runtime — no separate doc deployment needed                                             |
 | **AI assistant**     | Ollama (local LLM)                 | Runs entirely on-device — zero API cost, zero data sent to a third party; model and URL are configurable via env                      |
 | **Real-time**        | Socket.IO                          | Scaffolded for future live contest features (standings push, notifications); JWT-authenticated at the socket handshake level          |
-| **Dev tooling**      | concurrently + nodemon             | Runs the API server and submission worker as two parallel hot-reloading processes with a single `npm run dev`                              |
+| **Dev tooling**      | PM2                                | Runs the API server and all background workers as parallel processes with hot-reloading using a single `npm run dev`                  |
 | **Code style**       | Prettier                           | Enforced formatting across the entire codebase                                                                                        |
 
 ---
@@ -272,8 +272,7 @@ Contest leaderboards and submission history are read far more often than they ar
 | `morgan`                 | ^1.10.1       | HTTP request logger (dev format)                                             |
 | `dotenv`                 | ^17.4.2       | Loads `.env` into `process.env`                                              |
 | `ngrok`                  | ^5.0.0-beta.2 | Dev tunnel for exposing the local server publicly (commented out by default) |
-| `concurrently`           | ^10.0.3       | Runs API server + submission worker as two parallel processes                     |
-| `nodemon`                | ^3.1.14       | Hot-reloads both processes on file changes during development                |
+| `pm2`                    | ^7.0.1        | Runs API server and all background workers as parallel processes             |
 | `prettier`               | ^3.8.3        | Enforces consistent code style across the entire codebase                    |
 | `child_process` (stdlib) | —             | `execFile` to spawn `docker run` for each submission                         |
 | `fs/promises` (stdlib)   | —             | Async file I/O for sandbox creation, source file writing, and cleanup        |
@@ -325,7 +324,7 @@ mysql -u root -p < src/db/schema.sql
 ### Run
 
 ```bash
-# Development (hot-reload, both API server + judge worker)
+# Development (hot-reload, API server + all workers)
 npm run dev
 
 # Production

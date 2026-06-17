@@ -21,7 +21,6 @@ const generateAccessToken = (user) =>
         {expiresIn: process.env.JWT_ACCESS_EXPIRES_IN || '5m'}
     );
 
-
 const generateRefreshToken = (user) =>
     jwt.sign({userId: user.id}, process.env.JWT_REFRESH_SECRET, {
         expiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '7d',
@@ -85,7 +84,6 @@ const register = asyncHandler(async (req, res) => {
             )
         );
 });
-
 
 const login = asyncHandler(async (req, res) => {
     const {email, password} = req.body;
@@ -176,7 +174,6 @@ const refresh = asyncHandler(async (req, res) => {
     const user = await User.findByRefreshToken(incomingRefreshToken);
 
     if (!user) {
-   
         res.clearCookie('accessToken', accessTokenCookieOptions);
         res.clearCookie('refreshToken', refreshTokenCookieOptions);
         throw new ApiError(
@@ -215,7 +212,6 @@ const forgotPassword = asyncHandler(async (req, res) => {
     const user = await User.findByEmail(email);
 
     if (user) {
-       
         const rawToken = crypto.randomBytes(64).toString('hex');
 
         const hashedToken = await bcrypt.hash(rawToken, 10);
@@ -223,9 +219,7 @@ const forgotPassword = asyncHandler(async (req, res) => {
         const redisKey = `reset:${user.id}`;
         await redis.set(redisKey, hashedToken, 'EX', 300);
 
-
-        const frontendUrl =
-            process.env.FRONTEND_URL || 'http://localhost:5173';
+        const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
         const resetLink = `${frontendUrl}/reset-password?userid=${user.id}&token=${rawToken}`;
 
         // Enqueue email job — picked up by emailWorker
@@ -244,7 +238,6 @@ const forgotPassword = asyncHandler(async (req, res) => {
         .status(statusCode.OK)
         .json(new ApiResponse(statusCode.OK, GENERIC_RESPONSE));
 });
-
 
 const resetPassword = asyncHandler(async (req, res) => {
     const {userId, token, newPassword} = req.body;
@@ -266,10 +259,8 @@ const resetPassword = asyncHandler(async (req, res) => {
 
     const redisKey = `reset:${userId}`;
 
-
     const hashedToken = await redis.get(redisKey);
     if (!hashedToken) {
-
         throw new ApiError(
             statusCode.BAD_REQUEST,
             'Reset link has expired or is invalid. Please request a new one.'

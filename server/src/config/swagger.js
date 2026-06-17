@@ -213,6 +213,70 @@ const swaggerDefinition = {
                 },
             },
         },
+        '/auth/forgot-password': {
+            post: {
+                tags: ['Auth'],
+                summary: 'Send password reset email',
+                security: [],
+                requestBody: {
+                    required: true,
+                    content: {
+                        'application/json': {
+                            schema: {
+                                type: 'object',
+                                required: ['email'],
+                                properties: {
+                                    email: {
+                                        type: 'string',
+                                        example: 'alex@example.com',
+                                    },
+                                },
+                            },
+                        },
+                    },
+                },
+                responses: {
+                    200: {description: 'Reset email sent if user exists'},
+                    400: {description: 'Email is required'},
+                },
+            },
+        },
+        '/auth/reset-password': {
+            post: {
+                tags: ['Auth'],
+                summary: 'Reset password using token',
+                security: [],
+                requestBody: {
+                    required: true,
+                    content: {
+                        'application/json': {
+                            schema: {
+                                type: 'object',
+                                required: ['userId', 'token', 'newPassword'],
+                                properties: {
+                                    userId: {
+                                        type: 'integer',
+                                        example: 1,
+                                    },
+                                    token: {
+                                        type: 'string',
+                                        example: 'hex_token_string',
+                                    },
+                                    newPassword: {
+                                        type: 'string',
+                                        example: 'newstrongpassword123',
+                                    },
+                                },
+                            },
+                        },
+                    },
+                },
+                responses: {
+                    200: {description: 'Password reset successfully'},
+                    400: {description: 'Invalid token or short password'},
+                },
+            },
+        },
 
         // ── CONTESTS ──────────────────────────────────────────────────────────
         '/contests': {
@@ -950,6 +1014,28 @@ const swaggerDefinition = {
         },
 
         // ── USERS ─────────────────────────────────────────────────────────────
+        '/users/me': {
+            get: {
+                tags: ['Users'],
+                summary: 'Get current authenticated user',
+                description:
+                    'Returns the user details corresponding to the session cookie.',
+                responses: {
+                    200: {
+                        description: 'User details',
+                        content: {
+                            'application/json': {
+                                schema: {
+                                    $ref: '#/components/schemas/User',
+                                },
+                            },
+                        },
+                    },
+                    401: {description: 'Not authenticated'},
+                    404: {description: 'User not found'},
+                },
+            },
+        },
         '/users/{id}': {
             get: {
                 tags: ['Users'],

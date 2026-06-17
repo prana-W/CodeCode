@@ -99,18 +99,29 @@ const worker = new Worker(
                     );
                 }
             }
-            throw err; 
+            throw err;
         }
     },
-    {connection, concurrency: 4, removeOnComplete: {count: 5}, removeOnFail: {count: 5}}
+    {
+        connection,
+        concurrency: 4,
+        removeOnComplete: {count: 5},
+        removeOnFail: {count: 5},
+    }
 );
 
-worker.on('completed', job => {
-    console.log(`✅ [CustomInvocationWorker] Job ${job.id} completed successfully`);
+worker.on('completed', (job) => {
+    console.log(
+        `✅ [CustomInvocationWorker] Job ${job.id} completed successfully`
+    );
 });
 
 worker.on('failed', (job, err) => {
-    console.error(`❌ [CustomInvocationWorker] Job ${job?.id} failed with error: ${err.message}`);
+    console.error(
+        `❌ [CustomInvocationWorker] Job ${job?.id} failed with error: ${err.message}`
+    );
 });
 
-console.log('🚀 Custom Invocation Worker is running and listening to custom-invocation-queue...');
+console.log(
+    '🚀 Custom Invocation Worker is running and listening to custom-invocation-queue...'
+);

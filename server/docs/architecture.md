@@ -103,7 +103,7 @@ server/
 
 ## Phase 1 — Server Startup
 
-`npm run dev` (via `concurrently`) starts **two** parallel processes:
+`npm run dev` (via `PM2`) starts the API server and all background workers as parallel processes:
 
 ### Process 1 — API Server (`src/index.js`)
 
@@ -585,7 +585,7 @@ Cron (every 5 min, runs inside API server process)
 | `swagger-jsdoc`               | Generates OpenAPI spec from JSDoc comments + inline definition               |
 | `swagger-ui-express`          | Serves interactive Swagger UI at `/` and `/api-docs`                         |
 | `socket.io`                   | WebSocket layer for future real-time features (scaffolded)                   |
-| `concurrently`                | Runs API server and submission worker as two parallel `nodemon` processes in dev  |
+| `pm2`                         | Runs API server and all background workers as parallel processes in dev      |
 | `morgan`                      | HTTP request logger                                                          |
 | `dotenv`                      | Loads `.env` into `process.env`                                              |
 | `cors`                        | Configures allowed origins from `CORS_ORIGIN` env variable                   |

@@ -79,7 +79,7 @@ const worker = new Worker(
                 `Judge failed for submission ${submissionId} (Attempt ${job.attemptsMade + 1}/${maxAttempts}):`,
                 err.message
             );
-            
+
             // If this is the last attempt, mark it as system_error
             if (job.attemptsMade >= maxAttempts - 1) {
                 await Submission.setVerdict(submissionId, 'system_error');
@@ -98,15 +98,24 @@ const worker = new Worker(
             throw err;
         }
     },
-    {connection, concurrency: 4, removeOnComplete: {count: 5}, removeOnFail: {count: 5}}
+    {
+        connection,
+        concurrency: 4,
+        removeOnComplete: {count: 5},
+        removeOnFail: {count: 5},
+    }
 );
 
-worker.on('completed', job => {
+worker.on('completed', (job) => {
     console.log(`✅ [SubmissionWorker] Job ${job.id} completed successfully`);
 });
 
 worker.on('failed', (job, err) => {
-    console.error(`❌ [SubmissionWorker] Job ${job?.id} failed with error: ${err.message}`);
+    console.error(
+        `❌ [SubmissionWorker] Job ${job?.id} failed with error: ${err.message}`
+    );
 });
 
-console.log('🚀 Submission Worker is running and listening to submission-queue...');
+console.log(
+    '🚀 Submission Worker is running and listening to submission-queue...'
+);

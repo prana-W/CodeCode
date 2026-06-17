@@ -9,5 +9,4 @@ const submissionQueue = new Queue('submission-queue', {
     },
 });
 
-
 export default submissionQueue;
