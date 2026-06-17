@@ -9,6 +9,7 @@ import {
     Save,
     AtSign,
     ArrowLeft,
+    KeyRound,
 } from 'lucide-react';
 import {Button} from '@/components/ui/button';
 import {Input} from '@/components/ui/input';
@@ -33,6 +34,7 @@ export default function UserProfileEdit() {
     const [profile, setProfile] = useState(null);
     const [loading, setLoading] = useState(true);
     const [updating, setUpdating] = useState(false);
+    const [changePwLoading, setChangePwLoading] = useState(false);
 
     const [form, setForm] = useState({
         name: '',
@@ -139,6 +141,24 @@ export default function UserProfileEdit() {
             );
         } finally {
             setUpdating(false);
+        }
+    };
+
+    const handleChangePassword = async () => {
+        if (!profile?.email) return;
+        setChangePwLoading(true);
+        try {
+            await api.post('/auth/forgot-password', {email: profile.email});
+            toast.success(
+                'A password reset link has been sent to your email address.'
+            );
+        } catch (err) {
+            toast.error(
+                err?.response?.data?.message ||
+                    'Failed to send reset link. Please try again.'
+            );
+        } finally {
+            setChangePwLoading(false);
         }
     };
 
@@ -391,6 +411,48 @@ export default function UserProfileEdit() {
                             </Button>
                         </CardFooter>
                     </form>
+                </Card>
+
+                {/* ── Security Section ──────────────────────────────── */}
+                <Card className="border-border overflow-hidden mt-6">
+                    <div className="p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                        <div className="flex items-start gap-4">
+                            <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-primary/10 shrink-0">
+                                <KeyRound className="w-5 h-5 text-primary" />
+                            </div>
+                            <div>
+                                <h2 className="text-base font-semibold text-foreground">
+                                    Password &amp; Security
+                                </h2>
+                                <p className="text-sm text-muted-foreground mt-0.5">
+                                    We&apos;ll email a secure reset link to{' '}
+                                    <span className="font-medium text-foreground">
+                                        {profile?.email}
+                                    </span>
+                                    . The link expires in 5 minutes.
+                                </p>
+                            </div>
+                        </div>
+                        <Button
+                            type="button"
+                            variant="outline"
+                            className="gap-2 text-xs font-semibold uppercase tracking-wider shrink-0"
+                            onClick={handleChangePassword}
+                            disabled={changePwLoading}
+                        >
+                            {changePwLoading ? (
+                                <>
+                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                    Sending…
+                                </>
+                            ) : (
+                                <>
+                                    <KeyRound className="w-4 h-4" />
+                                    Change Password
+                                </>
+                            )}
+                        </Button>
+                    </div>
                 </Card>
             </div>
         </div>

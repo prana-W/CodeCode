@@ -155,6 +155,17 @@ class User {
     }
 
     /**
+     * Updates the hashed password for a user.
+     * Called during the reset-password flow after token validation.
+     */
+    static async updatePassword(id, hashedPassword) {
+        await pool.query('UPDATE users SET password = ? WHERE id = ?', [
+            hashedPassword,
+            id,
+        ]);
+    }
+
+    /**
      * Returns all activity data needed for the profile heatmap section:
      *  - heatmap: per-day totals (for the requested year)
      *  - allTimeTotal / allTimeAccepted

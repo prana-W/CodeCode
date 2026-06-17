@@ -943,3 +943,17 @@ call POST /auth/refresh
 - In the server, the refresh token is first validated, then verified with the one stored in db, then both access and refresh token are genreted again,refresh token stored in DB, and both sent back to user via cookies.
 
 - Also we add the JWT expiration to both tokens which adds a entry to the JWT token, which when reaches above the expiratin limit returns false when validated
+
+## Commit - Later 12
+
+- I have now added a forgot password during login and reset password inside user profile functionality to the application. Both has the exaclty same flow and uses the same api endpoint
+
+- User clicks forgot password, the server received it, it uses crypto to create a  crypto.randomBytes(64).toString('hex') (128 chars) reset token, hash it using bcryptand stores it in Redis with a short TTL (5 minutes).
+
+- A job is created and added to queue for sending email, which the bullMQ worker picks up and sends the user an email containing the reset link which has userId and reset token as params in the link and the base url is frontend link
+
+- User clicks on the link, it opens the page, where user can choose the new password (strength of password is also validated) and then when clicks conffrim, sends it to server
+
+- Server hashes the password, updates it, resets all refresh token in DB, deletes reset token in redis and confirms the user
+
+- Now user can log in normally. Also we have added rate limit to the endpoint to prevent brute force attacks

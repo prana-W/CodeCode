@@ -1,6 +1,8 @@
 import NotFound from './NotFound';
 import Login from './Login';
 import Register from './Register';
+import ForgotPassword from './ForgotPassword';
+import ResetPassword from './ResetPassword';
 import Home from './Home.jsx';
 import ContestsPage from './ContestsPage.jsx';
 import ContestListPage from './design-contest/ContestListPage.jsx';
@@ -30,6 +32,8 @@ export {
     NotFound,
     Login,
     Register,
+    ForgotPassword,
+    ResetPassword,
     ContestsPage,
     AboutUs,
     UserProfile,

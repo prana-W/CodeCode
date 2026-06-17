@@ -3,6 +3,8 @@ import {
     NotFound,
     Login,
     Register,
+    ForgotPassword,
+    ResetPassword,
     ContestsPage,
     ContestListPage,
     ContestEditPage,
@@ -68,6 +70,14 @@ const router = createBrowserRouter([
             {
                 path: 'register',
                 element: <Register />,
+            },
+            {
+                path: 'forgot-password',
+                element: <ForgotPassword />,
+            },
+            {
+                path: 'reset-password',
+                element: <ResetPassword />,
             },
             {
                 path: 'rankings',

@@ -1,4 +1,5 @@
 import bcrypt from 'bcrypt';
+import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
 import User from '../models/User.model.js';
 import {ApiError, ApiResponse, asyncHandler} from '../utility/index.js';
@@ -7,13 +8,12 @@ import {
     accessTokenCookieOptions,
     refreshTokenCookieOptions,
 } from '../constants/cookieOptions.js';
+import redis from '../config/redis.js';
+import emailQueue from '../queues/emailQueue.js';
+import {buildPasswordResetEmail} from '../constants/emailTemplates.js';
 
 const SALT_ROUNDS = 12;
 
-/**
- * Signs a short-lived access token (5 minutes).
- * Verified using JWT_ACCESS_SECRET.
- */
 const generateAccessToken = (user) =>
     jwt.sign(
         {userId: user.id, username: user.username, role: user.role},
@@ -21,12 +21,7 @@ const generateAccessToken = (user) =>
         {expiresIn: process.env.JWT_ACCESS_EXPIRES_IN || '5m'}
     );
 
-/**
- * Signs a long-lived refresh token (7 days).
- * Verified using JWT_REFRESH_SECRET — separate from the access token secret.
- * Storing a JWT in the DB allows cryptographic validation (signature + expiry)
- * BEFORE the DB lookup, which serves as the rotation guard.
- */
+
 const generateRefreshToken = (user) =>
     jwt.sign({userId: user.id}, process.env.JWT_REFRESH_SECRET, {
         expiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '7d',
@@ -151,16 +146,6 @@ const logout = asyncHandler(async (req, res) => {
         .json(new ApiResponse(statusCode.OK, 'Logout successful.'));
 });
 
-/**
- * POST /auth/refresh
- *
- * Two-layer validation:
- *   1. JWT verification (signature + expiry) — catches tampered/forged tokens
- *      without touching the DB at all.
- *   2. DB lookup — confirms the token hasn't been rotated out (replay protection).
- *
- * On success, issues a new access token AND rotates the refresh token.
- */
 const refresh = asyncHandler(async (req, res) => {
     const incomingRefreshToken = req.cookies?.refreshToken;
 
@@ -171,10 +156,6 @@ const refresh = asyncHandler(async (req, res) => {
         );
     }
 
-    // ── Layer 1: Cryptographic validation ────────────────────────────────────
-    // Verify signature and expiry using JWT_REFRESH_SECRET.
-    // If the token was forged, tampered with, or simply expired, this throws
-    // before we ever hit the database.
     let decoded;
     try {
         decoded = jwt.verify(
@@ -198,15 +179,10 @@ const refresh = asyncHandler(async (req, res) => {
         );
     }
 
-    // ── Layer 2: DB rotation check ───────────────────────────────────────────
-    // Even a cryptographically valid token is rejected if it no longer matches
-    // what's stored in the DB — meaning it has already been rotated out.
-    // This is what prevents replay attacks with stolen refresh tokens.
     const user = await User.findByRefreshToken(incomingRefreshToken);
 
     if (!user) {
-        // Token is valid JWT but not in DB — it was already rotated.
-        // This could mean a replay attack: clear cookies and force re-login.
+   
         res.clearCookie('accessToken', accessTokenCookieOptions);
         res.clearCookie('refreshToken', refreshTokenCookieOptions);
         throw new ApiError(
@@ -225,7 +201,6 @@ const refresh = asyncHandler(async (req, res) => {
         );
     }
 
-    // ── Issue new tokens (rotation) ──────────────────────────────────────────
     await issueTokens(res, user);
 
     return res
@@ -233,4 +208,171 @@ const refresh = asyncHandler(async (req, res) => {
         .json(new ApiResponse(statusCode.OK, 'Token refreshed successfully.'));
 });
 
-export {register, login, logout, refresh};
+const forgotPassword = asyncHandler(async (req, res) => {
+    const {email} = req.body;
+
+    if (!email) {
+        throw new ApiError(statusCode.BAD_REQUEST, 'Email is required.');
+    }
+
+    const GENERIC_RESPONSE =
+        'If that email is registered, a password reset link has been sent.';
+
+    const user = await User.findByEmail(email);
+
+    if (user) {
+        // 128-character hex token — computationally infeasible to brute-force
+        const rawToken = crypto.randomBytes(64).toString('hex');
+
+        // Hash before storing — Redis compromise cannot expose the raw token
+        const hashedToken = await bcrypt.hash(rawToken, 10);
+
+        // Store in Redis with 5-minute TTL
+        const redisKey = `reset:${user.id}`;
+        await redis.set(redisKey, hashedToken, 'EX', 300);
+
+        // Build the reset link
+        const frontendUrl =
+            process.env.FRONTEND_URL || 'http://localhost:5173';
+        const resetLink = `${frontendUrl}/reset-password?userid=${user.id}&token=${rawToken}`;
+
+        // Enqueue email job — picked up by emailWorker
+        await emailQueue.add('send-reset-email', {
+            to: user.email,
+            subject: 'Reset your CodeCode password',
+            html: buildPasswordResetEmail(user.name, resetLink),
+        });
+
+        console.log(
+            `[ForgotPassword] Reset email queued for user ${user.id} (${user.email})`
+        );
+    }
+
+    return res
+        .status(statusCode.OK)
+        .json(new ApiResponse(statusCode.OK, GENERIC_RESPONSE));
+});
+
+
+const resetPassword = asyncHandler(async (req, res) => {
+    const {userId, token, newPassword} = req.body;
+
+    if (!userId || !token || !newPassword) {
+        throw new ApiError(
+            statusCode.BAD_REQUEST,
+            'userId, token and newPassword are required.'
+        );
+    }
+
+    // Minimum password length — matches registration requirement
+    if (newPassword.length < 8) {
+        throw new ApiError(
+            statusCode.BAD_REQUEST,
+            'Password must be at least 8 characters.'
+        );
+    }
+
+    const redisKey = `reset:${userId}`;
+
+
+    const hashedToken = await redis.get(redisKey);
+    if (!hashedToken) {
+
+        throw new ApiError(
+            statusCode.BAD_REQUEST,
+            'Reset link has expired or is invalid. Please request a new one.'
+        );
+    }
+
+    const isValid = await bcrypt.compare(token, hashedToken);
+    if (!isValid) {
+        throw new ApiError(
+            statusCode.BAD_REQUEST,
+            'Reset link has expired or is invalid. Please request a new one.'
+        );
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, SALT_ROUNDS);
+    await User.updatePassword(userId, hashedPassword);
+
+    await User.clearRefreshToken(userId);
+
+    await redis.del(redisKey);
+
+    res.clearCookie('accessToken', accessTokenCookieOptions);
+    res.clearCookie('refreshToken', refreshTokenCookieOptions);
+
+    return res
+        .status(statusCode.OK)
+        .json(
+            new ApiResponse(
+                statusCode.OK,
+                'Password reset successfully. Please log in with your new password.'
+            )
+        );
+});
+
+
+function buildResetEmailHtml(name, resetLink) {
+    return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Reset your CodeCode password</title>
+</head>
+<body style="margin:0;padding:0;background:#0f0f0f;font-family:'Segoe UI',Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#0f0f0f;padding:40px 0;">
+    <tr>
+      <td align="center">
+        <table width="600" cellpadding="0" cellspacing="0" style="background:#1a1a1a;border-radius:12px;overflow:hidden;border:1px solid #2a2a2a;">
+          <tr>
+            <td style="background:linear-gradient(135deg,#6366f1,#8b5cf6);padding:32px 40px;text-align:center;">
+              <h1 style="margin:0;color:#fff;font-size:28px;font-weight:800;letter-spacing:-0.5px;">CodeCode</h1>
+              <p style="margin:6px 0 0;color:rgba(255,255,255,0.75);font-size:14px;">Competitive Programming Platform</p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:40px;">
+              <h2 style="margin:0 0 8px;color:#f5f5f5;font-size:22px;font-weight:700;">Reset your password</h2>
+              <p style="margin:0 0 24px;color:#a0a0a0;font-size:15px;line-height:1.6;">
+                Hi <strong style="color:#e0e0e0;">${name}</strong>,<br/>
+                We received a request to reset the password for your CodeCode account.
+                Click the button below to choose a new password.
+              </p>
+              <div style="text-align:center;margin:32px 0;">
+                <a href="${resetLink}"
+                   style="display:inline-block;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;
+                          text-decoration:none;font-size:15px;font-weight:700;padding:14px 36px;
+                          border-radius:8px;letter-spacing:0.3px;">
+                  Reset Password
+                </a>
+              </div>
+              <p style="margin:0 0 8px;color:#a0a0a0;font-size:13px;line-height:1.6;">
+                Or copy and paste this link into your browser:
+              </p>
+              <p style="margin:0 0 24px;word-break:break-all;">
+                <a href="${resetLink}" style="color:#818cf8;font-size:12px;">${resetLink}</a>
+              </p>
+              <hr style="border:none;border-top:1px solid #2a2a2a;margin:24px 0;"/>
+              <p style="margin:0;color:#6b6b6b;font-size:12px;line-height:1.6;">
+                ⏱ This link expires in <strong style="color:#a0a0a0;">5 minutes</strong>.<br/>
+                🔒 If you did not request a password reset, you can safely ignore this email — your password will not change.<br/>
+                This is an automated message; please do not reply.
+              </p>
+            </td>
+          </tr>
+          <tr>
+            <td style="background:#141414;padding:20px 40px;text-align:center;border-top:1px solid #2a2a2a;">
+              <p style="margin:0;color:#4a4a4a;font-size:12px;">© 2025 CodeCode. All rights reserved.</p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+}
+
+export {register, login, logout, refresh, forgotPassword, resetPassword};

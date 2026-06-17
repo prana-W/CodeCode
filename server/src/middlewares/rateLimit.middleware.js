@@ -95,3 +95,17 @@ export const aiLimiter = rateLimit({
             'You have reached your AI assistant limit. Please wait 5 minutes.',
     },
 });
+
+// Password Reset Limiter — strict, 5 tries per 5 minutes per IP
+export const passwordResetLimiter = rateLimit({
+    windowMs: 5 * 60 * 1000, // 5 minutes
+    limit: 5,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: {
+        statusCode: 429,
+        success: false,
+        message:
+            'Too many password reset attempts. Please wait 5 minutes before trying again.',
+    },
+});
