@@ -25,6 +25,7 @@ import {
     CustomInvocationPage,
     UserTemplates,
     TemplateEditor,
+    ProblemSetPage,
 } from './pages/index.js';
 
 import ErrorBoundary from './components/ErrorBoundary.jsx';
@@ -108,6 +109,14 @@ const router = createBrowserRouter([
                 element: (
                     <ProtectedRoute>
                         <UserTemplates />
+                    </ProtectedRoute>
+                ),
+            },
+            {
+                path: 'problemset',
+                element: (
+                    <ProtectedRoute>
+                        <ProblemSetPage />
                     </ProtectedRoute>
                 ),
             },

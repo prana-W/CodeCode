@@ -71,26 +71,31 @@ class User {
         return rows;
     }
 
-    static async getRankings(institute, sortBy = 'rating') {
-        let query = `
-            SELECT id, name, username, email, institute, rating, max_rating, role 
-            FROM users 
-            WHERE role != 'admin'
-        `;
+    static async getRankings(institute, sortBy = 'rating', page = 1, limit = 50) {
+        const offset = (page - 1) * limit;
         const params = [];
+        let whereClause = `WHERE role != 'admin'`;
 
         if (institute && institute !== 'All Institutes') {
-            query += ' AND institute = ? ';
+            whereClause += ' AND institute = ?';
             params.push(institute);
         }
 
         const validSortFields = ['rating', 'max_rating'];
         const sortField = validSortFields.includes(sortBy) ? sortBy : 'rating';
 
-        query += ` ORDER BY ${sortField} DESC, id ASC`;
+        const countQuery = `SELECT COUNT(*) AS total FROM users ${whereClause}`;
+        const [[{ total }]] = await pool.query(countQuery, [...params]);
 
-        const [rows] = await pool.query(query, params);
-        return rows;
+        const dataQuery = `
+            SELECT id, name, username, email, institute, rating, max_rating, role
+            FROM users
+            ${whereClause}
+            ORDER BY ${sortField} DESC, id ASC
+            LIMIT ? OFFSET ?`;
+        const [rows] = await pool.query(dataQuery, [...params, limit, offset]);
+
+        return { rows, total: Number(total) };
     }
 
     static async delete(id) {

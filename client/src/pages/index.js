@@ -26,6 +26,8 @@ import RankingsPage from './RankingsPage.jsx';
 import CustomInvocationPage from './CustomInvocationPage.jsx';
 import UserTemplates from './UserTemplates.jsx';
 import TemplateEditor from './TemplateEditor.jsx';
+import ProblemSetPage from './ProblemSetPage.jsx';
+
 
 export {
     Home,
@@ -54,4 +56,6 @@ export {
     CustomInvocationPage,
     UserTemplates,
     TemplateEditor,
+    ProblemSetPage,
 };
+

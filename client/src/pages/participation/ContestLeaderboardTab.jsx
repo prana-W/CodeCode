@@ -1,11 +1,13 @@
-import {useState, useEffect} from 'react';
+import {useState, useEffect, useRef, useCallback} from 'react';
 import {useParams, useOutletContext} from 'react-router-dom';
 import {toast} from 'sonner';
 import {Trophy, Loader2, RotateCw} from 'lucide-react';
 import api from '@/lib/axios';
 import {Button} from '@/components/ui/button';
+import PaginationControls from '@/components/PaginationControls';
 
 const PROBLEM_LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+const PAGE_SIZE = 50;
 
 export default function ContestLeaderboardTab() {
     const {id} = useParams();
@@ -13,31 +15,75 @@ export default function ContestLeaderboardTab() {
     const [leaderboard, setLeaderboard] = useState([]);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
+    const [page, setPage] = useState(1);
+    const [pagination, setPagination] = useState(null);
 
-    const fetchLeaderboard = async (isManual = false) => {
-        if (isManual) setRefreshing(true);
-        try {
-            const res = await api.get(`/contests/${id}/leaderboard`);
-            setLeaderboard(res.data.data || []);
-            if (isManual) toast.success('Leaderboard updated');
-        } catch (err) {
-            if (isManual) toast.error('Failed to update leaderboard');
-        } finally {
-            if (isManual) setRefreshing(false);
-            setLoading(false);
-        }
-    };
+    // Cache per page: Map<pageNum, { rows, pagination }>
+    const cache = useRef(new Map());
+
+    const fetchLeaderboard = useCallback(
+        async (targetPage, isManual = false) => {
+            // On manual refresh, flush the cache for all pages
+            if (isManual) {
+                cache.current.clear();
+                setRefreshing(true);
+            }
+
+            if (!isManual && cache.current.has(targetPage)) {
+                const cached = cache.current.get(targetPage);
+                setLeaderboard(cached.rows);
+                setPagination(cached.pagination);
+                return;
+            }
+
+            try {
+                const res = await api.get(`/contests/${id}/leaderboard`, {
+                    params: {page: targetPage, limit: PAGE_SIZE},
+                });
+                const rows = res.data.data || [];
+                const pag = res.data.pagination;
+                cache.current.set(targetPage, {rows, pagination: pag});
+                setLeaderboard(rows);
+                setPagination(pag);
+                if (isManual) toast.success('Leaderboard updated');
+            } catch (err) {
+                if (isManual) toast.error('Failed to update leaderboard');
+            } finally {
+                if (isManual) setRefreshing(false);
+                setLoading(false);
+            }
+        },
+        [id]
+    );
 
     useEffect(() => {
         setLoading(true);
-        fetchLeaderboard();
+        cache.current.clear();
+        setPage(1);
+        fetchLeaderboard(1);
 
         const interval = setInterval(() => {
-            fetchLeaderboard();
+            // Auto-refresh: clear cache and refetch current page silently
+            cache.current.clear();
+            fetchLeaderboard(1);
         }, 60000);
 
         return () => clearInterval(interval);
-    }, [id]);
+    }, [id]); // eslint-disable-line react-hooks/exhaustive-deps
+
+    const handlePrev = () => {
+        const newPage = page - 1;
+        setPage(newPage);
+        fetchLeaderboard(newPage);
+    };
+
+    const handleNext = () => {
+        const newPage = page + 1;
+        setPage(newPage);
+        fetchLeaderboard(newPage);
+    };
+
+    const rankOffset = (page - 1) * PAGE_SIZE;
 
     if (loading) {
         return (
@@ -70,7 +116,10 @@ export default function ContestLeaderboardTab() {
                 <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => fetchLeaderboard(true)}
+                    onClick={() => {
+                        setPage(1);
+                        fetchLeaderboard(1, true);
+                    }}
                     disabled={refreshing}
                     className="gap-2 text-xs font-semibold uppercase tracking-wider"
                 >
@@ -113,7 +162,7 @@ export default function ContestLeaderboardTab() {
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-border">
-                        {leaderboard.map((user, rank) => {
+                        {leaderboard.map((user, idx) => {
                             let solvedList = [];
                             try {
                                 solvedList =
@@ -137,7 +186,7 @@ export default function ContestLeaderboardTab() {
                                     className="hover:bg-muted/30 transition-colors"
                                 >
                                     <td className="px-4 py-3 text-center border-r border-border font-mono text-xs text-muted-foreground">
-                                        {rank + 1}
+                                        {rankOffset + idx + 1}
                                     </td>
                                     <td className="px-4 py-3 border-r border-border">
                                         <div className="font-semibold text-foreground">
@@ -204,6 +253,18 @@ export default function ContestLeaderboardTab() {
                         })}
                     </tbody>
                 </table>
+
+                {pagination && (
+                    <PaginationControls
+                        currentPage={page}
+                        totalPages={pagination.totalPages}
+                        total={pagination.total}
+                        limit={PAGE_SIZE}
+                        onPrev={handlePrev}
+                        onNext={handleNext}
+                        loading={refreshing}
+                    />
+                )}
             </div>
         </div>
     );

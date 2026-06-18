@@ -56,6 +56,7 @@ export default function Header() {
         if (user.role === 'admin') {
             return [
                 {to: '', label: 'HOME'},
+                {to: '/problemset', label: 'PROBLEM SET'},
                 {to: '/contests', label: 'CONTESTS'},
                 {to: '/admin/verify-contests', label: 'VERIFY CONTESTS'},
                 {to: '/admin/evaluate-contests', label: 'EVALUATE CONTESTS'},
@@ -66,6 +67,7 @@ export default function Header() {
 
         return [
             {to: '/', label: 'HOME', end: true},
+            {to: '/problemset', label: 'PROBLEM SET'},
             {to: '/templates', label: 'TEMPLATES'},
             {to: '/contests', label: 'CONTESTS'},
             {to: '/custom-invocation', label: 'CUSTOM INVOCATION'},

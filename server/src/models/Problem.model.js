@@ -109,6 +109,56 @@ class Problem {
         return result;
     }
 
+    /**
+     * Fetches all problems from verified, ended contests.
+     * Includes per-user status: 'accepted', 'attempted', or null.
+     * Supports server-side pagination.
+     */
+    static async findProblemSet(userId, page = 1, limit = 50) {
+        const offset = (page - 1) * limit;
+
+        const [[{ total }]] = await pool.query(
+            `SELECT COUNT(*) AS total
+             FROM problems p
+             JOIN contests c ON p.contest_id = c.id
+             WHERE c.isVerified = 1
+               AND c.contest_end_time < NOW()`
+        );
+
+        const [rows] = await pool.query(
+            `SELECT
+                p.problem_id,
+                p.contest_id,
+                p.title,
+                p.score,
+                c.title AS contest_title,
+                c.division,
+                CASE
+                    WHEN EXISTS (
+                        SELECT 1 FROM submissions s2
+                        WHERE s2.problem_id = p.problem_id
+                          AND s2.submitted_by = ?
+                          AND s2.verdict = 'accepted'
+                    ) THEN 'accepted'
+                    WHEN EXISTS (
+                        SELECT 1 FROM submissions s3
+                        WHERE s3.problem_id = p.problem_id
+                          AND s3.submitted_by = ?
+                    ) THEN 'attempted'
+                    ELSE NULL
+                END AS user_status
+             FROM problems p
+             JOIN contests c ON p.contest_id = c.id
+             WHERE c.isVerified = 1
+               AND c.contest_end_time < NOW()
+             ORDER BY p.score DESC, p.problem_id ASC
+             LIMIT ? OFFSET ?`,
+            [userId, userId, limit, offset]
+        );
+
+        return { rows, total: Number(total) };
+    }
+
     static async delete(problem_id) {
         const [result] = await pool.query(
             'DELETE FROM problems WHERE problem_id = ?',

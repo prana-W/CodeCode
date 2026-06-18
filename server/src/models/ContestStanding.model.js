@@ -1,7 +1,15 @@
 import pool from '../db/db.js';
 
 class ContestStanding {
-    static async getLeaderboard(contest_id) {
+    static async getLeaderboard(contest_id, page = 1, limit = 50) {
+        const offset = (page - 1) * limit;
+
+        // Get total count of distinct participants
+        const [[{ total }]] = await pool.query(
+            `SELECT COUNT(DISTINCT user_id) AS total FROM contest_standings WHERE contest_id = ?`,
+            [contest_id]
+        );
+
         const [rows] = await pool.query(
             `SELECT
                 cs.user_id,
@@ -27,10 +35,11 @@ class ContestStanding {
              LEFT JOIN contest_registrations cr ON cr.contest_id = cs.contest_id AND cr.user_id = cs.user_id
              WHERE cs.contest_id = ?
              GROUP BY cs.user_id, u.username, u.name, cr.delta
-             ORDER BY final_score DESC`,
-            [contest_id]
+             ORDER BY final_score DESC
+             LIMIT ? OFFSET ?`,
+            [contest_id, limit, offset]
         );
-        return rows;
+        return { rows, total: Number(total) };
     }
 }
 

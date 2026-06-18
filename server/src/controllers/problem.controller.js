@@ -243,10 +243,30 @@ const getProblemById = asyncHandler(async (req, res) => {
         .json(new ApiResponse(statusCode.OK, 'Problem fetched.', problem));
 });
 
+const getProblemSet = asyncHandler(async (req, res) => {
+    const page = Math.max(1, parseInt(req.query.page) || 1);
+    const limit = Math.min(100, Math.max(1, parseInt(req.query.limit) || 50));
+
+    const {rows, total} = await Problem.findProblemSet(req.userId, page, limit);
+    const totalPages = Math.ceil(total / limit);
+
+    return res.status(statusCode.OK).json(
+        new ApiResponse(statusCode.OK, 'Problem set fetched.', rows, {
+            page,
+            limit,
+            total,
+            totalPages,
+            hasNext: page < totalPages,
+            hasPrev: page > 1,
+        })
+    );
+});
+
 export {
     createProblem,
     updateProblem,
     deleteProblem,
     getAllProblems,
     getProblemById,
+    getProblemSet,
 };

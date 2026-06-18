@@ -232,13 +232,26 @@ const getLeaderboard = asyncHandler(async (req, res) => {
         );
     }
 
-    const leaderboard = await ContestStanding.getLeaderboard(Number(id));
+    const page = Math.max(1, parseInt(req.query.page) || 1);
+    const limit = Math.min(100, Math.max(1, parseInt(req.query.limit) || 50));
 
-    return res
-        .status(statusCode.OK)
-        .json(
-            new ApiResponse(statusCode.OK, 'Leaderboard fetched.', leaderboard)
-        );
+    const {rows, total} = await ContestStanding.getLeaderboard(
+        Number(id),
+        page,
+        limit
+    );
+    const totalPages = Math.ceil(total / limit);
+
+    return res.status(statusCode.OK).json(
+        new ApiResponse(statusCode.OK, 'Leaderboard fetched.', rows, {
+            page,
+            limit,
+            total,
+            totalPages,
+            hasNext: page < totalPages,
+            hasPrev: page > 1,
+        })
+    );
 });
 
 const REGISTRATION_WINDOW_MINUTES = 30;

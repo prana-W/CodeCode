@@ -1,4 +1,4 @@
-import {useState, useEffect} from 'react';
+import {useState, useEffect, useRef, useCallback} from 'react';
 import {Link} from 'react-router-dom';
 import {toast} from 'sonner';
 import {
@@ -25,15 +25,15 @@ import {
 } from '@/components/ui/select';
 import {
     Card,
-    CardHeader,
-    CardTitle,
-    CardDescription,
     CardContent,
 } from '@/components/ui/card';
 import api from '@/lib/axios';
 import {getRankDetails} from '@/constants/ratings';
 import {INSTITUTES} from '@/constants/institutes';
 import {useAuth} from '@/context/AuthContext';
+import PaginationControls from '@/components/PaginationControls';
+
+const PAGE_SIZE = 50;
 
 export default function RankingsPage() {
     const {user} = useAuth();
@@ -41,28 +41,68 @@ export default function RankingsPage() {
     const [loading, setLoading] = useState(true);
     const [sortBy, setSortBy] = useState('rating');
     const [institute, setInstitute] = useState('All Institutes');
+    const [page, setPage] = useState(1);
+    const [pagination, setPagination] = useState(null);
 
-    const fetchRankings = async () => {
-        setLoading(true);
-        try {
-            const params = {sortBy};
-            if (institute !== 'All Institutes') {
-                params.institute = institute;
+    // Cache: Map<cacheKey, { users, pagination }>
+    const cache = useRef(new Map());
+
+    const getCacheKey = (s, inst, p) => `${s}|${inst}|${p}`;
+
+    const fetchRankings = useCallback(
+        async (targetPage) => {
+            const key = getCacheKey(sortBy, institute, targetPage);
+            if (cache.current.has(key)) {
+                const cached = cache.current.get(key);
+                setUsers(cached.users);
+                setPagination(cached.pagination);
+                return;
             }
-            const res = await api.get('/users/rankings', {params});
-            setUsers(res.data.data);
-        } catch (err) {
-            toast.error(
-                err?.response?.data?.message || 'Failed to fetch rankings'
-            );
-        } finally {
-            setLoading(false);
-        }
+
+            setLoading(true);
+            try {
+                const params = {sortBy, page: targetPage, limit: PAGE_SIZE};
+                if (institute !== 'All Institutes') {
+                    params.institute = institute;
+                }
+                const res = await api.get('/users/rankings', {params});
+                const pag = res.data.pagination;
+                const data = res.data.data;
+                cache.current.set(key, {users: data, pagination: pag});
+                setUsers(data);
+                setPagination(pag);
+            } catch (err) {
+                toast.error(
+                    err?.response?.data?.message || 'Failed to fetch rankings'
+                );
+            } finally {
+                setLoading(false);
+            }
+        },
+        [sortBy, institute]
+    );
+
+    // On filter change: clear cache and reset to page 1
+    useEffect(() => {
+        cache.current.clear();
+        setPage(1);
+        fetchRankings(1);
+    }, [sortBy, institute]); // eslint-disable-line react-hooks/exhaustive-deps
+
+    const handlePrev = () => {
+        const newPage = page - 1;
+        setPage(newPage);
+        fetchRankings(newPage);
     };
 
-    useEffect(() => {
-        fetchRankings();
-    }, [sortBy, institute]);
+    const handleNext = () => {
+        const newPage = page + 1;
+        setPage(newPage);
+        fetchRankings(newPage);
+    };
+
+    // Global rank offset for display
+    const rankOffset = (page - 1) * PAGE_SIZE;
 
     return (
         <div className="min-h-screen bg-background py-8">
@@ -181,6 +221,8 @@ export default function RankingsPage() {
                                             );
                                             const isCurrentUser =
                                                 user?.username === u.username;
+                                            const globalRank =
+                                                rankOffset + idx + 1;
 
                                             return (
                                                 <TableRow
@@ -188,7 +230,7 @@ export default function RankingsPage() {
                                                     className={`transition-colors ${isCurrentUser ? 'bg-primary/5 hover:bg-primary/10 border-l-4 border-l-primary' : 'hover:bg-muted/30'}`}
                                                 >
                                                     <TableCell className="text-center font-bold text-muted-foreground">
-                                                        {idx + 1}
+                                                        {globalRank}
                                                     </TableCell>
                                                     <TableCell>
                                                         <div className="flex items-center gap-3">
@@ -236,6 +278,18 @@ export default function RankingsPage() {
                                 </TableBody>
                             </Table>
                         </div>
+
+                        {pagination && (
+                            <PaginationControls
+                                currentPage={page}
+                                totalPages={pagination.totalPages}
+                                total={pagination.total}
+                                limit={PAGE_SIZE}
+                                onPrev={handlePrev}
+                                onNext={handleNext}
+                                loading={loading}
+                            />
+                        )}
                     </CardContent>
                 </Card>
             </div>

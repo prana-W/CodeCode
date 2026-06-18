@@ -168,17 +168,22 @@ const deleteUser = asyncHandler(async (req, res) => {
 
 const getRankings = asyncHandler(async (req, res) => {
     const {institute, sortBy} = req.query;
-    const users = await User.getRankings(institute, sortBy);
+    const page = Math.max(1, parseInt(req.query.page) || 1);
+    const limit = Math.min(100, Math.max(1, parseInt(req.query.limit) || 50));
 
-    return res
-        .status(statusCode.OK)
-        .json(
-            new ApiResponse(
-                statusCode.OK,
-                'Rankings fetched successfully.',
-                users
-            )
-        );
+    const {rows, total} = await User.getRankings(institute, sortBy, page, limit);
+    const totalPages = Math.ceil(total / limit);
+
+    return res.status(statusCode.OK).json(
+        new ApiResponse(statusCode.OK, 'Rankings fetched successfully.', rows, {
+            page,
+            limit,
+            total,
+            totalPages,
+            hasNext: page < totalPages,
+            hasPrev: page > 1,
+        })
+    );
 });
 
 const getContestHistory = asyncHandler(async (req, res) => {
