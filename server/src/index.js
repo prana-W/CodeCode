@@ -5,6 +5,7 @@ import app from './app.js';
 import './cron/contestEvaluation.cron.js';
 import initializeSocket from './sockets/index.js';
 import redis from './config/redis.js';
+import Submission from './models/Submission.model.js';
 
 dotenv.config({
     path: `./.env`,
@@ -33,7 +34,20 @@ redisSubscriber.on('message', (channel, message) => {
     }
 });
 
-connectToDatabase().then(() => {
+connectToDatabase().then(async () => {
+    // Recover any submissions that got stuck in pending/running while workers were down.
+    // Mark them as system_error so users aren't left with an infinite spinner.
+    try {
+        const cleaned = await Submission.clearStuckSubmissions(5);
+        if (cleaned > 0) {
+            console.log(
+                `⚠️  Recovered ${cleaned} stuck submission(s) → system_error`
+            );
+        }
+    } catch (err) {
+        console.error('Failed to clear stuck submissions on startup:', err.message);
+    }
+
     httpServer.listen(port, () => {
         console.log(`✅ Server is running on port ${port}`);
     });

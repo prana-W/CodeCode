@@ -982,4 +982,90 @@ call POST /auth/refresh
 
 - Pagination logic:
 
-    - 
+## Pagination Architecture
+
+### Backend — 3 moving parts
+
+**1. Query params (input)**
+Every paginated endpoint accepts `?page=1&limit=50` from the client.
+
+**2. SQL — `LIMIT` + `OFFSET` + `COUNT(*)` (model layer)**
+```js
+const offset = (page - 1) * limit;
+
+// ① Total count (for totalPages calculation)
+const [[{ total }]] = await pool.query(
+    `SELECT COUNT(*) AS total FROM users WHERE ...`
+);
+
+// ② Actual page of data
+const [rows] = await pool.query(
+    `SELECT ... FROM users WHERE ... LIMIT ? OFFSET ?`,
+    [...params, limit, offset]
+);
+
+return { rows, total };
+```
+
+**3. Pagination envelope (controller layer)**
+```js
+const { rows, total } = await User.getRankings(institute, sortBy, page, limit);
+const totalPages = Math.ceil(total / limit);
+
+res.json(new ApiResponse(200, 'OK', rows, {
+    page, limit, total, totalPages,
+    hasNext: page < totalPages,
+    hasPrev: page > 1,
+}));
+```
+`ApiResponse` was updated to accept an optional 4th `pagination` arg — it attaches as a top-level `pagination` field alongside `data` in the JSON response.
+
+---
+
+### Frontend — page cache + `PaginationControls`
+
+**1. Page cache (`useRef(Map)`)**
+
+Each page holds a `Map` keyed by all filter values + page number. Before fetching, checks the cache — if already fetched, renders instantly with no API call. Filter changes clear the entire cache and reset to page 1.
+
+```js
+const cache = useRef(new Map());
+const key = `${sortBy}|${institute}|${page}`;
+
+if (cache.current.has(key)) {
+    setUsers(cache.current.get(key).users); // instant, no fetch
+    return;
+}
+// else fetch → store in cache → render
+```
+
+**2. `PaginationControls` component**
+
+Reusable component at the bottom of each table:
+- Shows **"Showing X–Y of N"** label
+- Renders **Prev / Next** buttons (disabled at boundaries)
+- Returns `null` automatically if `totalPages <= 1`
+
+```jsx
+<PaginationControls
+    currentPage={page}
+    totalPages={pagination.totalPages}
+    total={pagination.total}
+    limit={PAGE_SIZE}
+    onPrev={handlePrev}
+    onNext={handleNext}
+    loading={loading}
+/>
+```
+
+---
+
+### Pages using it
+
+| Page | Endpoint | Page size |
+|------|----------|-----------|
+| Rankings | `GET /users/rankings` | 50 |
+| Contest Leaderboard | `GET /contests/:id/leaderboard` | 50 |
+| Problem Set | `GET /problems/problemset` | 50 |
+
+All three follow the same pattern — model returns `{ rows, total }`, controller builds the envelope, frontend caches by page key and renders `PaginationControls`.

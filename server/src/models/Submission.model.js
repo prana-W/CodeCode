@@ -133,6 +133,18 @@ class Submission {
         );
         return rows.map((r) => r.problem_id);
     }
+
+
+    static async clearStuckSubmissions(thresholdMinutes = 3) {
+        const [result] = await pool.query(
+            `UPDATE submissions
+             SET verdict = 'system_error'
+             WHERE verdict IN ('pending', 'running')
+               AND submitted_at < NOW() - INTERVAL ? MINUTE`,
+            [thresholdMinutes]
+        );
+        return result.affectedRows;
+    }
 }
 
 export default Submission;
