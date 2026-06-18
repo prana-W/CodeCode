@@ -144,6 +144,7 @@ class Problem {
                         SELECT 1 FROM submissions s3
                         WHERE s3.problem_id = p.problem_id
                           AND s3.submitted_by = ?
+                          AND s3.verdict != 'system_error'
                     ) THEN 'attempted'
                     ELSE NULL
                 END AS user_status
