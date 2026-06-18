@@ -1,5 +1,5 @@
 import {useState, useEffect, useRef} from 'react';
-import {Link, useParams, useNavigate, useOutletContext} from 'react-router-dom';
+import {Link, useParams, useNavigate, useOutletContext, useSearchParams} from 'react-router-dom';
 import {toast} from 'sonner';
 import {
     Code,
@@ -40,6 +40,9 @@ const LANG_LABEL = {
 export default function ContestProblemView() {
     const {id, problemId} = useParams();
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
+    const fromProblemSet = searchParams.get('from') === 'problemset';
+    const backTo = fromProblemSet ? '/problemset' : `/contest/${id}/problems`;
     const {contest, problems, solvedIds, setSolvedIds} = useOutletContext();
     const [problem, setProblem] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -363,7 +366,7 @@ export default function ContestProblemView() {
                         className="gap-1.5 -ml-2 text-xs font-semibold text-muted-foreground hover:text-foreground"
                         asChild
                     >
-                        <Link to={`/contest/${id}/problems`}>
+                        <Link to={backTo}>
                             <ChevronLeft className="w-4 h-4" /> Back
                         </Link>
                     </Button>

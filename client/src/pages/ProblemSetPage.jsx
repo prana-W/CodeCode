@@ -36,6 +36,7 @@ import PaginationControls from '@/components/PaginationControls';
 
 const PAGE_SIZE = 50;
 const LS_HIDE_SCORE_KEY = 'problemset_hide_score';
+const SS_STATE_KEY = 'problemset_state'; // sessionStorage key for filter/page state
 
 // Status metadata
 const STATUS_CONFIG = {
@@ -65,22 +66,41 @@ function getStatusConfig(status) {
     return STATUS_CONFIG[status] ?? STATUS_CONFIG['null'];
 }
 
+// Read persisted filter state from sessionStorage
+function readPersistedState() {
+    try {
+        const raw = sessionStorage.getItem(SS_STATE_KEY);
+        if (raw) return JSON.parse(raw);
+    } catch {}
+    return null;
+}
+
+// Write filter state to sessionStorage
+function persistState(state) {
+    try {
+        sessionStorage.setItem(SS_STATE_KEY, JSON.stringify(state));
+    } catch {}
+}
+
 export default function ProblemSetPage() {
     const navigate = useNavigate();
 
-    // Filter state
-    const [sortScore, setSortScore] = useState('desc'); // 'desc' | 'asc'
-    const [statusFilter, setStatusFilter] = useState('all'); // 'all' | 'accepted' | 'attempted' | 'unsolved'
-    const [contestFilter, setContestFilter] = useState('all');
+    // Restore state from sessionStorage on mount (so back-navigation keeps filters)
+    const persisted = readPersistedState();
+
+    // Filter state — restored from sessionStorage if available
+    const [sortScore, setSortScore] = useState(persisted?.sortScore ?? 'desc');
+    const [statusFilter, setStatusFilter] = useState(persisted?.statusFilter ?? 'all');
+    const [contestFilter, setContestFilter] = useState(persisted?.contestFilter ?? 'all');
+    const [page, setPage] = useState(persisted?.page ?? 1);
 
     // Data state
     const [problems, setProblems] = useState([]);
-    const [allContests, setAllContests] = useState([]); // for contest filter dropdown
+    const [allContests, setAllContests] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [page, setPage] = useState(1);
     const [pagination, setPagination] = useState(null);
 
-    // Hide score: persisted to localStorage
+    // Hide score: persisted to localStorage (intentional — persists across tabs/sessions)
     const [hideScore, setHideScore] = useState(() => {
         try {
             return localStorage.getItem(LS_HIDE_SCORE_KEY) === 'true';
@@ -98,6 +118,11 @@ export default function ProblemSetPage() {
             return next;
         });
     };
+
+    // Save filter/page state to sessionStorage whenever it changes
+    useEffect(() => {
+        persistState({sortScore, statusFilter, contestFilter, page});
+    }, [sortScore, statusFilter, contestFilter, page]);
 
     // Page cache: Map keyed by "sortScore|statusFilter|contestFilter|page"
     const cache = useRef(new Map());
@@ -127,7 +152,7 @@ export default function ProblemSetPage() {
                 const rawProblems = res.data.data || [];
                 const pag = res.data.pagination;
 
-                // Collect unique contest names for the dropdown (only from first page fetch)
+                // Collect unique contest names for the dropdown (page 1 only)
                 if (targetPage === 1 && allContests.length === 0) {
                     const seen = new Map();
                     rawProblems.forEach((p) => {
@@ -135,8 +160,6 @@ export default function ProblemSetPage() {
                             seen.set(p.contest_id, p.contest_title);
                         }
                     });
-                    // Note: full contest list only visible on page 1; for full coverage
-                    // we'd need a separate API. This is acceptable for now.
                     setAllContests(
                         [...seen.entries()].map(([id, title]) => ({id, title}))
                     );
@@ -163,6 +186,18 @@ export default function ProblemSetPage() {
         fetchProblems(1);
     }, [sortScore, statusFilter, contestFilter]); // eslint-disable-line react-hooks/exhaustive-deps
 
+    // On first mount if a page was saved (back-navigation), restore it
+    const didRestorePage = useRef(false);
+    useEffect(() => {
+        if (!didRestorePage.current && persisted?.page && persisted.page > 1) {
+            didRestorePage.current = true;
+            // Cache was cleared by the filter effect above; refetch the restored page
+            fetchProblems(persisted.page);
+            setPage(persisted.page);
+        }
+        didRestorePage.current = true;
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
     const handlePrev = () => {
         const newPage = page - 1;
         setPage(newPage);
@@ -175,13 +210,12 @@ export default function ProblemSetPage() {
         fetchProblems(newPage);
     };
 
-    // Client-side filtering and sorting (applied on top of fetched page)
+    // Client-side filtering + sorting applied on top of the fetched page
     const displayedProblems = problems
         .filter((p) => {
             if (statusFilter === 'all') return true;
             if (statusFilter === 'accepted') return p.user_status === 'accepted';
-            if (statusFilter === 'attempted')
-                return p.user_status === 'attempted';
+            if (statusFilter === 'attempted') return p.user_status === 'attempted';
             if (statusFilter === 'unsolved') return p.user_status === null;
             return true;
         })
@@ -189,20 +223,19 @@ export default function ProblemSetPage() {
             if (contestFilter === 'all') return true;
             return String(p.contest_id) === String(contestFilter);
         })
-        .sort((a, b) => {
-            return sortScore === 'desc' ? b.score - a.score : a.score - b.score;
-        });
+        .sort((a, b) =>
+            sortScore === 'desc' ? b.score - a.score : a.score - b.score
+        );
 
+    // Navigate to problem, passing ?from=problemset so the back button knows where to go
     const handleProblemClick = (problem) => {
-        navigate(`/contest/${problem.contest_id}/problem/${problem.problem_id}`);
+        navigate(
+            `/contest/${problem.contest_id}/problem/${problem.problem_id}?from=problemset`
+        );
     };
 
-    const solvedCount = problems.filter(
-        (p) => p.user_status === 'accepted'
-    ).length;
-    const attemptedCount = problems.filter(
-        (p) => p.user_status === 'attempted'
-    ).length;
+    const solvedCount = problems.filter((p) => p.user_status === 'accepted').length;
+    const attemptedCount = problems.filter((p) => p.user_status === 'attempted').length;
 
     return (
         <div className="min-h-screen bg-background py-8">
@@ -241,29 +274,26 @@ export default function ProblemSetPage() {
 
                     {/* Controls */}
                     <div className="flex flex-wrap items-center gap-2 bg-muted/30 p-2 rounded-lg border border-border">
-                        {/* Sort by score */}
+                        {/* Sort by score — wider to fit "Score: High → Low" on one line */}
                         <div className="flex items-center gap-2">
                             <SlidersHorizontal className="w-4 h-4 text-muted-foreground shrink-0" />
-                            <Select
-                                value={sortScore}
-                                onValueChange={setSortScore}
-                            >
+                            <Select value={sortScore} onValueChange={setSortScore}>
                                 <SelectTrigger
                                     id="sort-score"
-                                    className="w-[160px] bg-card border-border text-sm"
+                                    className="w-[185px] bg-card border-border text-sm whitespace-nowrap"
                                 >
                                     <SelectValue placeholder="Sort by score" />
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="desc">
-                                        <span className="flex items-center gap-2">
-                                            <ChevronDown className="w-3.5 h-3.5" />
+                                        <span className="flex items-center gap-2 whitespace-nowrap">
+                                            <ChevronDown className="w-3.5 h-3.5 shrink-0" />
                                             Score: High → Low
                                         </span>
                                     </SelectItem>
                                     <SelectItem value="asc">
-                                        <span className="flex items-center gap-2">
-                                            <ChevronUp className="w-3.5 h-3.5" />
+                                        <span className="flex items-center gap-2 whitespace-nowrap">
+                                            <ChevronUp className="w-3.5 h-3.5 shrink-0" />
                                             Score: Low → High
                                         </span>
                                     </SelectItem>
@@ -285,18 +315,10 @@ export default function ProblemSetPage() {
                                     <SelectValue placeholder="Status" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="all">
-                                        All Statuses
-                                    </SelectItem>
-                                    <SelectItem value="accepted">
-                                        Solved
-                                    </SelectItem>
-                                    <SelectItem value="attempted">
-                                        Attempted
-                                    </SelectItem>
-                                    <SelectItem value="unsolved">
-                                        Unsolved
-                                    </SelectItem>
+                                    <SelectItem value="all">All Statuses</SelectItem>
+                                    <SelectItem value="accepted">Solved</SelectItem>
+                                    <SelectItem value="attempted">Attempted</SelectItem>
+                                    <SelectItem value="unsolved">Unsolved</SelectItem>
                                 </SelectContent>
                             </Select>
                         </div>
@@ -316,9 +338,7 @@ export default function ProblemSetPage() {
                                         <SelectValue placeholder="Contest" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="all">
-                                            All Contests
-                                        </SelectItem>
+                                        <SelectItem value="all">All Contests</SelectItem>
                                         {allContests.map((c) => (
                                             <SelectItem
                                                 key={c.id}
@@ -418,9 +438,7 @@ export default function ProblemSetPage() {
                                             );
                                             const StatusIcon = cfg.icon;
                                             const globalIdx =
-                                                (page - 1) * PAGE_SIZE +
-                                                idx +
-                                                1;
+                                                (page - 1) * PAGE_SIZE + idx + 1;
 
                                             return (
                                                 <TableRow
@@ -428,9 +446,7 @@ export default function ProblemSetPage() {
                                                     id={`problem-row-${problem.problem_id}`}
                                                     className="cursor-pointer hover:bg-muted/40 transition-colors"
                                                     onClick={() =>
-                                                        handleProblemClick(
-                                                            problem
-                                                        )
+                                                        handleProblemClick(problem)
                                                     }
                                                 >
                                                     <TableCell className="text-center font-mono text-xs text-muted-foreground font-semibold">
@@ -446,15 +462,10 @@ export default function ProblemSetPage() {
                                                     <TableCell className="hidden sm:table-cell">
                                                         <div className="flex flex-col">
                                                             <span className="text-sm text-muted-foreground font-medium truncate max-w-[220px]">
-                                                                {
-                                                                    problem.contest_title
-                                                                }
+                                                                {problem.contest_title}
                                                             </span>
                                                             <span className="text-[10px] text-muted-foreground/60 font-semibold uppercase tracking-wider mt-0.5">
-                                                                Div.{' '}
-                                                                {
-                                                                    problem.division
-                                                                }
+                                                                Div. {problem.division}
                                                             </span>
                                                         </div>
                                                     </TableCell>

@@ -4,6 +4,8 @@ module.exports = {
             name: 'api-server',
             script: 'src/index.js',
             node_args: '-r dotenv/config',
+            watch_delay: 1000,
+            ignore_watch: ['node_modules', 'sandbox', 'logs', '.pm2'],
             env: {
                 NODE_ENV: 'development',
             },
@@ -15,6 +17,8 @@ module.exports = {
             name: 'worker-submission',
             script: 'src/workers/submissionWorker.js',
             node_args: '-r dotenv/config',
+            watch_delay: 1000,
+            ignore_watch: ['node_modules', 'sandbox', 'logs', '.pm2'],
             env: {
                 NODE_ENV: 'development',
             },
@@ -26,6 +30,8 @@ module.exports = {
             name: 'worker-custom-invocation',
             script: 'src/workers/customInvocationWorker.js',
             node_args: '-r dotenv/config',
+            watch_delay: 1000,
+            ignore_watch: ['node_modules', 'sandbox', 'logs', '.pm2'],
             env: {
                 NODE_ENV: 'development',
             },
@@ -37,6 +43,8 @@ module.exports = {
             name: 'worker-email-service',
             script: 'src/workers/emailWorker.js',
             node_args: '-r dotenv/config',
+            watch_delay: 1000,
+            ignore_watch: ['node_modules', 'sandbox', 'logs', '.pm2'],
             env: {
                 NODE_ENV: 'development',
             },
@@ -46,3 +54,4 @@ module.exports = {
         },
     ],
 };
+
