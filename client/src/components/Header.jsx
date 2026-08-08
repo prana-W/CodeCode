@@ -62,6 +62,11 @@ export default function Header() {
                 {to: '/admin/evaluate-contests', label: 'EVALUATE CONTESTS'},
                 {to: '/rankings', label: 'RANKINGS'},
                 {to: '/about', label: 'ABOUT'},
+                {
+                    to: import.meta.env.VITE_SERVER_URL.replace('/api/v1', '/api-docs'),
+                    label: 'API',
+                    isExternal: true,
+                },
             ];
         }
 
@@ -74,6 +79,11 @@ export default function Header() {
             {to: '/design-contest', label: 'DESIGN'},
             {to: '/rankings', label: 'RANKINGS'},
             {to: '/about', label: 'ABOUT'},
+            {
+                to: import.meta.env.VITE_SERVER_URL.replace('/api/v1', '/api-docs'),
+                label: 'API',
+                isExternal: true,
+            },
         ];
     };
 
@@ -194,22 +204,34 @@ export default function Header() {
             {user && !isProblemView && (
                 <div className="hidden md:block max-w-7xl mx-auto w-full px-4 sm:px-6 pb-2">
                     <nav className="flex flex-wrap items-center gap-x-6 gap-y-2 rounded-md border border-border bg-card px-6 shadow-sm overflow-hidden">
-                        {navLinks.map(({to, label, end}) => (
-                            <NavLink
-                                key={to}
-                                to={to}
-                                end={end}
-                                className={({isActive}) =>
-                                    `text-xs font-bold tracking-wider py-3 border-b-[3px] transition-all whitespace-nowrap ${
-                                        isActive
-                                            ? 'border-primary text-foreground'
-                                            : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border'
-                                    }`
-                                }
-                            >
-                                {label}
-                            </NavLink>
-                        ))}
+                        {navLinks.map(({to, label, end, isExternal}) =>
+                            isExternal ? (
+                                <a
+                                    key={to}
+                                    href={to}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-xs font-bold tracking-wider py-3 border-b-[3px] transition-all whitespace-nowrap border-transparent text-muted-foreground hover:text-foreground hover:border-border"
+                                >
+                                    {label}
+                                </a>
+                            ) : (
+                                <NavLink
+                                    key={to}
+                                    to={to}
+                                    end={end}
+                                    className={({isActive}) =>
+                                        `text-xs font-bold tracking-wider py-3 border-b-[3px] transition-all whitespace-nowrap ${
+                                            isActive
+                                                ? 'border-primary text-foreground'
+                                                : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border'
+                                        }`
+                                    }
+                                >
+                                    {label}
+                                </NavLink>
+                            )
+                        )}
 
                         {/* Right-aligned Online Users counter */}
                         {onlineCount !== null && (
@@ -229,23 +251,36 @@ export default function Header() {
             {mobileOpen && (
                 <div className="md:hidden border-t border-border bg-background px-4 py-4 space-y-3">
                     {user &&
-                        navLinks.map(({to, label, end}) => (
-                            <NavLink
-                                key={to}
-                                to={to}
-                                end={end}
-                                className={({isActive}) =>
-                                    `block py-2 text-sm font-bold tracking-wide transition-colors ${
-                                        isActive
-                                            ? 'text-primary'
-                                            : 'text-muted-foreground hover:text-foreground'
-                                    }`
-                                }
-                                onClick={() => setMobileOpen(false)}
-                            >
-                                {label}
-                            </NavLink>
-                        ))}
+                        navLinks.map(({to, label, end, isExternal}) =>
+                            isExternal ? (
+                                <a
+                                    key={to}
+                                    href={to}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="block py-2 text-sm font-bold tracking-wide transition-colors text-muted-foreground hover:text-foreground"
+                                    onClick={() => setMobileOpen(false)}
+                                >
+                                    {label}
+                                </a>
+                            ) : (
+                                <NavLink
+                                    key={to}
+                                    to={to}
+                                    end={end}
+                                    className={({isActive}) =>
+                                        `block py-2 text-sm font-bold tracking-wide transition-colors ${
+                                            isActive
+                                                ? 'text-primary'
+                                                : 'text-muted-foreground hover:text-foreground'
+                                        }`
+                                    }
+                                    onClick={() => setMobileOpen(false)}
+                                >
+                                    {label}
+                                </NavLink>
+                            )
+                        )}
 
                     <div className="pt-3 border-t border-border space-y-2">
                         {user ? (
