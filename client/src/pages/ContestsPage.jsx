@@ -12,6 +12,7 @@ import {
     Shield,
 } from 'lucide-react';
 import {Button} from '@/components/ui/button';
+import PaginationControls from '@/components/PaginationControls';
 import api from '@/lib/axios';
 import {useAuth} from '@/context/AuthContext';
 import {DIV_LABELS} from '@/constants/ratings';
@@ -330,6 +331,8 @@ export default function ContestsPage() {
     const [loading, setLoading] = useState(true);
     const [sortField, setSortField] = useState('start');
     const [sortDir, setSortDir] = useState('asc');
+    const [pastPage, setPastPage] = useState(1);
+    const pastLimit = 10;
 
     useEffect(() => {
         const fetchData = async () => {
@@ -337,17 +340,12 @@ export default function ContestsPage() {
             try {
                 const res = await api.get('/contests');
                 const all = res.data.data || [];
-                const now = new Date();
-                const cutoff = new Date(now.getTime() - 7 * 86400000);
-                const visible = all.filter(
-                    (c) => new Date(c.contest_end_time) > cutoff
-                );
-                setContests(visible);
+                setContests(all);
 
                 if (user) {
                     const statuses = {};
                     await Promise.all(
-                        visible.map(async (c) => {
+                        all.map(async (c) => {
                             try {
                                 const regRes = await api.get(
                                     `/contests/register/status?contest_id=${c.id}`
@@ -645,7 +643,7 @@ export default function ContestsPage() {
                                 <div className="flex items-center gap-2 mb-3">
                                     <span className="status-dot status-past" />
                                     <h2 className="text-xs font-bold text-muted-foreground uppercase tracking-wider font-mono">
-                                        Recent ({past.length})
+                                        Past Contests ({past.length})
                                     </h2>
                                 </div>
                                 <div className="rounded-xl border border-border overflow-hidden">
@@ -670,7 +668,7 @@ export default function ContestsPage() {
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            {past.map((c) => (
+                                            {past.slice((pastPage - 1) * pastLimit, pastPage * pastLimit).map((c) => (
                                                 <ContestRow
                                                     key={c.id}
                                                     contest={c}
@@ -683,6 +681,14 @@ export default function ContestsPage() {
                                             ))}
                                         </tbody>
                                     </table>
+                                    <PaginationControls
+                                        currentPage={pastPage}
+                                        totalPages={Math.ceil(past.length / pastLimit)}
+                                        total={past.length}
+                                        limit={pastLimit}
+                                        onPrev={() => setPastPage(p => Math.max(1, p - 1))}
+                                        onNext={() => setPastPage(p => Math.min(Math.ceil(past.length / pastLimit), p + 1))}
+                                    />
                                 </div>
                             </section>
                         )}
