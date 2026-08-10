@@ -7,6 +7,7 @@ import statusCode from '../constants/statusCode.js';
 import {
     accessTokenCookieOptions,
     refreshTokenCookieOptions,
+    clearCookieOptions,
 } from '../constants/cookieOptions.js';
 import redis from '../config/redis.js';
 import emailQueue from '../queues/emailQueue.js';
@@ -133,8 +134,8 @@ const logout = asyncHandler(async (req, res) => {
 
     return res
         .status(statusCode.OK)
-        .clearCookie('accessToken', accessTokenCookieOptions)
-        .clearCookie('refreshToken', refreshTokenCookieOptions)
+        .clearCookie('accessToken', clearCookieOptions)
+        .clearCookie('refreshToken', clearCookieOptions)
         .json(new ApiResponse(statusCode.OK, 'Logout successful.'));
 });
 
@@ -156,8 +157,8 @@ const refresh = asyncHandler(async (req, res) => {
         );
     } catch (error) {
         // Clear stale cookies on any JWT error
-        res.clearCookie('accessToken', accessTokenCookieOptions);
-        res.clearCookie('refreshToken', refreshTokenCookieOptions);
+        res.clearCookie('accessToken', clearCookieOptions);
+        res.clearCookie('refreshToken', clearCookieOptions);
 
         if (error.name === 'TokenExpiredError') {
             throw new ApiError(
@@ -174,8 +175,8 @@ const refresh = asyncHandler(async (req, res) => {
     const user = await User.findByRefreshToken(incomingRefreshToken);
 
     if (!user) {
-        res.clearCookie('accessToken', accessTokenCookieOptions);
-        res.clearCookie('refreshToken', refreshTokenCookieOptions);
+        res.clearCookie('accessToken', clearCookieOptions);
+        res.clearCookie('refreshToken', clearCookieOptions);
         throw new ApiError(
             statusCode.UNAUTHORIZED,
             'Refresh token has already been used or revoked. Please log in again.'
@@ -184,8 +185,8 @@ const refresh = asyncHandler(async (req, res) => {
 
     // Extra sanity check: decoded.userId should match the DB row
     if (decoded.userId !== user.id) {
-        res.clearCookie('accessToken', accessTokenCookieOptions);
-        res.clearCookie('refreshToken', refreshTokenCookieOptions);
+        res.clearCookie('accessToken', clearCookieOptions);
+        res.clearCookie('refreshToken', clearCookieOptions);
         throw new ApiError(
             statusCode.UNAUTHORIZED,
             'Token mismatch. Please log in again.'
@@ -282,8 +283,8 @@ const resetPassword = asyncHandler(async (req, res) => {
 
     await redis.del(redisKey);
 
-    res.clearCookie('accessToken', accessTokenCookieOptions);
-    res.clearCookie('refreshToken', refreshTokenCookieOptions);
+    res.clearCookie('accessToken', clearCookieOptions);
+    res.clearCookie('refreshToken', clearCookieOptions);
 
     return res
         .status(statusCode.OK)

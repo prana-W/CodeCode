@@ -11,12 +11,16 @@ const baseCookieOptions = {
 
 const accessTokenCookieOptions = {
     ...baseCookieOptions,
-    maxAge: 5 * 60 * 1000, // 5 minutes in ms
+    maxAge: 15 * 60 * 1000, // 15 minutes in ms — must match JWT_ACCESS_EXPIRES_IN
 };
 
 const refreshTokenCookieOptions = {
     ...baseCookieOptions,
-    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days in ms
+    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days in ms — must match JWT_REFRESH_EXPIRES_IN
 };
 
-export {accessTokenCookieOptions, refreshTokenCookieOptions};
+// Used with res.clearCookie() — MUST NOT include maxAge or the positive value
+// fights against the epoch expiry that clearCookie sets, leaving the cookie alive.
+const clearCookieOptions = {...baseCookieOptions};
+
+export {accessTokenCookieOptions, refreshTokenCookieOptions, clearCookieOptions};
